@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "description": "Plugin para scraping de carteleras",
   "scripts": {
+    "up": "wp-env start",
+    "down": "wp-env stop",
     "test": "phpunit",
     "cs": "composer run lint .",
     "cbf": "composer run format .",
@@ -20,10 +22,10 @@
     "test:e2e": "wp-scripts test-e2e",
     "test:unit": "wp-scripts test-unit-js"
   },
-  "author": "",
+  "author": "@cobianzo",
   "license": "GPL-2.0-or-later",
   "devDependencies": {
     "@wordpress/scripts": "^26.0.0",
-    "@wordpress/env": "^8.0.0"
+    "@wordpress/env": "^10.2.0"
   }
 }
