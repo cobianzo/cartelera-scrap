@@ -43,6 +43,7 @@ class Cartelera_Scrap_Plugin {
 	 * @return void
 	 */
 	private function load_dependencies() {
+		define( 'CARTELERA_PLUGIN_SLUG', 'cartelera-scrap' );
 		define( 'CARTELERA_SCRAP_VERSION', self::VERSION );
 		define( 'CARTELERA_SCRAP_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'CARTELERA_SCRAP_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

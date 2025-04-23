@@ -2,7 +2,7 @@
 
 namespace Cartelera_Scrap\Admin;
 
-use Scrap_Output;
+use Cartelera_Scrap\Scrap_Output;
 
 /**
  * Class Settings_Page
@@ -156,4 +156,4 @@ class Settings_Page {
 }
 
 // Instantiate the Settings_Page class with the plugin name and version.
-new Settings_Page( 'cartelera-scrap', CARTELERA_SCRAP_VERSION );
+new Settings_Page( CARTELERA_PLUGIN_SLUG, CARTELERA_SCRAP_VERSION );
