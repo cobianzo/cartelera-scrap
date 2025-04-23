@@ -22,6 +22,25 @@ WordPress test site started at http://localhost:8667
 MySQL is listening on port 54868
 MySQL for automated testing is listening on port 54878
 
+## Use CLI
+
+`wp-env run cli`
+`wp-env run cli bash`
+
+### Use CLI for DB connection (MySQL/MariaDB)
+
+The raw connection would be (replacing the port with the one created by wp-env):
+
+`mysql -h127.0.0.1 -P54868 -uroot -p`
+
+Using CLI
+`wp-env run cli wp db cli`
+
+### Use WP CLI
+
+`wp-env run cli wp get option siteurl`
+
+
 PHPCS
 ===
 Installed Alleys PHPCS standards, which uses WordPress VIP.
@@ -38,3 +57,9 @@ npm run cs .
 npm run cbf .
 ```
 
+# TESTS PHP
+
+## Cases to Test
+- when the cartelera title is not in ticketmaster
+- when the cartelera title has more than one show title occurrence in ticketmaster
+- when the cartelera title has a result in ticketmaster
