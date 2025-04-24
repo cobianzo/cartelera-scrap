@@ -23,13 +23,16 @@ class Settings_Page {
 	private string $version;
 
 		// Name of the options saved in the database.
-	public string $options_name;
+	public string $all_plugin_options_name;
 
 		// Key for scrapping cartelera (checked).
 	public static string $option_cartelera_url = 'cartelera_obras_page';
 
 		// Key for scrapping tickemaster (source).
 	public static string $option_ticketmaster_url = 'ticketmaster_search_page';
+
+		// how many shows to process each time, before calling the next cron job.
+	public static string $number_processed_each_time = 'number_processed_each_time';
 
 		/**
 		 * Constructor for the Settings_Page class.
@@ -40,7 +43,7 @@ class Settings_Page {
 	public function __construct( string $plugin_name, string $version ) {
 			$this->plugin_name  = $plugin_name;
 			$this->version      = $version;
-			$this->options_name = $plugin_name . '_options'; // Save the options serialized.
+			$this->all_plugin_options_name = $plugin_name . '_options'; // Save the options serialized.
 
 			// Hook to add the settings page to the admin menu.
 			add_action( 'admin_menu', [ $this, 'add_admin_menu' ] );
@@ -54,6 +57,7 @@ class Settings_Page {
 
 		/**
 		 * Enqueue styles and scripts for the settings page.
+		 * NOT IN USE YET: todelete.
 		 */
 	public function enqueue_scripts_styles(): void {
 			wp_enqueue_style(
@@ -95,7 +99,7 @@ class Settings_Page {
 						<h1><?php echo esc_html( get_admin_page_title() ); ?></h1> <!-- Display the page title. -->
 						<form action='options.php' method='post'> <!-- Form to save settings. -->
 							<?php
-							settings_fields( $this->options_name ); // Output nonce, action, and option group.
+							settings_fields( $this->all_plugin_options_name ); // Output nonce, action, and option group.
 							do_settings_sections( $this->plugin_name ); // Output settings sections and fields.
 							submit_button(); // Output the submit button.
 							?>
@@ -113,12 +117,16 @@ class Settings_Page {
 	public function settings_init(): void {
 			// Register the settings option in the database.
 			register_setting(
-				$this->options_name,
-				$this->options_name,
+				$this->all_plugin_options_name,
+				$this->all_plugin_options_name,
 				[
 					'sanitize_callback' => function ( array $options ) {
 						// Sanitize the options before saving them. $options is an associative array ( optionname=>value).
-						return array_map( 'esc_url_raw', $options );
+						$options[self::$option_cartelera_url] = esc_url_raw( $options[self::$option_cartelera_url] );
+						$options[self::$option_ticketmaster_url] = esc_url_raw( $options[self::$option_ticketmaster_url] );
+						$options[self::$number_processed_each_time] = intval( $options[self::$number_processed_each_time] ) ?  intval( $options[self::$number_processed_each_time] ) : 1;
+
+						return $options;
 					},
 				]
 			);
@@ -140,20 +148,37 @@ class Settings_Page {
 				$option_name, // Field ID.
 				ucwords( str_replace( '_', ' ', $option_name ) ), // Field title.
 				function () use ( $option_name ): void {
-					$options      = get_option( $this->options_name ); // Retrieve the saved options.
+					$options      = get_option( $this->all_plugin_options_name ); // Retrieve the saved options.
 					$option_value = $options[ $option_name ] ?? '';
 					?>
-								<input type="text"
-									name="<?php echo esc_attr( $this->options_name ); ?>[<?php echo esc_attr( $option_name ); ?>]"
+								<input type="text" class="regular-text"
+									name="<?php echo esc_attr( $this->all_plugin_options_name ); ?>[<?php echo esc_attr( $option_name ); ?>]"
 									value="<?php echo esc_attr( $option_value ); ?>">
 							<?php
 				},
 				$this->plugin_name, // Page slug.
 				$this->plugin_name . '_fields__section' // Section ID.
 			);
-		}
+		} // end for both urls fields
+
+		$field = self::$number_processed_each_time;
+		add_settings_field(
+			self::$number_processed_each_time, // Field ID.
+			__( 'Number of shows to process each time', $this->plugin_name ), // Field title.
+			function () use ( $field ): void {
+				$options      = get_option( $this->all_plugin_options_name ); // Retrieve the saved options.
+				$option_value = $options[ $field ] ?? '';
+				?>
+							<input type="number" step="1" min="1" placeholder="type a number"
+								name="<?php echo esc_attr( $this->all_plugin_options_name ); ?>[<?php echo esc_attr( $field ); ?>]"
+								value="<?php echo esc_attr( $option_value ); ?>">
+						<?php
+			},
+			$this->plugin_name, // Page slug.
+			$this->plugin_name . '_fields__section' // Section ID.
+		);
 	}
 }
 
 // Instantiate the Settings_Page class with the plugin name and version.
-new Settings_Page( CARTELERA_PLUGIN_SLUG, CARTELERA_SCRAP_VERSION );
+new Settings_Page( CARTELERA_SCRAP_PLUGIN_SLUG, CARTELERA_SCRAP_VERSION );

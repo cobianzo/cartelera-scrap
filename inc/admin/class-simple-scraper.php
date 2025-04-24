@@ -13,13 +13,13 @@ use DOMXPath;
 use DOMElement;
 
 /**
- * Class Simple_Scrapper.
+ * Class Simple_Scraper.
  *
- * A simple scrapper class for easy access to DOM elements and values.
- * Usage: $scraper = new Simple_Scrapper($html);
+ * A simple scraper class for easy access to DOM elements and values.
+ * Usage: $scraper = new Simple_Scraper($html);
  * $titles = $scraper->get_texts('//h2[@class="post-title"]');
  */
-class Simple_Scrapper {
+class Simple_Scraper {
 
 
 	/**
@@ -35,7 +35,9 @@ class Simple_Scrapper {
 	public function __construct( string $html ) {
 		$dom = new DOMDocument();
 		libxml_use_internal_errors( true );
-		$dom->loadHTML( $html );
+		if ( ! empty( $html ) ) {
+			$dom->loadHTML( $html );
+		}
 		libxml_clear_errors();
 		$this->xpath = new DOMXPath( $dom );
 	}
@@ -219,7 +221,7 @@ class Simple_Scrapper {
 		}
 
 		// Start scrapping the HTML with DOM.
-		$scraper = new Simple_Scrapper( $html );
+		$scraper = new Simple_Scraper( $html );
 		$shows   = $scraper->get_texts_and_hrefs( "//div[@id='content-obras']//li/a[1]" );
 
 		return $shows; // Returns array of [ text => 'El Rey Leon', href => 'http://cartelera.com/el-rey-leon' ].
@@ -242,7 +244,7 @@ class Simple_Scrapper {
 		}
 
 		// Start scrapping the HTML with DOM.
-		$scraper  = new Simple_Scrapper( $html );
+		$scraper  = new Simple_Scraper( $html );
 		$li_nodes = $scraper->get_root()->query( '//ul[@data-testid="eventList"]/li' );
 
 		$result_tickermaster = [
@@ -255,10 +257,12 @@ class Simple_Scrapper {
 			$div           = $div->firstChild;
 			$all_divs      = $div->getElementsByTagName( 'div' );
 			$all_spans     = $div->getElementsByTagName( 'span' );
-			$printed_date  = $all_divs->item( 0 ); // may25
-			$complete_date = $all_spans->item( 0 );
-			$time          = $all_spans->item( 10 ); // 8:30 p.m.
-			$time_24h      = \DateTime::createFromFormat( 'g:i a', str_replace( '.', '', strtolower( $time->textContent ) ) )->format( 'H:i' );
+			$printed_date  = $all_divs? $all_divs->item( 0 ): null; // may25
+			$complete_date = $all_spans? $all_spans->item( 0 ) : null;
+			$time          = $all_spans? $all_spans->item( 10 ) : null; // 8:30 p.m.
+			$time_24h      = $time ?
+				\DateTime::createFromFormat( 'g:i a', str_replace( '.', '', strtolower( $time->textContent ) ) )->format( 'H:i' )
+				: null;
 
 			$result_tickermaster['dates'][] = [
 				'printed_date' => $printed_date->textContent, // may25
@@ -293,7 +297,7 @@ class Simple_Scrapper {
 		}
 
 		// start scrapping the html with DOM.;
-		$scraper = new Simple_Scrapper( $html );
+		$scraper = new Simple_Scraper( $html );
 
 		// Retrieve the text : `Del 6 abril al 8 de junio de 2025` or `2, 3 y 4 de mayo de 2025.`, or `En temporada 2025.`
 		$nodes = $scraper->get_root()->query( '//div[@class="post-content-obras"]/p' );

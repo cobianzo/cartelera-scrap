@@ -4,6 +4,8 @@ namespace Cartelera_Scrap;
 
 class Scrap_Output {
 	public static function init() {
+
+		// The notices if we come back grom the cron job with message.
 		add_action( 'admin_init', function () {
 			if ( isset( $_GET['error'] ) ) {
 				$error_msg = sanitize_text_field( $_GET['error'] );
@@ -25,7 +27,9 @@ class Scrap_Output {
 
 		// check if the cron job is running
 		if ( wp_next_scheduled( Scrap_Actions::CRONJOB_NAME ) ) {
-			echo '<p>Scrapping is running</p>';
+			_e( '<h3>Scrapping is running</h3>', 'cartelera-scrap' );
+			printf( __( '<p>Shows in the processing queue waiting to be processed: %s<br />', 'cartelera-scrap' ), Scrap_Actions::get_queued_count() );
+			printf( __( 'Already processed shows: %s</p>', 'cartelera-scrap' ), count( Scrap_Actions::get_show_results() ) );
 			$queue = Scrap_Actions::get_first_queued_show();
 			if ( $queue ) {
 				echo '<p>Next show to Scrap:  ' . $queue['text'] . '</p>';
@@ -79,29 +83,40 @@ class Scrap_Output {
 							foreach ( $results as $result ) :
 								?>
 									<tr style="border: 1px solid #ccc;">
+
 										<td> <!-- Display the title and URL -->
-											<strong><?php echo esc_html( $result['title'] ); ?></strong><br>
-										<?php if ( empty( $result['ticketmaster']['dates'] ) || ! isset( $result['ticketmaster']['url'] ) ) : ?>
-												<p style="color: red;">No information in ticketmaster</p>
-											<?php else : ?>
-												<a href="<?php echo esc_url( $result['ticketmaster']['url'] ); ?>" target="_blank">
-													<?php echo esc_html( str_replace( 'https://', '', $result['ticketmaster']['url'] ) ); ?>
-												</a> <br/>
-											<?php endif; ?>
-											<!-- // cartelera url -->
-											<a href="<?php echo esc_url( $result['cartelera']['url'] ); ?>" target="_blank">
-											<?php echo esc_html( str_replace( 'https://', '', $result['cartelera']['url'] ) ); ?>
-											</a>
+											<strong><?php echo esc_html( $result['title'] ); ?></strong>
+											<ul>
+												<?php if ( empty( $result['ticketmaster']['dates'] ) || ! isset( $result['ticketmaster']['url'] ) ) : ?>
+													<li style="color: red;">No information in ticketmaster</li>
+												<?php else : ?>
+													<li>
+														<a href="<?php echo esc_url( $result['ticketmaster']['url'] ); ?>" target="_blank">
+															<?php echo esc_html( str_replace( 'https://', '', $result['ticketmaster']['url'] ) ); ?>
+														</a>
+													</li>
+												<?php endif; ?>
+												<!-- // cartelera url -->
+												<li>
+													<a href="<?php echo esc_url( $result['cartelera']['url'] ); ?>" target="_blank">
+													<?php echo esc_html( str_replace( 'https://', '', $result['cartelera']['url'] ) ); ?>
+													</a>
+												</li>
+											</ul>
 										</td>
+
 										<td> <!-- Display the ticketmaster dates -->
 										<?php
-										if ( ! empty( $result['ticketmaster']['dates'] ) ) {
-											dd($result['ticketmaster']['dates']);
-										} else {
-											echo 'No dates found';
-										}
-										?>
+											if ( ! empty( $result['ticketmaster']['dates'] ) ) {
+												foreach ( $result['ticketmaster']['dates'] as $date ) {
+													echo '<p>' . esc_html( $date['date'] . ' ' . $date['time'] ) . '</p>';
+												}
+											} else {
+												echo 'No dates found';
+											}
+											?>
 										</td>
+
 										<td> <!-- Display the cartelera dates in text -->
 											<?php
 											if ( !empty( $result['cartelera']['scraped_dates_text'] ) ) {
@@ -114,16 +129,19 @@ class Scrap_Output {
 											}
 											?>
 										</td>
+
 										<td> <!-- Display the cartelera dates parsed -->
 											<?php
 											// parse dates to get specific calendar dates.
 											?>
 										</td>
+
 										<td> <!-- Display the coincidence check -->
 											<?php
 											// execute a function to compare both values.
 											?>
 										</td>
+
 									</tr>
 								<?php endforeach; ?>
 						</tbody>
