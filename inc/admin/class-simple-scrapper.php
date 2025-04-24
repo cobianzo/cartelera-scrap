@@ -1,6 +1,7 @@
 <?php
+
 /**
- * Static methods for easier scrapping
+ * Static methods for easier scrapping.
  *
  * @package Cartelera_Scrap
  */
@@ -12,14 +13,18 @@ use DOMXPath;
 use DOMElement;
 
 /**
- * Class Simple_Scrapper
+ * Class Simple_Scrapper.
  *
- * A simple scrapper class fr easy access to DOM elements and values.
- * Usage $scraper = new Simple_Scrapper($html);
- * $titles = $scraper->getTexts('//h2[@class="post-title"]');
+ * A simple scrapper class for easy access to DOM elements and values.
+ * Usage: $scraper = new Simple_Scrapper($html);
+ * $titles = $scraper->get_texts('//h2[@class="post-title"]');
  */
 class Simple_Scrapper {
 
+
+	/**
+	 * @var DOMXPath $xpath The DOMXPath object for querying the DOM.
+	 */
 	protected DOMXPath $xpath;
 
 	/**
@@ -35,17 +40,49 @@ class Simple_Scrapper {
 		$this->xpath = new DOMXPath( $dom );
 	}
 
+	/**
+	 * Get the root DOMXPath object.
+	 *
+	 * @return DOMXPath
+	 */
 	public function get_root(): DOMXPath {
 		return $this->xpath;
 	}
 
+
+	/**
+	 * For debugging, show the content of the first node matching the XPath query.
+	 *
+	 * @param string      $query XPath query.
+	 *
+	 * @param DOMNodeList $nodes
+	 * @param boolean     $asHTML
+	 * @return void
+	 */
+	public static function debug_nodes( \DOMNodeList $nodes, $asHTML = false ): void {
+		echo '<div style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">';
+		echo '<h2>Debugging nodes</h2>';
+		foreach ( $nodes as $node ) {
+			if ( $asHTML && $node instanceof DOMElement ) {
+				$doc      = new DOMDocument();
+				$imported = $doc->importNode( $node, true );
+				$doc->appendChild( $imported );
+				echo $doc->saveHTML() . PHP_EOL;
+			} else {
+				echo $node->textContent . PHP_EOL;
+			}
+		}
+		echo '</div>';
+	}
+
 	/**
 	 * Get text content from nodes matching the XPath query.
+	 * NOT in use: TODELETE.
 	 *
 	 * @param string $query XPath query.
 	 * @return array<string> List of text content.
 	 */
-	public function getTexts( string $query ): array {
+	public function get_texts( string $query ): array {
 		$results = [];
 		$nodes   = $this->xpath->query( $query );
 		foreach ( $nodes as $node ) {
@@ -54,8 +91,14 @@ class Simple_Scrapper {
 		return $results;
 	}
 
-	public static function simplificar_titulo( string $titulo ): string {
-		// Normalizar caracteres con tilde y la ñ
+	/**
+	 * Remove accents and special characters from a string.
+	 *
+	 * @param string $titulo The text to clean up.
+	 * @return string
+	 */
+	public static function remove_accents( string $titulo ): string {
+		// Normalize characters with accents and the ñ.
 		$titulo = strtr( $titulo, [
 			'á' => 'a',
 			'é' => 'e',
@@ -71,71 +114,82 @@ class Simple_Scrapper {
 			'Ñ' => 'N',
 		] );
 
-		// Eliminar signos de interrogación, exclamación y guiones
+		// Remove question marks, exclamation marks, and dashes.
 		$titulo = preg_replace( '/[¡!¿?\-\—]/u', '', $titulo );
 
-		// También eliminar espacios innecesarios
+		// Also remove unnecessary spaces.
 		$titulo = trim( preg_replace( '/\s+/', ' ', $titulo ) );
 
 		return $titulo;
 	}
 
-	public static function sanear_texto_scrap( string $texto ): string {
-		// 1. Primero decodifica entidades HTML como &nbsp;, &aacute;, etc.
-		// $texto = html_entity_decode($texto, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-		$texto        = str_replace( '&nbsp;', ' ', $texto ); // por si acaso
+	/**
+	 * Sanitize text for scraping.
+	 *
+	 * @param string $texto The text to sanitize.
+	 * @return string The sanitized text.
+	 */
+	public static function sanitize_scraped_text( string $texto ): string {
+		// Decode HTML entities like &nbsp;, &aacute;, etc.
+		$texto        = str_replace( '&nbsp;', ' ', $texto ); // Just in case.
 		$replacements = [
-			'Ã¡'  => 'á',
-			'Ã©'  => 'é',
-			'Ã­'  => 'í',
-			'Ã³'  => 'ó',
-			'Ãº'  => 'ú',
-			'Ã'  => 'Á',
-			'Ã‰'  => 'É',
-			'Ã'  => 'Í',
-			'Ã“'  => 'Ó',
-			'Ãš'  => 'Ú',
-			'Ã±'  => 'ñ',
-			'Ã‘'  => 'Ñ',
-			'Â¡'  => '¡',
-			'Â¿'  => '¿',
-			'Â«'  => '«',
-			'Â»'  => '»',
-			'Â·'  => '·',
-			'Â´'  => '´',
-			'Â°'  => '°',
-			'Â¬'  => '¬',
-			'Â'   => '',  // casos como Â¡ o Â¿
-			'â¦' => '…',  // puntos suspensivos
-			'â' => '–',  // guion largo
-			'â' => '—',  // raya
-			'â' => '“',  // comillas dobles izquierda
-			'â' => '”',  // comillas dobles derecha
-			'â' => '‘',  // comilla simple izquierda
-			'â' => '’',  // comilla simple derecha
-			'â¢' => '•',  // viñeta
-			'â¢' => '•',
-			'â¨' => '',  // salto de línea Unicode
-			'â'  => '-',  // guiones
-			'âª' => '',  // LRM
-			'â«' => '',  // LRE
-			'â¬' => '',  // PDF
-			'â­' => '',  // RLE
-			'â®' => '',  // RLM
+			'Ã¡'     => 'á',
+			'Ã©'     => 'é',
+			'Ã­'     => 'í',
+			'Ã³'     => 'ó',
+			'Ãº'     => 'ú',
+			'Ã'     => 'Á',
+			'Ã‰'     => 'É',
+			'Ã'     => 'Í',
+			'Ã“'     => 'Ó',
+			'Ãš'     => 'Ú',
+			'Ã±'     => 'ñ',
+			'Ã‘'     => 'Ñ',
+			'Â¡'     => '¡',
+			'Â¿'     => '¿',
+			'Â«'     => '«',
+			'Â»'     => '»',
+			'Â·'     => '·',
+			'Â´'     => '´',
+			'Â°'     => '°',
+			'Â¬'     => '¬',
+			'Â'      => '',  // Cases like Â¡ or Â¿.
+			'â¦'    => '…',  // Ellipsis.
+			'â'    => '–',  // En dash.
+			'â'    => '—',  // Em dash.
+			'â'    => '“',  // Left double quotation mark.
+			'â'    => '”',  // Right double quotation mark.
+			'â'    => '‘',  // Left single quotation mark.
+			'â'    => '’',  // Right single quotation mark.
+			'â¢'    => '•',  // Bullet.
+			'â¨'    => '',  // Unicode line break.
+			'â'     => '-',  // Dashes.
+			'âª'    => '',  // LRM.
+			'â«'    => '',  // LRE.
+			'â¬'    => '',  // PDF.
+			'â­'    => '',  // RLE.
+			'â®'    => '',  // RLM.
+			'&npsp;' => ' ', // Non-breaking space.
 		];
 
 		$texto = str_replace( array_keys( $replacements ), array_values( $replacements ), $texto );
 
-		// 4. Limpia espacios múltiples y trima
-		// $texto = preg_replace('/\s+/', ' ', $texto);
+		// Clean up multiple spaces and trim.
 		return trim( $texto );
 	}
-	public function getTextsAndHrefs( string $query ): array {
+
+	/**
+	 * Get texts and hrefs from nodes matching the XPath query.
+	 *
+	 * @param string $query XPath query.
+	 * @return array List of texts and hrefs.
+	 */
+	public function get_texts_and_hrefs( string $query ): array {
 		$results = [];
 		$nodes   = $this->xpath->query( $query );
 		foreach ( $nodes as $node ) {
-			$text = self::sanear_texto_scrap( $node->nodeValue );
-			$text = self::simplificar_titulo( $text );
+			$text = self::sanitize_scraped_text( $node->nodeValue );
+			$text = self::remove_accents( $text );
 
 			$href      = $node instanceof DOMElement ? $node->getAttribute( 'href' ) : '';
 			$results[] = [
@@ -147,20 +201,145 @@ class Simple_Scrapper {
 	}
 
 	/**
-	 * Get attributes from nodes matching the XPath query.
+	 * Scrapes all shows listed in the cartelera.
 	 *
-	 * @param string $query XPath query.
-	 * @param string $attr Attribute name.
-	 * @return array<string> List of attribute values.
+	 * This function retrieves the HTML content from the cartelera URL,
+	 * parses it, and extracts the titles and links of all shows listed
+	 * in the specified section of the page.
+	 *
+	 * @return array|WP_Error An array of shows with their titles and links, or a WP_Error object on failure.
 	 */
-	public function getAttributes( string $query, string $attr ): array {
-		$results = [];
-		$nodes   = $this->xpath->query( $query );
-		foreach ( $nodes as $node ) {
-			if ( $node instanceof DOMElement ) {
-				$results[] = $node->getAttribute( $attr );
+	public static function scrap_all_shows_in_cartelera(): array|\WP_Error {
+		$html = wp_remote_get( Cartelera_Scrap_Plugin::get_cartelera_url() );
+		$html = wp_remote_retrieve_body( ( $html && ! is_wp_error( $html ) ) ? $html : '' );
+		if ( is_wp_error( $html ) ) {
+			return new \WP_Error( 'cartelera_url_error', 'Error retrieving cartelera URL.' );
+		} elseif ( ! $html ) {
+			return new \WP_Error( 'empty_response', 'Empty response from cartelera URL.' );
+		}
+
+		// Start scrapping the HTML with DOM.
+		$scraper = new Simple_Scrapper( $html );
+		$shows   = $scraper->get_texts_and_hrefs( "//div[@id='content-obras']//li/a[1]" );
+
+		return $shows; // Returns array of [ text => 'El Rey Leon', href => 'http://cartelera.com/el-rey-leon' ].
+	}
+
+	/**
+	 * Scrapes a single show from Ticketmaster.
+	 * ie https://www.ticketmaster.com.mx/search?q=el+rey+leon
+	 *
+	 * @param string $url the url in tickermaster to scrap. (https://www.ticketmaster.com.mx/search?q=el+rey+leon)
+	 * @return array|\WP_Error
+	 */
+	public static function scrap_one_tickermaster_show( string $url ): array|\WP_Error {
+		$html = wp_remote_get( $url );
+		$html = wp_remote_retrieve_body( ( $html && ! is_wp_error( $html ) ) ? $html : '' );
+		if ( is_wp_error( $html ) ) {
+			return new \WP_Error( 'ticketmaster_url_error', 'Error retrieving ticketmaster URL.' );
+		} elseif ( ! $html ) {
+			return new \WP_Error( 'empty_response', 'Empty response from ticketmaster URL.' );
+		}
+
+		// Start scrapping the HTML with DOM.
+		$scraper  = new Simple_Scrapper( $html );
+		$li_nodes = $scraper->get_root()->query( '//ul[@data-testid="eventList"]/li' );
+
+		$result_tickermaster = [
+			'url'   => $url, // https://www.ticketmaster.com.mx/search?q=el+rey+leon
+			'dates' => [],
+		];
+		foreach ( $li_nodes as $i => $li_item ) {
+
+			$div           = $li_item->firstChild;
+			$div           = $div->firstChild;
+			$all_divs      = $div->getElementsByTagName( 'div' );
+			$all_spans     = $div->getElementsByTagName( 'span' );
+			$printed_date  = $all_divs->item( 0 ); // may25
+			$complete_date = $all_spans->item( 0 );
+			$time          = $all_spans->item( 10 ); // 8:30 p.m.
+			$time_24h      = \DateTime::createFromFormat( 'g:i a', str_replace( '.', '', strtolower( $time->textContent ) ) )->format( 'H:i' );
+
+			$result_tickermaster['dates'][] = [
+				'printed_date' => $printed_date->textContent, // may25
+				'time_12h'     => $time->textContent, // 8:30 p.m
+				'date'         => $complete_date->textContent, // 25/05/25
+				'time'         => $time_24h, // 20:30
+			];
+		}
+
+		return $result_tickermaster;
+	}
+
+	/**
+	 * Scrapes a single show from Cartelera.
+	 *
+	 * @param string $cartelera_url The URL of the show in Cartelera (https://carteleradeteatro.mx/2015/el-rey-leon/).
+	 * @return array|\WP_Error
+	 */
+	public static function scrap_one_cartelera_show( string $cartelera_url ): array|\WP_Error {
+
+		$result_cartelera = [
+			'url'                => $cartelera_url,
+		];
+
+		// now we retrieve the data from cartelera and compare it with the ticketmaster data.
+		$html = wp_remote_get( $cartelera_url );
+		$html = wp_remote_retrieve_body( ( $html && ! is_wp_error( $html ) ) ? $html : '' );
+		if ( is_wp_error( $html ) ) {
+			$result_cartelera['error'] = 'Error retrieving cartelera URL: ' . $html->get_error_message();
+		} elseif ( ! $html ) {
+			$result_cartelera['error'] = 'Empty response from cartelera URL.';
+		}
+
+		// start scrapping the html with DOM.;
+		$scraper = new Simple_Scrapper( $html );
+
+		// Retrieve the text : `Del 6 abril al 8 de junio de 2025` or `2, 3 y 4 de mayo de 2025.`, or `En temporada 2025.`
+		$nodes = $scraper->get_root()->query( '//div[@class="post-content-obras"]/p' );
+
+		$scraped_dates_text = '';
+		if ( $nodes->length > 0 ) {
+			foreach ( $nodes as $node ) {
+				if ( strpos( $node->textContent, ' ' . date('Y') ) !== false ) {
+					$scraped_dates_text = $node->textContent; // text 'En temporada 2025.'
+					break;
+				}
+				// this criteria is not always accurate: grab the first node without <strong>
+				// $strong_descendants = $node->getElementsByTagName( 'strong' );
+				// if ( $strong_descendants->length === 0 ) {
+				// 	$scraped_dates_text = $node->textContent; // text '27 de abril, 4 y 11 de mayo.'
+				// 	break;
+				// }
 			}
 		}
-		return $results;
+		// Retrieve the text : 'Sábados de abril y mayo, 12:00 y 14:30 horas. Domingo 1 y 8 de junio, 12:00 y 14:30 horas'
+		$nodes = $scraper->get_root()->document->getElementsByTagName( 'strong' );
+		foreach ( $nodes as $i => $strongNode ) {
+			if ( str_contains( $strongNode->textContent, 'Horario de' ) ) {
+				// Get the text that is right after this <strong>, but before the next <br>.
+				$time_text = '';
+				if ( $strongNode && $strongNode->nextSibling ) {
+					$nextNode = $strongNode->nextSibling;
+					while ( $nextNode && $nextNode->nodeName !== 'br' ) {
+						if ( $nextNode->nodeType === XML_TEXT_NODE || $nextNode->nodeType === XML_ELEMENT_NODE ) {
+							$time_text .= $nextNode->textContent;
+						}
+						$nextNode = $nextNode->nextSibling;
+					}
+					$time_text = trim( $time_text ); // ie 'Domingos 13:00 horas'
+				}
+
+				$result_cartelera = array_merge( $result_cartelera, [
+					'scraped_dates_text' => ! empty( $scraped_dates_text ) ? self::sanitize_scraped_text( $scraped_dates_text ) : '',
+					'scraped_time_text'  => self::sanitize_scraped_text( $time_text ),
+					'url'                => $cartelera_url,
+				] );
+
+				break; // found the text with the times, we can exit.
+			}
+		}
+
+		return $result_cartelera;
 	}
 }

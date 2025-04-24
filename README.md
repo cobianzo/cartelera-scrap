@@ -33,7 +33,7 @@ The raw connection would be (replacing the port with the one created by wp-env):
 
 `mysql -h127.0.0.1 -P54868 -uroot -p`
 
-Using CLI
+Using DB CLI
 `wp-env run cli wp db cli`
 
 ### Use WP CLI

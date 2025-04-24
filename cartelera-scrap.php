@@ -92,5 +92,17 @@ class Cartelera_Scrap_Plugin {
 	}
 }
 
+
+
+function dd( $var ) {
+	echo '<pre>';
+	print_r( $var );
+	echo '</pre>';
+}
+function ddie( $var ) {
+	dd( $var );
+	wp_die();
+}
+
 // Initialize the plugin.
 new Cartelera_Scrap_Plugin();
