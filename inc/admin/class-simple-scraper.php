@@ -7,10 +7,12 @@
  */
 
 namespace Cartelera_Scrap;
+use Cartelera_Scrap\Text_Parser;
 
 use DOMDocument;
 use DOMXPath;
 use DOMElement;
+use DOMNode;
 
 /**
  * Class Simple_Scraper.
@@ -53,7 +55,7 @@ class Simple_Scraper {
 
 
 	/**
-	 * For debugging, show the content of the first node matching the XPath query.
+	 * Helper: For debugging, show the content of the first node matching the XPath query.
 	 *
 	 * @param string      $query XPath query.
 	 *
@@ -69,7 +71,9 @@ class Simple_Scraper {
 				$doc      = new DOMDocument();
 				$imported = $doc->importNode( $node, true );
 				$doc->appendChild( $imported );
+				echo "------------------------<br>\n";
 				echo $doc->saveHTML() . PHP_EOL;
+				echo "------------------------<br>\n";
 			} else {
 				echo $node->textContent . PHP_EOL;
 			}
@@ -91,6 +95,19 @@ class Simple_Scraper {
 			$results[] = trim( $node->nodeValue );
 		}
 		return $results;
+	}
+
+	/**
+	 * Get text content from a specific node.
+	 *
+	 * @param DOMNode $node The node to get text from.
+	 * @return string
+	 */
+	public static function cleanup_node_text( DOMNode $node ): string {
+		// Remove unwanted characters and trim whitespace.
+		$text = str_replace(["\r", "\n"], ' ', $node->textContent);
+
+		return trim( $text );
 	}
 
 	/**
@@ -279,21 +296,31 @@ class Simple_Scraper {
 	 * Scrapes a single show from Cartelera.
 	 *
 	 * @param string $cartelera_url The URL of the show in Cartelera (https://carteleradeteatro.mx/2015/el-rey-leon/).
-	 * @return array|\WP_Error
+	 * 	or the direct html to scrap.
+	 * @return array
 	 */
-	public static function scrap_one_cartelera_show( string $cartelera_url ): array|\WP_Error {
+	public static function scrap_one_cartelera_show( string $cartelera_url ): array {
 
-		$result_cartelera = [
-			'url'                => $cartelera_url,
-		];
+		// if the arg is a valid url we get the html from it.
+		if ( ! filter_var( $cartelera_url, FILTER_VALIDATE_URL ) ) {
+			$html             = $cartelera_url;
+			$result_cartelera = [
+				'url'  => 'unknown',
+			];
+		} else {
 
-		// now we retrieve the data from cartelera and compare it with the ticketmaster data.
-		$html = wp_remote_get( $cartelera_url );
-		$html = wp_remote_retrieve_body( ( $html && ! is_wp_error( $html ) ) ? $html : '' );
-		if ( is_wp_error( $html ) ) {
-			$result_cartelera['error'] = 'Error retrieving cartelera URL: ' . $html->get_error_message();
-		} elseif ( ! $html ) {
-			$result_cartelera['error'] = 'Empty response from cartelera URL.';
+			$result_cartelera = [
+				'url'  => $cartelera_url,
+			];
+
+			// now we retrieve the data from cartelera and compare it with the ticketmaster data.
+			$html = wp_remote_get( $cartelera_url );
+			$html = wp_remote_retrieve_body( ( $html && ! is_wp_error( $html ) ) ? $html : '' );
+			if ( is_wp_error( $html ) ) {
+				$result_cartelera['error'] = 'Error retrieving cartelera URL: ' . $html->get_error_message();
+			} elseif ( ! $html ) {
+				$result_cartelera['error'] = 'Empty response from cartelera URL.';
+			}
 		}
 
 		// start scrapping the html with DOM.;
@@ -305,8 +332,9 @@ class Simple_Scraper {
 		$scraped_dates_text = '';
 		if ( $nodes->length > 0 ) {
 			foreach ( $nodes as $node ) {
-				if ( strpos( $node->textContent, ' ' . date('Y') ) !== false ) {
-					$scraped_dates_text = $node->textContent; // text 'En temporada 2025.'
+				// The first text with a date is the one we want. ( ie 25 de mayo de 2025 )
+				if ( Text_Parser::text_contains_a_date( $node->textContent ) ) {
+					$scraped_dates_text = self::cleanup_node_text( $node ); // text 'En temporada 2025.'
 					break;
 				}
 				// this criteria is not always accurate: grab the first node without <strong>
@@ -337,7 +365,6 @@ class Simple_Scraper {
 				$result_cartelera = array_merge( $result_cartelera, [
 					'scraped_dates_text' => ! empty( $scraped_dates_text ) ? self::sanitize_scraped_text( $scraped_dates_text ) : '',
 					'scraped_time_text'  => self::sanitize_scraped_text( $time_text ),
-					'url'                => $cartelera_url,
 				] );
 
 				break; // found the text with the times, we can exit.

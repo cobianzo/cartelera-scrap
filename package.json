@@ -5,7 +5,10 @@
   "scripts": {
     "up": "wp-env start",
     "down": "wp-env stop",
-    "test": "phpunit",
+    "cli": "wp-env run cli",
+    "tcli": "wp-env run tests-cli",
+    "test:php": "wp-env run tests-wordpress --env-cwd='wp-content/plugins/cartelera-scrap' composer run punit",
+    "test:php:watch": "wp-env run tests-wordpress --env-cwd='wp-content/plugins/cartelera-scrap' composer run punit-watch",
     "cs": "composer run lint .",
     "cbf": "composer run format .",
     "build": "wp-scripts build",

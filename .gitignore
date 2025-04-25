@@ -40,3 +40,4 @@ logs
 #.vscode/
 /playwright-report
 /test-results
+/.phpunit.result.cache

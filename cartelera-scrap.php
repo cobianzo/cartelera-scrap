@@ -53,6 +53,7 @@ class Cartelera_Scrap_Plugin {
 			require_once CARTELERA_SCRAP_PLUGIN_DIR . 'vendor/autoload.php';
 		}
 
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-text-parser.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-simple-scraper.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-settings-page.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-scrap-output.php';
@@ -121,10 +122,10 @@ class Cartelera_Scrap_Plugin {
 /**
  * Debugging functions
  *
- * @param [type] $var
+ * @param mixed $var
  * @return void
  */
-function dd( $var ) {
+function dd( mixed $var ) {
 	echo '<pre>';
 	print_r( $var );
 	echo '</pre>';
@@ -132,10 +133,10 @@ function dd( $var ) {
 /**
  * Debugging function
  *
- * @param [type] $var
+ * @param mixed $var
  * @return void
  */
-function ddie( $var ) {
+function ddie( mixed $var ) {
 	dd( $var );
 	wp_die();
 }

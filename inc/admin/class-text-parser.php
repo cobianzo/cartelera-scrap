@@ -15,6 +15,8 @@
  * En temporada 2025.
  */
 
+namespace Cartelera_Scrap;
+
 /**
  *
 */
@@ -28,6 +30,20 @@ class Text_Parser {
 		];
 	}
 
+	public static function text_contains_a_date( string $text ): bool {
+		$this_year = date( 'Y' );
+		if ( strpos( $text, 'de ' . $this_year ) !== false ) {
+			return true;
+		}
+		foreach ( self::months() as $month => $number ) {
+			if ( strpos( $text, 'de ' . $month ) !== false ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public static function get_type_of_sentence( string $text ): array {
 
 		// 17, 18, 24 y 25 de mayo de 2025 || 12 y 13 de abril, 5, 6 y 7 de mayo. || 12 y 13 de abril, 5, 6 y 7 de mayo de 2025
@@ -39,7 +55,7 @@ class Text_Parser {
 
 		foreach ($patterns as $pattern) {
 			if (preg_match($pattern, $text, $matches)) {
-				return $matches;
+				return ['type' => 'days month and ?year', 'matches' => $matches];
 			}
 		}
 

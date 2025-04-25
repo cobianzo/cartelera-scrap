@@ -57,6 +57,32 @@ npm run cs .
 npm run cbf .
 ```
 
+# PHPUNIT
+
+```
+npm run test:php
+npm run test:php:watch
+
+it uses wp-env run tests-wordpress ...
+```
+
+Following the last PHPUnit installation working version: https://github.com/cobianzo/wp-env-sidebar-related-article/
+PHPUnit 9.4.
+
+Important, we need to use php 8.3 in wp-env, so we can run the package
+`wp-env run tests-wordpress` which works perfectly out of the box.
+
+The watch version of the phpunit run works like charm!!
+
+If run teh tests outside the container, it's still not tested.
+
+packages:
+- phpunit/phpunit: ! important, version 9 max, or it will be incompatible with function inside teh tests.
+Then we can access locally o inside the container to wp-content/plugins/cartelera-scrap/vendor/bin/phpunit
+- yoast/phpunit-polyfills it must be installed, and `wp-env run tests-wordpress` finds it automatically. When installed, it install phpunit, as it depends on it, but the version 12. We need to install phpunit ourselves, the version 9, so there are no incompatibilites.
+- spatie/phpunit-watcher: for the phpUnit watcher, ran with `npm run test:php:watch`.
+- ~~wp-phpunit/wp-phpunit~~: not needed, all the bootstrap is handled by `wp-env run tests-wordpress`
+
 # TESTS PHP
 
 ## Cases to Test
