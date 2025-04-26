@@ -1,0 +1,19 @@
+
+
+.equal-width-columns tr {
+  display: grid;
+  grid-template-columns: 30px repeat( 6, 1fr );
+  gap: 1rem;
+}
+
+.equal-width-columns tr td, .equal-width-columns tr th {
+  flex: 1 1 200px; /* Ensures all columns are the same width, with a minimum width of 200px */
+  max-width: 300px; /* Prevents columns from becoming too wide */
+  box-sizing: border-box; /* Includes padding and border in the element's total width and height */
+}
+
+.times-sentences {
+  border: 1px solid pink;
+  padding: 1rem;
+  background: lightgray;
+}

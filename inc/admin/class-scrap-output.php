@@ -32,6 +32,7 @@ class Scrap_Output {
 		} );
 	}
 
+
 	/**
 	 * Printing the button to start the scrapping process.
 	 *
@@ -80,13 +81,14 @@ class Scrap_Output {
 				?>
 					<?php // dd( $results ); todelete ?>
 					<h2>Results</h2>
-					<table style="width: 100%; border-collapse: collapse; border: 1px solid #ccc;">
+					<table style="width: 100%; border-collapse: collapse; border: 1px solid #ccc;"
+					 class="equal-width-columns">
 						<thead>
 							<tr>
 								<th>#</th>
 								<th>Title and urls</th>
 								<th>ticketmaster dates</th>
-								<th>cartelera dates in text</th>
+								<th style="width:200px">cartelera dates in text</th>
 								<th>cartelera dates parsed</th>
 								<th>coincidence check</th>
 								<th>actions</th>
@@ -125,6 +127,7 @@ class Scrap_Output {
 										<td> <!-- Display the ticketmaster dates -->
 										<?php
 											if ( ! empty( $result['ticketmaster']['dates'] ) ) {
+												echo "<p>TickH: 🎫🎫🎫🎫🎫 </p>";
 												foreach ( $result['ticketmaster']['dates'] as $date ) {
 													echo '<p>' . esc_html( $date['date'] . ' ' . $date['time'] ) . '</p>';
 												}
@@ -134,26 +137,27 @@ class Scrap_Output {
 											?>
 										</td>
 
-										<td> <!-- Display the cartelera dates in text -->
+										<td style="width:200px"> <!-- Display the cartelera dates in text -->
 											<?php
 											// Dates
+											// To extract the dates from the text we:
+											// - confirm that the text is a valid dates information,(first_acceptance_of_date_text)
+											// 		- extracting more than one sentence needed, and sanitize a little
+											// - converts that sanitized text into the dates that it represents
+											// 		- (identify_dates_sencence_daterange_or_singledays)
 											if ( ! empty( $result['cartelera']['scraped_dates_text'] ) ) {
 												$dates_text = $result['cartelera']['scraped_dates_text'];
 												echo '<p>';
 												echo  '<b>Dates</b>==> ' . esc_html( $dates_text );
-												$accepted_sentences       = Text_Parser::first_acceptance_of_date_text( $dates_text );
-												$accepted_sentences_count = count( $accepted_sentences );
+												$accepted_sentences_dates = Text_Parser::first_acceptance_of_date_text( $dates_text );
+												$accepted_sentences_count = count( $accepted_sentences_dates );
 												echo $accepted_sentences_count ? '✅ (' . $accepted_sentences_count . ')' : '❌ text not parseable <br/>';
 												echo  '</p>';
 
 												if ( $accepted_sentences_count ) {
 													echo '<div class="dates-sentences">';
-													echo '<em>📆📆📆' . implode( '</em><br/><em>📆📆📆', $accepted_sentences ) . '</em>';
+													echo '<em>📆📆📆' . implode( '</em><br/><em>📆📆📆', $accepted_sentences_dates ) . '</em>';
 													echo '</div>';
-												}
-												foreach ( $accepted_sentences as $dates_in_text) {
-													$all_dates = Text_Parser::identify_dates_sencence_daterange_or_singledays($dates_in_text);
-													print_r( $all_dates );
 												}
 
 											} else {
@@ -163,30 +167,85 @@ class Scrap_Output {
 
 											// Weekday and times
 											if ( ! empty( $result['cartelera']['scraped_time_text'] ) ) {
-												$accepted_sentences = Text_Parser::first_acceptance_of_times_text($result['cartelera']['scraped_time_text']);
+												$accepted_sentences_time = Text_Parser::first_acceptance_of_times_text($result['cartelera']['scraped_time_text']);
 												echo '<p>';
 												echo  '<b>Times</b>==> ' .esc_html( $result['cartelera']['scraped_time_text'] );
-												$accepted_sentences_count = count( $accepted_sentences );
+												$accepted_sentences_count = count( $accepted_sentences_time );
 												echo $accepted_sentences_count ? '✅ (' . $accepted_sentences_count . ')' : '❌ times not parseable <br/>';
 												echo  '</p>';
-												if ( $accepted_sentences_count ) {
-													echo '<div class="times-sentences">';
-													echo '<em>' . implode( '</em><br/><em>', $accepted_sentences ) . '</em>';
-													echo '</div>';
-												}
 											}
 											?>
 										</td>
 
 										<td> <!-- Display the cartelera dates parsed -->
 											<?php
+											// Day sof month
 											// parse dates to get specific calendar dates.
+											$all_dates = [];
+											foreach ( $accepted_sentences_dates as $dates_in_text) {
+												$all_dates = array_merge( $all_dates,
+													Text_Parser::identify_dates_sencence_daterange_or_singledays($dates_in_text)
+												);
+											}
+											foreach ( $all_dates as $show_date ) {
+												echo esc_html( date( 'l, F j, Y', strtotime( $show_date ) ) ) . '<br />';
+											}
+
+											// Times
+											if ( ! empty( $accepted_sentences_time ) ) {
+												echo '<div class="times-sentences">';
+												echo '<em>' . implode( '</em><br/><em>', $accepted_sentences_time ) . '</em>';
+												echo '</div>';
+												echo implode( ', ', Text_Parser::get_all_days_of_week_in_sentences( $accepted_sentences_time ) );
+											}
+
 											?>
 										</td>
 
 										<td> <!-- Display the coincidence check -->
 											<?php
-											// execute a function to compare both values.
+											// cross-compare the definitives dates and times, they must match with the ones from ticketmaster
+											$datetimes_cartelera = Text_Parser::definitive_dates_and_times( $all_dates, $accepted_sentences_time );
+											// echo implode( ', ', $dates );
+											$datetimes_ticketmaster = [];
+											foreach ( $result['ticketmaster']['dates'] as $date_info ) {
+												$datetimes_ticketmaster[] = $date_info['date'] . ' ' . $date_info['time'];
+											}
+
+											// DEBUG TODELETE
+											// echo '<br>TODELETE - comparing';
+											// echo '<br>ticketmaster';
+											// echo '<pre>';
+											// print_r($datetimes_ticketmaster);
+											// echo '</pre>';
+											// echo '<br>cartela';
+											// echo '<pre>';
+											// print_r($datetimes_cartelera);
+											// echo '</pre>';
+
+											// we cleanup dates in both which are before today
+											$datetimes_cartelera    = Text_Parser::remove_dates_previous_of_today( $datetimes_cartelera );
+											$datetimes_ticketmaster = Text_Parser::remove_dates_previous_of_today( $datetimes_ticketmaster );
+											$result_compare = Text_Parser::compare_arrays( $datetimes_cartelera, $datetimes_ticketmaster );
+											if ( true === $result_compare ) {
+												echo '👍🏻👍🏻👍🏻👍🏻👍🏻👍🏻👍🏻👍🏻 Yuhuuu all good';
+											} elseif ( ! isset( $result_compare['only_in_a'] ) && ! isset( $result_compare['only_in_b'] ) ) {
+												echo 'Error in comparing function (compare_arrays)';
+											} else {
+												echo '<br/>All baaad here: ❌❌❌❌❌❌❌❌❌❌❌❌<br/><br/><br/>';
+												if ( ! empty( $result_compare['only_in_a'] ) ) {
+													echo '<br>dates in cartelera not in tickermaster: <br/>';
+													echo implode( '<br/>', $result_compare['only_in_a'] );
+												}
+												if ( ! empty( $result_compare['only_in_b'] ) ) {
+													echo '<br>dates in tickermaster not in cartelera: <br/>';
+													echo implode( '<br/>', $result_compare['only_in_b'] );
+												}
+
+
+											}
+
+
 											?>
 										</td>
 										<td>

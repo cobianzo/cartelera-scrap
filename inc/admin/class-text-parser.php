@@ -26,7 +26,8 @@ namespace Cartelera_Scrap;
  */
 class Text_Parser {
 
-
+	const DATE_COMPARE_FORMAT = 'Y-m-d';
+	const TIME_COMPARE_FORMAT = 'H:i';
 
 	/**
 	 * List of months
@@ -51,20 +52,30 @@ class Text_Parser {
 	}
 	public static function weekdays(): array {
 		return [
-			'lunes'     => 1,
-			'martes'    => 2,
-			'miércoles' => 3,
-			'jueves'    => 4,
-			'viernes'   => 5,
-			'sábado'    => 6,
-			'sabado'    => 6,
-			'sabados'   => 6,
-			'sábados'   => 6,
-			'domingo'   => 7,
-			'domingos'  => 7,
+			'lunes'     => 'monday',
+			'martes'    => 'tuesday',
+			'miercoles' => 'wednesday',
+			'miércoles' => 'wednesday',
+			'jueves'    => 'thursday',
+			'viernes'   => 'friday',
+			'sábado'    => 'saturday',
+			'sabado'    => 'saturday',
+			'sabados'   => 'saturday',
+			'sábados'   => 'saturday',
+			'domingo'   => 'sunday',
+			'domingos'  => 'sunday',
 		];
 	}
 
+	public static function get_weekday( string $date ) {
+		if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date ) ) {
+			$timestamp = strtotime( $date );
+			if ( $timestamp !== false ) {
+				return strtolower( date( 'l', $timestamp ) ); // Returns the full name of the day in lowercase
+			}
+		}
+		return null; // Return null if the date format is invalid or conversion fails
+	}
 	/**
 	 * Checks if the text contains the current year or a month's name
 	 *
@@ -86,14 +97,43 @@ class Text_Parser {
 		return false;
 	}
 
+	public static function remove_dates_previous_of_today( array $datetimes ): array {
+		return array_filter($datetimes, function ($datetime) {
+			$timestamp = strtotime($datetime);
+			$today_start = strtotime('today 00:01');
+			return $timestamp >= $today_start;
+		});
+	}
+
+	// to compare both ticketmaster and cartelera datetimes.
+	public static function compare_arrays( array $a, array $b ): array|bool {
+		// Find elements only in A
+		$only_in_a = array_diff( $a, $b );
+
+		// Find elements only in B
+		$only_in_b = array_diff( $b, $a );
+
+		// If both diffs are empty, arrays are identical
+		if ( empty( $only_in_a ) && empty( $only_in_b ) ) {
+			return true;
+		}
+
+		// Otherwise, return the differences
+		return [
+			'only_in_a' => array_values( $only_in_a ),
+			'only_in_b' => array_values( $only_in_b ),
+		];
+	}
+
+
+
 
 	/**
 	 * Basically trimming
-	 *
 	 */
 	public static function cleanup_sentences( array $sentences ) {
 		// Sustitución de "hrs" por "horas"
-		$sentences = array_map( function( $sencence ) {
+		$sentences = array_map( function ( $sencence ) {
 
 			$input_text = str_ireplace( [ 'hrs.', 'hrs', 'Hrs', 'HRS' ], 'horas', $sencence );
 
@@ -106,51 +146,51 @@ class Text_Parser {
 	}
 
 	/**
- * Sanitize a phrase into a simplified slug using WordPress functions.
- *
- * This function prepares a text to be used as a clean slug:
- * - Uses sanitize_title_with_dashes() for basic slug formatting.
- * - Removes unwanted numbers (only years > 2025 or days 1-31 are allowed).
- * - Keeps only specific words (del, suspende, al) and Spanish month names.
- *
- * @param string $dates_sentence Input phrase.
- * @return string Sanitized slug.
- */
-public static function sanitize_dates_sentence( string $dates_sentence ): string {
-	// Convert to lowercase
-	$text = sanitize_title_with_dashes( $dates_sentence );
+	 * Sanitize a phrase into a simplified slug using WordPress functions.
+	 *
+	 * This function prepares a text to be used as a clean slug:
+	 * - Uses sanitize_title_with_dashes() for basic slug formatting.
+	 * - Removes unwanted numbers (only years > 2025 or days 1-31 are allowed).
+	 * - Keeps only specific words (del, suspende, al) and Spanish month names.
+	 *
+	 * @param string $dates_sentence Input phrase.
+	 * @return string Sanitized slug.
+	 */
+	public static function sanitize_dates_sentence( string $dates_sentence ): string {
+		// Convert to lowercase
+		$text = sanitize_title_with_dashes( $dates_sentence );
 
-	// Remove numbers not corresponding to year >= 2025 or day 1-31
-	$text = preg_replace_callback('/\b\d+\b/', function($matches) {
-		$num = (int) $matches[0];
-		if (($num >= 1 && $num <= 31) || $num >= 2025) {
-			return $matches[0];
-		}
-		return '';
-	}, $text);
+		// Remove numbers not corresponding to year >= 2025 or day 1-31
+		$text = preg_replace_callback( '/\b\d+\b/', function ( $matches ) {
+			$num = (int) $matches[0];
+			if ( ( $num >= 1 && $num <= 31 ) || $num >= 2025 ) {
+				return $matches[0];
+			}
+			return '';
+		}, $text );
 
-	// Define allowed Spanish month names
-	$months = array_map( fn( string $month_name ) => $month_name, array_keys( self::months() ) );
+		// Define allowed Spanish month names
+		$months = array_map( fn( string $month_name ) => $month_name, array_keys( self::months() ) );
 
-	// Allow only "del-", "-al-", "suspende", months, numbers, hyphens, and years numbers
-	$allowed_pattern = '/(?:del\-|suspende|(?:' . implode('|', $months) . ')|-al-[0-9]{1,2}|\b[0-9]{1,2}\b|\b20[0-9]{2}\b|-)/';
+		// Allow only "del-", "-al-", "suspende", months, numbers, hyphens, and years numbers
+		$allowed_pattern = '/(?:del\-|suspende|cierre\-de\-temporada|temporada|(?:' . implode( '|', $months ) . ')|-al-[0-9]{1,2}|\b[0-9]{1,2}\b|\b20[0-9]{2}\b|-)/';
 
-	// Remove unwanted parts
-	preg_match_all($allowed_pattern, $text, $matches);
-	$valid_text = implode('', $matches[0]);
+		// Remove unwanted parts
+		preg_match_all( $allowed_pattern, $text, $matches );
+		$valid_text = implode( '', $matches[0] );
 
-	// Cleanup: remove multiple hyphens
-	$valid_text = preg_replace('/-+/', '-', $valid_text);
-	$valid_text = trim($valid_text, '-');
+		// Cleanup: remove multiple hyphens
+		$valid_text = preg_replace( '/-+/', '-', $valid_text );
+		$valid_text = trim( $valid_text, '-' );
 
-	return $valid_text;
-}
+		return $valid_text;
+	}
 	public static function separate_dates_sentences( $texto ) {
-    // Explicación:
-    // 1. Punto seguido de espacio o fin de línea -> separador
-    // 2. Paréntesis de apertura '(' -> separador
-    // 3. Año de 4 dígitos mayor que 2025 -> separador
-    $pattern = '/
+		// Explicación:
+		// 1. Punto seguido de espacio o fin de línea -> separador
+		// 2. Paréntesis de apertura '(' -> separador
+		// 3. Año de 4 dígitos mayor que 2025 -> separador
+		$pattern = '/
         (\.\s+|\.?$)             # Punto seguido de espacio o final de texto
         |
         (\()                    # Paréntesis de apertura
@@ -158,17 +198,23 @@ public static function sanitize_dates_sentence( string $dates_sentence ): string
         (\b(202[6-9]|20[3-9]\d|2[1-9]\d{2}|[3-9]\d{3})\b) # Año > 2025
     /x';
 
-    // Realizar la separación
-    $frases = preg_split( $pattern, $texto, -1, \PREG_SPLIT_NO_EMPTY  );
+		// Realizar la separación
+		$frases = preg_split( $pattern, $texto, -1, \PREG_SPLIT_NO_EMPTY );
 
-    return array_values(array_filter(array_map('trim', $frases)));
+		return array_values( array_filter( array_map( 'trim', $frases ) ) );
 	}
 
+	/**
+	 * Converts 'Del 24 de abril al 8 de junio de 2025 (Suspende 1, 10 y 15 de mayo)'
+	 * into [ 'del-24-abril-al-8-junio-2025', 'suspende-1-10-15-mayo' ]
+	 *
+	 * @param string $input_date_text
+	 * @return array
+	 */
 	public static function first_acceptance_of_date_text( string $input_date_text ): array {
 
 		$sentences = self::separate_dates_sentences( $input_date_text );
 		$sentences = self::cleanup_sentences( $sentences );
-
 
 
 		// Lista de patrones válidos
@@ -202,18 +248,24 @@ public static function sanitize_dates_sentence( string $dates_sentence ): string
 		}
 		*/
 
+		// converts into lower case with dashes 'del-24-abril-al-8-junio-2025'
 		$sentences = array_map( fn( $s ) => self::sanitize_dates_sentence( $s ), $sentences );
-		// in order to be valid, the sencence must contain at least one number between 1 and 31 and one name of month
 
-		$valid_sentences = array_filter($sentences, function ($sentence) {
-			$pattern = '/\b(3[01]|[12][0-9]|[1-9])\b.*\b(' . implode('|', array_keys(self::months())) . ')\b/i';
-			return preg_match($pattern, $sentence);
-		});
-		return $valid_sentences;
+		// in order to be valid, the sencence must contain:
+		// at least one number between 1 and 31 and one name of month (in spanish)
+		// $sentences = array_filter( $sentences, function ( $sentence ) {
+
+		// 	$pattern = '/\b(3[01]|[12][0-9]|[1-9])\b.*\b(' . implode( '|', array_keys( self::months() ) ) . ')\b/i';
+		// 	return preg_match( $pattern, $sentence );
+
+		// } );
+
+		return $sentences;
 	}
 
 	/**
-	 *
+	 * "Jueves y viernes, 20:00 horas, sábados 19:00 horas y domingos 18:00 horas"
+	 * converts into [ jueves-viernes-20:00, sabados-19:00, domingos-18:00 ]
 	 *
 	 * @param string $input_time_text
 	 * @return array
@@ -221,7 +273,8 @@ public static function sanitize_dates_sentence( string $dates_sentence ): string
 	public static function first_acceptance_of_times_text( string $input_time_text ): array {
 
 		// Lista de patrones válidos
-		$pattern_weekdays = implode( '|', array_map( fn( string $day ) => $day, array_keys( self::weekdays() ) ) );
+		$pattern_weekdays = implode( '|', array_keys( self::weekdays() ) );
+
 		$valid_patterns = [
 
 			// "Jueves y viernes, 20:00 horas, sábados 19:00 horas y domingos 18:00 horas"; (see the ',')
@@ -232,154 +285,251 @@ public static function sanitize_dates_sentence( string $dates_sentence ): string
 			// '/\b(?:' . $pattern_weekdays . ')\b(?:[^:]*?:\d{2}\s*horas(?:,?\s*y?\s*)?)+/iu',
 
 			//
-			//'/(?<!\w)(?:' . $pattern_weekdays . ')(?:\s*(?:\d{1,2}:\d{2})(?:\s*y\s*|\s*,\s*|\s+)?)*(?:\s*horas)?(?!\w)/iu',
+			// '/(?<!\w)(?:' . $pattern_weekdays . ')(?:\s*(?:\d{1,2}:\d{2})(?:\s*y\s*|\s*,\s*|\s+)?)*(?:\s*horas)?(?!\w)/iu',
 		];
 
 
 		// Validar patrones
-		$valid_items = [];
+		$valid_weekdays_times = [];
 		foreach ( $valid_patterns as $pattern ) {
 			preg_match_all( $pattern, $input_time_text, $matches );
-			$valid_items = array_merge( $valid_items, $matches[0] );
+			$valid_weekdays_times = array_merge( $valid_weekdays_times, $matches[0] );
 		}
 
-		return $valid_items;
+		// Lower case the sentence and with dashes
+		// jueves-y-viernes-20:00-horas, sabados-19:00-horas, domingos-18:00-horas
+		$valid_weekdays_times = array_map( function ( $time_dayweek ) {
+			$text = strtolower( $time_dayweek ); // Convert to lowercase
+			$text = str_replace(
+				[ 'á', 'é', 'í', 'ó', 'ú', 'ñ' ],
+				[ 'a', 'e', 'i', 'o', 'u', 'n' ],
+				$text
+			); // Replace accented vowels and ñ
+			$text = preg_replace( '/[^a-z0-9:]+/', '-', $text ); // Replace non-allowed characters with dashes
+			$text = preg_replace( '/-+/', '-', $text ); // Replace multiple dashes with a single dash
+			$text = trim( $text, '-' ); // Trim dashes from the start and end
+			return $text;
+		}, $valid_weekdays_times );
+
+		// filter to remove any word whihc is not a time or a day of the week.
+		$valid_weekdays_times = array_map( function ( $input ) {
+			$palabras = explode( '-', $input );
+
+			$resultado = array_filter( $palabras, function ( $palabra ) {
+					$palabra_lower = mb_strtolower( $palabra );
+
+					// Mantener si es día de la semana
+				if ( in_array( $palabra_lower, array_keys( self::weekdays() ) ) ) {
+						return true;
+				}
+
+					// Mantener si es hora (ej: 18:00)
+				if ( preg_match( '/^\d{1,2}:\d{2}$/', $palabra ) ) {
+						return true;
+				}
+
+					return false;
+			} );
+
+			$resultado = array_map( function ( $palabra ) {
+				$array_weekdays_translation = self::weekdays();
+				// Translate if it's a day of the week
+				if ( isset( $array_weekdays_translation[ $palabra ] ) ) {
+					return $array_weekdays_translation[ $palabra ];
+				}
+				return $palabra;
+			}, $resultado );
+
+			return implode( '-', $resultado );
+		}, $valid_weekdays_times );
+
+
+		return $valid_weekdays_times;
+	}
+
+	public static function get_all_days_of_week_in_sentences( array $sentences ): array {
+		$weekdays = [];
+		foreach ( $sentences as $sentence ) {
+			$words = explode( '-', $sentence );
+			foreach ( $words as $word ) {
+				if ( in_array( $word, self::weekdays() ) ) {
+					$weekdays[] = $word;
+				}
+			}
+		}
+		return $weekdays;
 	}
 
 	/**
-	 * Intro text: del-24-abril-al-8-junio-2025 ,  4-11-18-mayo-2025 ...
+	 * Intro text: del-24-abril-al-8-junio-2025 (this format is 'range'),
+	 * 4-11-18-mayo-2025 (format `singledays`)
 	 *
 	 * @param string $sanitized_date_sentence
-	 * @return void
+	 * @return array of dates [  '2025-05-17', '2025-05-18'  ... ]
 	 */
 	public static function identify_dates_sencence_daterange_or_singledays( string $sanitized_date_sentence ): array {
 
-		if (strpos($sanitized_date_sentence, 'del-') === 0 && strpos($sanitized_date_sentence, '-al-') !== false) {
-			$type =  'range';
+		if ( strpos( $sanitized_date_sentence, 'del-' ) === 0 && strpos( $sanitized_date_sentence, '-al-' ) !== false ) {
+			$type = 'range';
+		} elseif ( strpos( $sanitized_date_sentence, 'temporada' ) === 0 && strpos( $sanitized_date_sentence, '20' ) !== false ) {
+			$type = 'temporada';
 		} else {
-			$type =  'singledays';
+			$type = 'singledays';
 		}
 
 		$months_names = array_keys( self::months() );
-		$current_year = date('Y');
+		$current_year = date( 'Y' );
 		$all_dates    = [];
 
 		if ( 'singledays' === $type ) {
-			// Split the sentence by year text (4-digit numbers starting with 20)
+			// Split the sentence with the separator of a year text (4-digit numbers starting with 20)
 			$year_pattern = '/\b20\d{2}\b/';
-			$parts = preg_split($year_pattern, $sanitized_date_sentence, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+			$parts        = preg_split( $year_pattern, $sanitized_date_sentence, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY );
 
-
-
-			foreach ($parts as $part) {
+			// normally only one part.
+			// Every part should have among its elements at least one number (for day of month), one month name and end with the year.,
+			// if it's missing the month or the year, we append it (and make sure that the month is in english).
+			foreach ( $parts as $part ) {
 				// Extract numbers and month names
-				preg_match_all('/\b(3[01]|[12][0-9]|[1-9])\b|\b(' . implode('|', $months_names) . ')\b/i', $part, $matches);
-
+				preg_match_all( '/\b(3[01]|[12][0-9]|[1-9])\b|\b(' . implode( '|', $months_names ) . ')\b/i', $part, $matches );
 				$numbers = $matches[1];
-				$months = array_filter($matches[2]);
+				$months  = array_filter( $matches[2] );
 
 				// If no year is present, append the current year
-				if (!preg_match($year_pattern, $part)) {
+				if ( ! preg_match( $year_pattern, $part ) ) {
 					$numbers[] = $current_year;
 				}
 
 				// Combine numbers and months into valid dates
-				foreach ($numbers as $number) {
-					foreach ($months as $month) {
-						$month_english = self::months()[strtolower($month)];
-						$all_dates[] = date('Y-m-d', strtotime("$number $month_english"));
+				foreach ( $numbers as $number ) {
+					foreach ( $months as $month ) {
+						$month_english = self::months()[ strtolower( $month ) ];
+						$all_dates[]   = date( self::DATE_COMPARE_FORMAT, strtotime( "$number $month_english" ) );
 					}
 				}
 			}
-
-
-		}
-		elseif ( 'range' === $type ) {
+		} elseif ( 'range' === $type ) {
 			// Extract months mentioned in the sentence
-			preg_match_all('/\b(' . implode('|', array_keys(self::months())) . ')\b/i', $sanitized_date_sentence, $matches);
-			$months = array_unique($matches[1]);
-
+			preg_match_all( '/\b(' . implode( '|', array_keys( self::months() ) ) . ')\b/i', $sanitized_date_sentence, $matches );
+			$months  = array_unique( $matches[1] );
+			$from_to = [];
 			// if ! count($months) || count($months) > 2  ==> error
 
 
 			if ( 1 === count( $months ) ) {
 				$common_month = $months[0];
-				$from_to      = explode('-al-', $sanitized_date_sentence);
+				$from_to      = explode( '-al-', $sanitized_date_sentence );
 				// Filter parts: keep only numbers or month names
 				foreach ( $from_to as $i => $part ) {
-					$words = explode( '-', $part );
-					$valid_words = array_filter( $words, function( $word ) use ( $months_names ) {
+					$words       = explode( '-', $part );
+					$valid_words = array_filter( $words, function ( $word ) use ( $months_names ) {
 						return is_numeric( $word ) || in_array( strtolower( $word ), $months_names );
 					} );
 					// Translate months into english
-					$valid_words = array_map( fn( $word ) => in_array( $word, $months_names ) ? self::months()[$word] : $word, $valid_words );
+					$valid_words   = array_map( fn( $word ) => in_array( $word, $months_names ) ? self::months()[ $word ] : $word, $valid_words );
 					$from_to[ $i ] = $valid_words;
 				}
 
 				// append month to 'from' part, translated to english.
-				$from_to[0][] = self::months()[$common_month];
+				$from_to[0][] = self::months()[ $common_month ];
 
 				// append current year to each part if not included.
-				$from_to = array_map( function( $words ) use ( $current_year ) {
+				$from_to = array_map( function ( $words ) use ( $current_year ) {
 					$last_word = end( $words );
-					if ( ! is_numeric($last_word) || (int) $last_word <= 2024) {
+					if ( ! is_numeric( $last_word ) || (int) $last_word <= 2024 ) {
 						$words[] = $current_year;
 					}
 					return implode( '-', $words );  // convert array into dashed sentence string
 				}, $from_to );
-				print_r( $from_to );
+
 			}
 			if ( 2 === count( $months ) ) {
-				$first_month = $months[0];
-				print_r($first_month);
-				$split_position = strpos($sanitized_date_sentence, $first_month);
-				if ($split_position !== false) {
+				$first_month    = $months[0];
+				$split_position = strpos( $sanitized_date_sentence, $first_month );
+				if ( $split_position !== false ) {
 					$parts = [
-						substr($sanitized_date_sentence, 0, $split_position + strlen($first_month)),
-						substr($sanitized_date_sentence, $split_position + strlen($first_month))
+						substr( $sanitized_date_sentence, 0, $split_position + strlen( $first_month ) ),
+						substr( $sanitized_date_sentence, $split_position + strlen( $first_month ) ),
 					];
 
-					$from_to = [];
 					foreach ( $parts as $part ) {
 						$words = explode( '-', $part );
 
 						// Filter parts: keep only numbers or month names
-						$valid_words = array_filter( $words, function( $word ) use ( $months_names ) {
+						$valid_words = array_filter( $words, function ( $word ) use ( $months_names ) {
 							return is_numeric( $word ) || in_array( strtolower( $word ), $months_names );
 						} );
 						// Translate months into english
-						$valid_words = array_map( fn( $word ) => in_array( $word, $months_names ) ? self::months()[$word] : $word, $valid_words );
+						$valid_words = array_map( fn( $word ) => in_array( $word, $months_names ) ? self::months()[ $word ] : $word, $valid_words );
 
 						// if the $valid_words doesnt finish in a year later than 2024, then add the current year to the text
-						$last_word = end($valid_words);
-						if (!is_numeric($last_word) || (int)$last_word <= 2024) {
+						$last_word = end( $valid_words );
+						if ( ! is_numeric( $last_word ) || (int) $last_word <= 2024 ) {
 							$valid_words[] = '-' . $current_year;
 						}
 
-						$from_to[] = implode('-', $valid_words);
+						$from_to[] = implode( '-', $valid_words );
 					}
 					// return [$first_part, $second_part];
 				}
 			}
 
+			$all_dates  = [];
+			$start_date = strtotime( $from_to[0] );
+			$end_date   = strtotime( $from_to[1] );
+
+			if ( $start_date && $end_date && $start_date <= $end_date ) {
+				while ( $start_date <= $end_date ) {
+					$all_dates[] = date( self::DATE_COMPARE_FORMAT, $start_date );
+					$start_date  = strtotime( '+1 day', $start_date );
+				}
+			}
+		} elseif ( 'temporada' === $type ) {
+				preg_match('/\b20([2-9]\d|[3-9]\d{2}|[1-9]\d{3})\b/', $sanitized_date_sentence, $matches);
+				if (!empty($matches)) {
+					echo '<h1>TODELETE:'.$matches[0].' </h1>';
+					$year = (int) $matches[0];
+					$start_date = strtotime("1 January $year");
+					$end_date = strtotime("31 December $year");
+
+					while ($start_date <= $end_date) {
+						$all_dates[] = date(self::DATE_COMPARE_FORMAT, $start_date);
+						$start_date = strtotime('+1 day', $start_date);
+					}
+				}
+
 		}
 
 		// Remove everything that is not a month or a number
-		$all_dates = [];
-		$start_date = strtotime($from_to[0]);
-		$end_date = strtotime($from_to[1]);
 
-		if ($start_date && $end_date && $start_date <= $end_date) {
-			while ($start_date <= $end_date) {
-				$all_dates[] = date('Y-m-d', $start_date);
-				$start_date = strtotime('+1 day', $start_date);
-			}
-		}
 		return $all_dates;
 	}
 
-	public static function transform_date_sentence_into_dates( $date_sentence ) {
+	public static function definitive_dates_and_times( array $valid_dates, array $weekday_and_times ) {
+		$definitive_dates_and_times = [];
+		foreach ( $valid_dates as $date ) {
+			$weekday = self::get_weekday( $date );
+			if ( ! $weekday ) {
+				continue;
+			}
+			foreach ( $weekday_and_times as $weekday_time ) {
+				if ( strpos( $weekday_time, $weekday ) !== false ) {
+					preg_match_all( '/\b\d{1,2}:\d{2}\b/', $weekday_time, $time_matches );
 
 
+					$times = $time_matches[0];
+					// normally only one time (saturday-18:00), but sometimes more than one (saturday-18:00-21:30)
+					if ( count( $times ) ) {
+						foreach ( $times as $specific_time ) {
+							$definitive_dates_and_times[] = $date . ' ' . $specific_time;
+						}
+						// if ( count( $times ) > 1 ) {
+						// 	echo 'Too many times for the weekday ' . $weekday;
+						// }
+					}
+				}
+			}
+		}
+		return $definitive_dates_and_times;
 	}
 }
