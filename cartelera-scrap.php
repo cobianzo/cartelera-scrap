@@ -53,10 +53,14 @@ class Cartelera_Scrap_Plugin {
 			require_once CARTELERA_SCRAP_PLUGIN_DIR . 'vendor/autoload.php';
 		}
 
-		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-text-parser.php';
-		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-simple-scraper.php';
+		// admin area
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-settings-hooks.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-settings-page.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-scrap-output.php';
+
+		// static functions
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-text-parser.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-simple-scraper.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-scrap-actions.php';
 	}
 

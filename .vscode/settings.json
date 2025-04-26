@@ -1,7 +1,7 @@
 {
   "phpcs.composerJsonPath": "composer.json",
   "phpcs.executablePath": "vendor/bin/phpcs",
-  "phpcs.lintOnOpen": true,
+  "phpcs.lintOnOpen": false,
   "phpcs.standard": "phpcs.xml.dist",
-  "phpcs.lintOnSave": true
+  "phpcs.lintOnSave": false
 }

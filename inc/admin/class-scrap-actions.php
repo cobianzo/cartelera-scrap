@@ -14,21 +14,12 @@
 namespace Cartelera_Scrap;
 
 use Cartelera_Scrap\Admin\Settings_Page;
+use Cartelera_Scrap\Admin\Settings_Hooks;
 
 /**
  * The class Scrap_Actions handles the custom action triggered via a POST request
  */
 class Scrap_Actions {
-
-	const CRONJOB_NAME = 'cartelera_process_next_show';
-	/**
-	 * Initializes the class by hooking into WordPress actions.
-	 */
-	public static function init(): void {
-		// Hook the handle_scrap_action method to the 'admin_init' action.
-		add_action( 'admin_init', [ __CLASS__, 'handle_scrap_action' ] );
-		add_action( self::CRONJOB_NAME, [ __CLASS__, 'cartelera_process_one_batch' ] );
-	}
 
 	/**
 	 * =======
@@ -76,6 +67,15 @@ class Scrap_Actions {
 			return null;
 		}
 		return $shows[0];
+	}
+
+	public static function add_first_queued_show( $show_data ): bool  {
+		$all_queued = self::get_queued_shows();
+		if ( ! isset( $show_data['text'] ) || ! isset( $show_data['href'] ) ) {
+			return false;
+		}
+		array_unshift( $all_queued, $show_data );
+		return self::update_shows_queue_option($all_queued);
 	}
 	/**
 	 * Retrieve the shows options from the database.
@@ -155,57 +155,25 @@ class Scrap_Actions {
 	 * @param array $result info about a show in both sources: [ title=>..., cartelera=>... ticketmaster=>...]  ] .
 	 * @return void
 	 */
-	public static function append_show_result( array $result ): void {
+	public static function add_show_result( array $result ): void {
 		// Append a new show result to the existing results in the database.
 		$results   = self::get_show_results();
+
+		// first looks for the show with the same title, in case it needs to update, not append
+		foreach ( $results as $i => $existing_result ) {
+			if ( isset( $existing_result['title'] ) && $existing_result['title'] === $result['title'] ) {
+				$results[$i] = $result;
+				self::update_show_results( $results );
+				return;
+			}
+		}
+
 		$results   = (array) $results; // Ensure $results is an array.
 		$results[] = $result;
 		self::update_show_results( $results );
 	}
 
 	// ====
-
-	/**
-	 * Handles the custom scrap action triggered via a POST request.
-	 */
-	public static function handle_scrap_action(): void {
-
-		$message = 'Updated';
-
-		// Check if the custom action and nonce are set in the POST request.
-		if ( isset( $_POST['nonce_action_scrapping'] ) ) {
-			// Verify the nonce to ensure the request is valid.
-			if ( ! wp_verify_nonce( sanitize_text_field( $_POST['nonce_action_scrapping'] ), 'nonce_action_field' ) ) {
-				wp_safe_redirect( add_query_arg(
-					'error', 'Error: Nonce verification failed.',
-					admin_url( 'options-general.php?page=cartelera-scrap' )
-				) );
-				exit;
-			}
-
-			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- ignoring error_log usage for debugging purposes
-			error_log( 'Acción ejecutada' );
-
-			if ( isset( $_POST['start_scrapping_shows'] ) ) {
-
-				// Perform the scrap action -> calls the cron job to start processing the shows.
-				self::perform_scrap();
-
-				// Redirect back to the admin page after the action is executed.
-				$message = 'Scrap action executed successfully.';
-			} elseif ( isset( $_POST['process_next_scheduled_show'] ) ) {
-				update_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count', 0 ); // init the count of the shows being processed in this batch.
-				self::cartelera_process_one_batch();
-				$shows_per_batch = Cartelera_Scrap_Plugin::get_plugin_setting( Settings_Page::$number_processed_each_time ) ?? 10;
-				$message         = sprintf( __( 'Processed %s theatre shows.', 'cartelera-scrap' ), $shows_per_batch );
-			}
-
-			$redirect = add_query_arg( 'message', $message, admin_url( 'options-general.php?page=cartelera-scrap' ) );
-
-			wp_safe_redirect( $redirect );
-			exit;
-		}
-	}
 
 	/**
 	 * Retrieves the list of shows from cartelera and sets in to the processing queue.
@@ -219,15 +187,22 @@ class Scrap_Actions {
 		// Retrieve all html for the cartelera URL.
 		// and set them to the processing queue.
 		$all_shows = Simple_Scraper::scrap_all_shows_in_cartelera();
+		if ( ! $all_shows || is_wp_error( $all_shows )) {
+			wp_safe_redirect( add_query_arg(
+				'error', 'Error: No shows found in cartelera.',
+				admin_url( 'options-general.php?page=cartelera-scrap' )
+			) );
+			exit;
+		}
 		// launch the first one-time-off cron job in WP to strart processing the shows.
 		self::delete_show_results(); // clean the database and we will start from scratch.
 		self::update_shows_queue_option( $all_shows ); // set up the list of shows that we will process.
 		update_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count', 0 ); // init the count of the shows being processed in this batch.
-		if ( wp_next_scheduled( self::CRONJOB_NAME ) ) {
-			wp_clear_scheduled_hook( self::CRONJOB_NAME );
+		if ( wp_next_scheduled( Settings_Hooks::CRONJOB_NAME ) ) {
+			wp_clear_scheduled_hook( Settings_Hooks::CRONJOB_NAME );
 		}
-		if ( ! wp_next_scheduled( self::CRONJOB_NAME ) ) {
-			wp_schedule_single_event( time() + 30, self::CRONJOB_NAME ); // exectute in a few secs.
+		if ( ! wp_next_scheduled( Settings_Hooks::CRONJOB_NAME ) ) {
+			wp_schedule_single_event( time() + 30, Settings_Hooks::CRONJOB_NAME ); // exectute in a few secs.
 		}
 	}
 
@@ -259,8 +234,8 @@ class Scrap_Actions {
 		*  */
 		update_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count', $batch_count );
 		if ( $batch_count === $shows_per_batch ) {
-			if ( ! wp_next_scheduled( self::CRONJOB_NAME ) ) {
-				wp_schedule_single_event( time() + 5, self::CRONJOB_NAME ); // ejecuta en 5s.
+			if ( ! wp_next_scheduled( Settings_Hooks::CRONJOB_NAME ) ) {
+				wp_schedule_single_event( time() + 5, Settings_Hooks::CRONJOB_NAME ); // ejecuta en 5s.
 			}
 		} elseif ( $batch_count < $shows_per_batch ) {
 			self::cartelera_process_one_batch();
@@ -304,7 +279,7 @@ class Scrap_Actions {
 				 * =============================================
 				 * 3. SAVE BOTH DATA IN THE DB Results
 				 */
-				self::append_show_result( [
+				self::add_show_result( [
 					'title'        => Simple_Scraper::sanitize_scraped_text( $show['text'] ),
 					'cartelera'    => $result_cartelera,
 					'ticketmaster' => $result_tickermaster,
@@ -320,46 +295,4 @@ class Scrap_Actions {
 		 */
 		self::delete_first_queued_show();
 	}
-
-	/**
-	 * Converts the text dates into an array of dates.
-	 * The function will use regex to convert the text into an array of dates.
-	 *
-	 * @param string $text_dates The text containing the dates to be converted.
-	 * @return array An array of dates extracted from the text.
-	 */
-	public static function convert_test_dates_into_array( string $text_dates ): array {
-		// Tengo que hacer un regex para convertir las fechas en un array.
-		// Las fechas pueden tener dos formatos , uno de ellos
-
-		// Del 24 de abril al 8 de junio de 2025
-		// 28 de mayo de 2025.
-
-		// Sólo 30 de abril de 2025.
-		// Finalizó el 6 de abril de 2025.
-
-		// 2 y 9 de mayo de 2025.
-		// 27 de abril, 4 y 11 de mayo.
-		// 21, 22 y 23 de abril de 2025.
-		// 17, 18, 24 y 25 de mayo de 2025
-		// 1, 2,6, 8 y 9 de mayo  de 2025.
-		// 23 y 30 de marzo y 6 abril de 2025.
-		// Del 24 de abril al 8 de junio de 2025
-		// Del 24 de abril al 8 de junio de 2025 (Suspende 1, 10 y 15 de mayo)
-		// Viernes 21:30 horas. – Acceso al Foro Stelaris (piso 25) | 22:30 hrs – Inicio del Show | DJ a partir de las 00:00 hrs
-		// En temporada 2025.
-		// -- Miércoles y jueves 20:00 horas, viernes 20:30 horas, sábado 16:30 y 20:30 horas, domingo 13:00 y 17:30 horas.
-
-
-
-
-
-
-
-
-		return [];
-	}
 }
-
-// Initialize the Scrap_Actions class.
-Scrap_Actions::init();

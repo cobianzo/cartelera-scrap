@@ -1,6 +1,20 @@
 <?php
+/**
+ * This file contains the implementation of [describe the purpose of the file briefly].
+ *
+ * @package [Specify the package or module name, if applicable]
+ * @author [Your Name]
+ * @copyright [Year] [Your Organization or Name]
+ * @license [Specify the license, e.g., MIT, GPL, etc.]
+ * @version [Version of the file, if applicable]
+ *
+ * @description [Provide a brief description of the file's functionality or purpose.]
+ */
 
 namespace Cartelera_Scrap;
+
+use Cartelera_Scrap\Admin\Settings_Hooks;
+use Cartelera_Scrap\Admin\Settings_Page;
 
 class Scrap_Output {
 	public static function init() {
@@ -26,8 +40,8 @@ class Scrap_Output {
 	public static function render_scrap_status() {
 
 		// check if the cron job is running
-		if ( wp_next_scheduled( Scrap_Actions::CRONJOB_NAME ) ) {
-			_e( '<h3>Scrapping is running</h3>', 'cartelera-scrap' );
+		if ( wp_next_scheduled( Settings_Hooks::CRONJOB_NAME ) ) {
+			_e( '<h3>Scrapping is running as a cron job</h3>', 'cartelera-scrap' );
 			printf( __( '<p>Shows in the processing queue waiting to be processed: %s<br />', 'cartelera-scrap' ), Scrap_Actions::get_queued_count() );
 			printf( __( 'Already processed shows: %s</p>', 'cartelera-scrap' ), count( Scrap_Actions::get_show_results() ) );
 			$queue = Scrap_Actions::get_first_queued_show();
@@ -37,25 +51,23 @@ class Scrap_Output {
 				echo '<p>Nothing in the queue to scrap</p>';
 			}
 		} else {
-			echo '<p>Scrapping ' . Scrap_Actions::CRONJOB_NAME . ' is not running</p>';
+			echo '<p>Scrapping ' . Settings_Hooks::CRONJOB_NAME . ' is not running as a cron job</p>';
 		}
 		?>
 		<div class="wrap" style="display: flex; gap: 10px;">
 
-			<form method="post">
-				<?php wp_nonce_field( 'nonce_action_field', 'nonce_action_scrapping' ); ?>
-				<input type="hidden" name="start_scrapping_shows" value="1">
-				<input type="submit" class="button button-primary" value="Ejecutar acción">
-			</form>
 			<?php
-				$next_show = Scrap_Actions::get_first_queued_show();
+			Settings_Page::create_form_button_with_action( 'action_start_scrapping_shows', __( 'Start processing from scratch', 'cartelera-scrap' ) );
+
+			$next_show = Scrap_Actions::get_first_queued_show();
 			if ( $next_show ) :
 				?>
 				<form method="post" style="display: flex; align-items: center; gap: 10px;">
 				<?php wp_nonce_field( 'nonce_action_field', 'nonce_action_scrapping' ); ?>
-					<input type="hidden" name="process_next_scheduled_show" value="1">
+					<input type="hidden" name="action" value="action_process_next_scheduled_show">
 					<div style="display:flex; align-items: center; gap: 10px;">
-					<input type="submit" class="button button-primary" value="Process next show:"> <strong><?php echo esc_html( $next_show['text'] ); ?> </strong>
+					<input type="submit" class="button button-primary" value="<?php echo esc_attr( sprintf( __( 'Process next batch of', 'cartelera-scrap' ), Cartelera_Scrap_Plugin::get_plugin_setting( Settings_Page::$number_processed_each_time ) ) ); ?>" />
+						<strong><?php echo esc_html( $next_show['text'] ); ?></strong>
 					</div>
 				</form>
 			<?php endif; ?>
@@ -71,19 +83,24 @@ class Scrap_Output {
 					<table style="width: 100%; border-collapse: collapse; border: 1px solid #ccc;">
 						<thead>
 							<tr>
+								<th>#</th>
 								<th>Title and urls</th>
 								<th>ticketmaster dates</th>
 								<th>cartelera dates in text</th>
 								<th>cartelera dates parsed</th>
 								<th>coincidence check</th>
+								<th>actions</th>
 							</tr>
 						</thead>
 						<tbody>
 							<?php
-							foreach ( $results as $result ) :
+							foreach ( $results as $i => $result ) :
 								?>
 									<tr style="border: 1px solid #ccc;">
 
+										<td> <!-- #i -->
+											<?php echo esc_html( $i ); ?>
+										</td>
 										<td> <!-- Display the title and URL -->
 											<strong><?php echo esc_html( $result['title'] ); ?></strong>
 											<ul>
@@ -119,13 +136,44 @@ class Scrap_Output {
 
 										<td> <!-- Display the cartelera dates in text -->
 											<?php
-											if ( !empty( $result['cartelera']['scraped_dates_text'] ) ) {
-												echo '<p>' . esc_html( $result['cartelera']['scraped_dates_text'] ) . '</p>';
+											// Dates
+											if ( ! empty( $result['cartelera']['scraped_dates_text'] ) ) {
+												$dates_text = $result['cartelera']['scraped_dates_text'];
+												echo '<p>';
+												echo  '<b>Dates</b>==> ' . esc_html( $dates_text );
+												$accepted_sentences       = Text_Parser::first_acceptance_of_date_text( $dates_text );
+												$accepted_sentences_count = count( $accepted_sentences );
+												echo $accepted_sentences_count ? '✅ (' . $accepted_sentences_count . ')' : '❌ text not parseable <br/>';
+												echo  '</p>';
+
+												if ( $accepted_sentences_count ) {
+													echo '<div class="dates-sentences">';
+													echo '<em>📆📆📆' . implode( '</em><br/><em>📆📆📆', $accepted_sentences ) . '</em>';
+													echo '</div>';
+												}
+												foreach ( $accepted_sentences as $dates_in_text) {
+													$all_dates = Text_Parser::identify_dates_sencence_daterange_or_singledays($dates_in_text);
+													print_r( $all_dates );
+												}
+
 											} else {
+												echo '❌ not valid! <br/>';
 												dd($result['cartelera']);
 											}
+
+											// Weekday and times
 											if ( ! empty( $result['cartelera']['scraped_time_text'] ) ) {
-												echo '<p>' . esc_html( $result['cartelera']['scraped_time_text'] ) . '</p>';
+												$accepted_sentences = Text_Parser::first_acceptance_of_times_text($result['cartelera']['scraped_time_text']);
+												echo '<p>';
+												echo  '<b>Times</b>==> ' .esc_html( $result['cartelera']['scraped_time_text'] );
+												$accepted_sentences_count = count( $accepted_sentences );
+												echo $accepted_sentences_count ? '✅ (' . $accepted_sentences_count . ')' : '❌ times not parseable <br/>';
+												echo  '</p>';
+												if ( $accepted_sentences_count ) {
+													echo '<div class="times-sentences">';
+													echo '<em>' . implode( '</em><br/><em>', $accepted_sentences ) . '</em>';
+													echo '</div>';
+												}
 											}
 											?>
 										</td>
@@ -141,6 +189,19 @@ class Scrap_Output {
 											// execute a function to compare both values.
 											?>
 										</td>
+										<td>
+											<?php
+											Settings_Page::create_form_button_with_action(
+												'action_scrap_single_show', 'Re scrap',
+												[
+													'extra-data' => [
+														'show-title'     => $result['title'],
+														'cartelera-href' => $result['cartelera']['url'],
+													]
+												]
+											);
+											?>
+ 										</td>
 
 									</tr>
 								<?php endforeach; ?>

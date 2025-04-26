@@ -7,6 +7,7 @@
  */
 
 namespace Cartelera_Scrap;
+
 use Cartelera_Scrap\Text_Parser;
 
 use DOMDocument;
@@ -105,7 +106,7 @@ class Simple_Scraper {
 	 */
 	public static function cleanup_node_text( DOMNode $node ): string {
 		// Remove unwanted characters and trim whitespace.
-		$text = str_replace(["\r", "\n"], ' ', $node->textContent);
+		$text = str_replace( [ "\r", "\n" ], ' ', $node->textContent );
 
 		return trim( $text );
 	}
@@ -274,16 +275,19 @@ class Simple_Scraper {
 			$div           = $div->firstChild;
 			$all_divs      = $div->getElementsByTagName( 'div' );
 			$all_spans     = $div->getElementsByTagName( 'span' );
-			$printed_date  = $all_divs? $all_divs->item( 0 ): null; // may25
-			$complete_date = $all_spans? $all_spans->item( 0 ) : null;
-			$time          = $all_spans? $all_spans->item( 10 ) : null; // 8:30 p.m.
-			$time_24h      = $time ?
-				\DateTime::createFromFormat( 'g:i a', str_replace( '.', '', strtolower( $time->textContent ) ) )->format( 'H:i' )
-				: null;
+			$printed_date  = $all_divs ? $all_divs->item( 0 ) : null; // may25
+			$complete_date = $all_spans ? $all_spans->item( 0 ) : null;
+			$time_12h      = $all_spans ? $all_spans->item( 10 ) : null; // 8:30 p.m. (the span number 10th)
+
+			$date_object_for_time = ! empty( $time_12h->textContent ) ?
+				\DateTime::createFromFormat( 'g:i a', str_replace( '.', '', strtolower( $time_12h->textContent ) ) ) : false;
+
+			$time_24h = $date_object_for_time ?
+				$date_object_for_time->format( 'H:i' ) : '❌ Not found';
 
 			$result_tickermaster['dates'][] = [
 				'printed_date' => $printed_date->textContent, // may25
-				'time_12h'     => $time->textContent, // 8:30 p.m
+				'time_12h'     => $time_12h ? $time_12h->textContent : '❌ Not found', // 8:30 p.m
 				'date'         => $complete_date->textContent, // 25/05/25
 				'time'         => $time_24h, // 20:30
 			];
@@ -296,7 +300,7 @@ class Simple_Scraper {
 	 * Scrapes a single show from Cartelera.
 	 *
 	 * @param string $cartelera_url The URL of the show in Cartelera (https://carteleradeteatro.mx/2015/el-rey-leon/).
-	 * 	or the direct html to scrap.
+	 *  or the direct html to scrap.
 	 * @return array
 	 */
 	public static function scrap_one_cartelera_show( string $cartelera_url ): array {
@@ -305,12 +309,12 @@ class Simple_Scraper {
 		if ( ! filter_var( $cartelera_url, FILTER_VALIDATE_URL ) ) {
 			$html             = $cartelera_url;
 			$result_cartelera = [
-				'url'  => 'unknown',
+				'url' => 'unknown',
 			];
 		} else {
 
 			$result_cartelera = [
-				'url'  => $cartelera_url,
+				'url' => $cartelera_url,
 			];
 
 			// now we retrieve the data from cartelera and compare it with the ticketmaster data.
@@ -323,32 +327,40 @@ class Simple_Scraper {
 			}
 		}
 
+
 		// start scrapping the html with DOM.;
 		$scraper = new Simple_Scraper( $html );
 
+		/**
+		 * SCRAP FIRST PART OF THE CONTENT (days of the month)
+		 * ======================================================
+		 */
 		// Retrieve the text : `Del 6 abril al 8 de junio de 2025` or `2, 3 y 4 de mayo de 2025.`, or `En temporada 2025.`
 		$nodes = $scraper->get_root()->query( '//div[@class="post-content-obras"]/p' );
 
-		$scraped_dates_text = '';
 		if ( $nodes->length > 0 ) {
 			foreach ( $nodes as $node ) {
 				// The first text with a date is the one we want. ( ie 25 de mayo de 2025 )
 				if ( Text_Parser::text_contains_a_date( $node->textContent ) ) {
-					$scraped_dates_text = self::cleanup_node_text( $node ); // text 'En temporada 2025.'
+					// text 'En temporada 2025.'
+					$result_cartelera['scraped_dates_text'] = self::sanitize_scraped_text( self::cleanup_node_text( $node ) );
 					break;
 				}
-				// this criteria is not always accurate: grab the first node without <strong>
-				// $strong_descendants = $node->getElementsByTagName( 'strong' );
-				// if ( $strong_descendants->length === 0 ) {
-				// 	$scraped_dates_text = $node->textContent; // text '27 de abril, 4 y 11 de mayo.'
-				// 	break;
-				// }
 			}
 		}
-		// Retrieve the text : 'Sábados de abril y mayo, 12:00 y 14:30 horas. Domingo 1 y 8 de junio, 12:00 y 14:30 horas'
+
+		/**
+		 * SCRAP SECOND PART OF THE CONTENT (timetable per days ...)
+		 * ===============================================================
+		 */
+		// Retrieve the text for the days, it's inside a <strong> :
+		// 'Sábados de abril y mayo, 12:00 y 14:30 horas. Domingo 1 y 8 de junio, 12:00 y 14:30 horas'
 		$nodes = $scraper->get_root()->document->getElementsByTagName( 'strong' );
 		foreach ( $nodes as $i => $strongNode ) {
-			if ( str_contains( $strongNode->textContent, 'Horario de' ) ) {
+
+			if ( str_contains( $strongNode->textContent, 'Horario de' )
+			|| str_contains( $strongNode->textContent, 'Horarios de' ) ) {
+
 				// Get the text that is right after this <strong>, but before the next <br>.
 				$time_text = '';
 				if ( $strongNode && $strongNode->nextSibling ) {
@@ -362,10 +374,7 @@ class Simple_Scraper {
 					$time_text = trim( $time_text ); // ie 'Domingos 13:00 horas'
 				}
 
-				$result_cartelera = array_merge( $result_cartelera, [
-					'scraped_dates_text' => ! empty( $scraped_dates_text ) ? self::sanitize_scraped_text( $scraped_dates_text ) : '',
-					'scraped_time_text'  => self::sanitize_scraped_text( $time_text ),
-				] );
+				$result_cartelera['scraped_time_text'] = self::sanitize_scraped_text( $time_text );
 
 				break; // found the text with the times, we can exit.
 			}

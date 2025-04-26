@@ -8,6 +8,23 @@ and compare it with the same shows in `http://ticketmaster.com.mx/`.
 It will ensure that all timetables are the same.
 In case it finds an error, it will display it, or send an email
 
+HOW IT WORKS
+===
+
+First it scan and scrap the carteleradeteatro.mx/todas to grab all the titles for all theathre shows.
+In the table options, it saves that list as the queue of shows that need to be scraped
+On every iteration, it scrap one by one every show in the list, starting by the first.
+Once processed, it saves the result in the table options too, and removes the processed show from the queue.
+When this whole process is finished, we have the relevant data for all shows, either from
+carteleradeteatro and from ticketmaster. It looks like this.
+
+- The results of scrapping both sites can be exported and saved in a file called wp-content/uploads/cartelera-scrap/cartelera-scrap-results.json.
+NOTE: most of shows are only in cartelera, but has no entry in ticketmaster.
+
+Settings:
+
+
+
 DEVELOPMENT
 ===
 Dependencies
