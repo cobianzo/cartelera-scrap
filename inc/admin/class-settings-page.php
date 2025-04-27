@@ -209,10 +209,11 @@ class Settings_Page {
 					value="<?php echo esc_attr( $button_text ); ?>" />
 			</div>
 			<?php
-				if ( ! empty( $options['extra-data'] ) && is_array( $options['extra-data'] )) : ?>
+			if ( ! empty( $options['extra-data'] ) && is_array( $options['extra-data'] ) ) :
+				?>
 				<?php foreach ( $options['extra-data'] as $name => $value ) : ?>
 					<input type="hidden"
-						name="<?php echo esc_attr($name); ?>"
+						name="<?php echo esc_attr( $name ); ?>"
 						value="<?php echo esc_attr( $value ); ?>" />
 				<?php endforeach; ?>
 			<?php endif; ?>

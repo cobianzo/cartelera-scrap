@@ -1,9 +1,19 @@
+.muted {
+  color: #958787;
+}
 
-
-.equal-width-columns tr {
+table.equal-width-columns tr {
   display: grid;
   grid-template-columns: 30px repeat( 6, 1fr );
   gap: 1rem;
+  padding: 1rem;
+}
+table.equal-width-columns tr:nth-child(odd) {
+  background-color: #f9f9f9; /* Light gray for odd rows */
+}
+
+table.equal-width-columns tr:nth-child(even) {
+  background-color: #ffffff; /* White for even rows */
 }
 
 .equal-width-columns tr td, .equal-width-columns tr th {
@@ -12,8 +22,31 @@
   box-sizing: border-box; /* Includes padding and border in the element's total width and height */
 }
 
-.times-sentences {
+.col-actions {
+  width: 50px;
+}
+.col-index {
+  width: 30px;
+}
+.col-title {
+  width: 200px;
+}
+.col-ticketmaster-dates {
+  width: 200px
+}
+.col-cartelera-text {
+  width: 300px
+}
+.col-cartelera-dates {
+  width: 250px
+}
+.col-comparison {
+  width: 200px
+}
+
+
+.dates-sentences, .times-sentences {
   border: 1px solid pink;
-  padding: 1rem;
+  padding: 0.25rem 1rem 0.25rem;
   background: lightgray;
 }

@@ -69,13 +69,13 @@ class Scrap_Actions {
 		return $shows[0];
 	}
 
-	public static function add_first_queued_show( $show_data ): bool  {
+	public static function add_first_queued_show( $show_data ): bool {
 		$all_queued = self::get_queued_shows();
 		if ( ! isset( $show_data['text'] ) || ! isset( $show_data['href'] ) ) {
 			return false;
 		}
 		array_unshift( $all_queued, $show_data );
-		return self::update_shows_queue_option($all_queued);
+		return self::update_shows_queue_option( $all_queued );
 	}
 	/**
 	 * Retrieve the shows options from the database.
@@ -157,12 +157,12 @@ class Scrap_Actions {
 	 */
 	public static function add_show_result( array $result ): void {
 		// Append a new show result to the existing results in the database.
-		$results   = self::get_show_results();
+		$results = self::get_show_results();
 
 		// first looks for the show with the same title, in case it needs to update, not append
 		foreach ( $results as $i => $existing_result ) {
 			if ( isset( $existing_result['title'] ) && $existing_result['title'] === $result['title'] ) {
-				$results[$i] = $result;
+				$results[ $i ] = $result;
 				self::update_show_results( $results );
 				return;
 			}
@@ -187,7 +187,7 @@ class Scrap_Actions {
 		// Retrieve all html for the cartelera URL.
 		// and set them to the processing queue.
 		$all_shows = Simple_Scraper::scrap_all_shows_in_cartelera();
-		if ( ! $all_shows || is_wp_error( $all_shows )) {
+		if ( ! $all_shows || is_wp_error( $all_shows ) ) {
 			wp_safe_redirect( add_query_arg(
 				'error', 'Error: No shows found in cartelera.',
 				admin_url( 'options-general.php?page=cartelera-scrap' )

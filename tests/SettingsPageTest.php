@@ -23,7 +23,7 @@ class SettingsPageTest extends WP_UnitTestCase {
 
 		// We check that the URLs are valid.
 		$this->assertTrue(
-			filter_var( $ticketmaster_url, FILTER_VALIDATE_URL) && 'https' === parse_url( $ticketmaster_url, PHP_URL_SCHEME )
+			filter_var( $ticketmaster_url, FILTER_VALIDATE_URL ) && 'https' === parse_url( $ticketmaster_url, PHP_URL_SCHEME )
 		);
 		$this->assertTrue(
 			filter_var( $cartelera_url, FILTER_VALIDATE_URL ) && 'https' === parse_url( $cartelera_url, PHP_URL_SCHEME )

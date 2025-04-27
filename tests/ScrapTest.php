@@ -29,13 +29,13 @@ class ScrapTest extends WP_UnitTestCase {
 	public static function get_file_contents_html_file( WP_UnitTestCase $instance, string $filepath ): array {
 
 		if ( ! file_exists( $filepath ) ) {
-			return ['error' => '❌File not found: ' . $filepath];
+			return [ 'error' => '❌File not found: ' . $filepath ];
 		}
 
 		$html_content = file_get_contents( $filepath );
 
 		if ( $html_content === false ) {
-			return ['error' => '❌Failed to read file contents: ' . $filepath];
+			return [ 'error' => '❌Failed to read file contents: ' . $filepath ];
 		}
 
 		$instance->assertNotFalse( $html_content, '❌Failed to load HTML content from file ' . $filepath );
@@ -44,9 +44,11 @@ class ScrapTest extends WP_UnitTestCase {
 		$scrapped_data_extracted = \Cartelera_Scrap\Simple_Scraper::scrap_one_cartelera_show( $html_content );
 
 		$instance->assertNotEmpty( $scrapped_data_extracted, 'Failed to extract data from HTML content' );
-		$instance->assertArrayHasKey( 'scraped_dates_text', $scrapped_data_extracted,
+		$instance->assertArrayHasKey(
+			'scraped_dates_text', $scrapped_data_extracted,
 			'❌dates text not found in extracted data. Check `scrap_one_cartelera_show` function' . PHP_EOL
-			. print_r( $scrapped_data_extracted, 1 ) );
+			. print_r( $scrapped_data_extracted, 1 ) 
+		);
 		$instance->assertArrayHasKey( 'scraped_time_text', $scrapped_data_extracted, '❌time text not found in extracted data' . print_r( $scrapped_data_extracted, 1 ) );
 
 		return $scrapped_data_extracted;
@@ -106,6 +108,4 @@ class ScrapTest extends WP_UnitTestCase {
 
 		echo true === $completed ? "\n\n✅✅✅ Test passed 2. \n\n" : "\n\n❌❌❌ Test 2 didnt complete. \n $completed \n";
 	}
-
-
 }

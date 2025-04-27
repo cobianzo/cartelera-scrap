@@ -98,11 +98,11 @@ class Text_Parser {
 	}
 
 	public static function remove_dates_previous_of_today( array $datetimes ): array {
-		return array_filter($datetimes, function ($datetime) {
-			$timestamp = strtotime($datetime);
-			$today_start = strtotime('today 00:01');
+		return array_filter( $datetimes, function ( $datetime ) {
+			$timestamp   = strtotime( $datetime );
+			$today_start = strtotime( 'today 00:01' );
 			return $timestamp >= $today_start;
-		});
+		} );
 	}
 
 	// to compare both ticketmaster and cartelera datetimes.
@@ -255,8 +255,8 @@ class Text_Parser {
 		// at least one number between 1 and 31 and one name of month (in spanish)
 		// $sentences = array_filter( $sentences, function ( $sentence ) {
 
-		// 	$pattern = '/\b(3[01]|[12][0-9]|[1-9])\b.*\b(' . implode( '|', array_keys( self::months() ) ) . ')\b/i';
-		// 	return preg_match( $pattern, $sentence );
+		// $pattern = '/\b(3[01]|[12][0-9]|[1-9])\b.*\b(' . implode( '|', array_keys( self::months() ) ) . ')\b/i';
+		// return preg_match( $pattern, $sentence );
 
 		// } );
 
@@ -485,19 +485,18 @@ class Text_Parser {
 				}
 			}
 		} elseif ( 'temporada' === $type ) {
-				preg_match('/\b20([2-9]\d|[3-9]\d{2}|[1-9]\d{3})\b/', $sanitized_date_sentence, $matches);
-				if (!empty($matches)) {
-					echo '<h1>TODELETE:'.$matches[0].' </h1>';
-					$year = (int) $matches[0];
-					$start_date = strtotime("1 January $year");
-					$end_date = strtotime("31 December $year");
+				preg_match( '/\b20([2-9]\d|[3-9]\d{2}|[1-9]\d{3})\b/', $sanitized_date_sentence, $matches );
+			if ( ! empty( $matches ) ) {
+				echo '<h1>TODELETE:' . $matches[0] . ' </h1>';
+				$year       = (int) $matches[0];
+				$start_date = strtotime( "1 January $year" );
+				$end_date   = strtotime( "31 December $year" );
 
-					while ($start_date <= $end_date) {
-						$all_dates[] = date(self::DATE_COMPARE_FORMAT, $start_date);
-						$start_date = strtotime('+1 day', $start_date);
-					}
+				while ( $start_date <= $end_date ) {
+					$all_dates[] = date( self::DATE_COMPARE_FORMAT, $start_date );
+					$start_date  = strtotime( '+1 day', $start_date );
 				}
-
+			}       
 		}
 
 		// Remove everything that is not a month or a number
@@ -505,30 +504,31 @@ class Text_Parser {
 		return $all_dates;
 	}
 
+	// sunday, saturday-sunday-18:00-21:00 returns [`18:00`, `21:00`]
+	public static function get_times_for_weekday( string $weekday, array $weekday_and_times_sentences ): array {
+		foreach ( $weekday_and_times_sentences as $sentence ) {
+			if ( strpos( $sentence, $weekday ) !== false ) { // found the sentence with the given weekday
+				// get the occurrences with text like '18:00'
+				preg_match_all( '/\b\d{1,2}:\d{2}\b/', $sentence, $time_matches );
+				return $time_matches[0];
+			}
+		}
+		return [];
+	}
+
 	public static function definitive_dates_and_times( array $valid_dates, array $weekday_and_times ) {
 		$definitive_dates_and_times = [];
 		foreach ( $valid_dates as $date ) {
 			$weekday = self::get_weekday( $date );
-			if ( ! $weekday ) {
-				continue;
-			}
-			foreach ( $weekday_and_times as $weekday_time ) {
-				if ( strpos( $weekday_time, $weekday ) !== false ) {
-					preg_match_all( '/\b\d{1,2}:\d{2}\b/', $weekday_time, $time_matches );
+			$times   = self::get_times_for_weekday( $weekday, $weekday_and_times );
 
-
-					$times = $time_matches[0];
-					// normally only one time (saturday-18:00), but sometimes more than one (saturday-18:00-21:30)
-					if ( count( $times ) ) {
-						foreach ( $times as $specific_time ) {
-							$definitive_dates_and_times[] = $date . ' ' . $specific_time;
-						}
-						// if ( count( $times ) > 1 ) {
-						// 	echo 'Too many times for the weekday ' . $weekday;
-						// }
-					}
+			if ( count( $times ) ) {
+				foreach ( $times as $specific_time ) {
+					$date_time                    = $date . ' ' . $specific_time;
+					$date_time                    = date( self::DATE_COMPARE_FORMAT . ' ' . self::TIME_COMPARE_FORMAT, strtotime( $date_time ) );
+					$definitive_dates_and_times[] = $date_time;
 				}
-			}
+			}       
 		}
 		return $definitive_dates_and_times;
 	}

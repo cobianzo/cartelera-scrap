@@ -1,3 +1,9 @@
+TODO
+===
+- apply 'suspende' text
+- apply a setting to ignore dates after certain days in advance.
+
+
 WHAT IS THIS PROJECT
 ===
 
