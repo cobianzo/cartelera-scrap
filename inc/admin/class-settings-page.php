@@ -64,7 +64,7 @@ class Settings_Page {
 	public function enqueue_scripts_styles(): void {
 		wp_enqueue_style(
 			$this->plugin_name,
-			plugin_dir_url( __FILE__ ) . 'css/settings-page.css',
+			plugin_dir_url( __FILE__ ) . 'css/cartelera-settings-page.css',
 			[],
 			$this->version,
 			'all'
@@ -72,7 +72,7 @@ class Settings_Page {
 
 		wp_enqueue_script(
 			$this->plugin_name,
-			plugin_dir_url( __FILE__ ) . 'js/settings-page.js',
+			plugin_dir_url( __FILE__ ) . 'js/cartelera-settings-page.js',
 			[ 'jquery' ],
 			$this->version,
 			false

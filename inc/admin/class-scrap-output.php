@@ -78,6 +78,9 @@ class Scrap_Output {
 		<div class="wrap">
 			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
 
+			<button type="button" id="filter-by-yes-tickermaster" class="button toggle-button">
+				Filter by results only in tickermaster
+			</button>
 			<?php
 				self::render_table_with_results();
 			?>
@@ -97,8 +100,8 @@ class Scrap_Output {
 						<th class="col-actions">actions</th>
 						<th class="col-index">#</th>
 						<th class="col-title">Title and urls</th>
-						<th class="col-ticketmaster-dates">ticketmaster dates</th>
 						<th class="col-cartelera-text">cartelera dates in text</th>
+						<th class="col-ticketmaster-dates">ticketmaster dates</th>
 						<th class="col-cartelera-dates">cartelera dates parsed</th>
 						<th class="col-comparison">coincidence check</th>
 					</tr>
@@ -106,8 +109,10 @@ class Scrap_Output {
 				<tbody>
 					<?php
 					foreach ( $results as $i => $result ) :
+						$no_tickermaster = ( empty( $result['ticketmaster']['dates'] ) || ! isset( $result['ticketmaster']['url'] ) );
 						?>
-						<tr id="result-<?php echo esc_attr( sanitize_title_with_dashes( $result['title'] ) ); ?>">
+						<tr id="result-<?php echo esc_attr( sanitize_title_with_dashes( $result['title'] ) ); ?>"
+							class="result-row <?php echo esc_attr( $no_tickermaster ? 'no-tickermaster' : 'yes-tickermaster'); ?>">
 
 
 						<?php
@@ -121,7 +126,7 @@ class Scrap_Output {
 
 
 
-						<td class="col-actions">
+							<td class="col-actions">
 								<?php
 								Settings_Page::create_form_button_with_action(
 									'action_scrap_single_show',
@@ -148,14 +153,6 @@ class Scrap_Output {
 								<?php self::render_col_title( $result ); ?>
 							</td>
 
-							<?php // <!-- Display the ticketmaster dates Y-m-d H:i --> ?>
-							<td class="col-ticketmaster-dates">
-								<?php
-								$datetimes_tickermaster = self::render_col_ticketmaster_dates( $result );
-								$datetimes_ticketmaster = Text_Parser::remove_dates_previous_of_today( $datetimes_tickermaster );
-								?>
-							</td>
-
 							<?php // Display the cartelera dates in text ?>
 							<td class="col-cartelera-text">
 								<?php
@@ -164,7 +161,17 @@ class Scrap_Output {
 								?>
 							</td>
 
+							<?php // <!-- Display the ticketmaster dates Y-m-d H:i --> ?>
+							<td class="col-ticketmaster-dates">
+								<?php
+								$datetimes_tickermaster = self::render_col_ticketmaster_dates( $result );
+								$datetimes_ticketmaster = Text_Parser::remove_dates_previous_of_today( $datetimes_tickermaster );
+								?>
+							</td>
+
 							<td class="col-cartelera-dates"> <!-- Display the cartelera dates parsed -->
+								<p>CartH 🎟️🎟️ </p>
+
 								<?php
 								$datetimes_cartelera = self::render_col_cartelera_datetimes( $sentences_cartelera_dates, $sentences_cartelera_times );
 								?>
@@ -232,14 +239,16 @@ class Scrap_Output {
 			?>
 
 			<p>TickH: 🎫🎫🎫🎫🎫 </p>
-
+			<ul>
 			<?php
 			foreach ( $result['ticketmaster']['dates'] as $date ) {
 				$datetime    = $date['date'] . ' ' . $date['time']; // Y-m-d H:i
+				$datetime = date(Text_Parser::DATE_COMPARE_FORMAT . ' ' . Text_Parser::TIME_COMPARE_FORMAT, strtotime($datetime));
 				$datetimes[] = $datetime;
-				echo '<p>' . esc_html( $datetime ) . '</p>';
+				echo '<li>' . esc_html( $datetime ) . '</li>';
 			}
 			?>
+			</ul>
 
 			<?php
 		else :
@@ -284,6 +293,7 @@ class Scrap_Output {
 
 	public static function render_times_parsed_sentences( array $result ) {
 		// Weekday and times
+		$sentences = [];
 		if ( ! empty( $result['cartelera']['scraped_time_text'] ) ) {
 			$sentences = Text_Parser::first_acceptance_of_times_text( $result['cartelera']['scraped_time_text'] );
 			echo '<p>';
@@ -316,9 +326,11 @@ class Scrap_Output {
 		}
 		$datetimes_cartelera = Text_Parser::definitive_dates_and_times( $all_dates, $sentences_times );
 		$datetimes_cartelera = Text_Parser::remove_dates_previous_of_today( $datetimes_cartelera );
+		echo '<ul>';
 		foreach ( $datetimes_cartelera as $show_date ) {
-			echo esc_html( $show_date ) . '<br />';
+			echo '<li>' . esc_html( $show_date ) . '</li>';
 		}
+		echo '</ul>';
 		return $datetimes_cartelera;
 	}
 
