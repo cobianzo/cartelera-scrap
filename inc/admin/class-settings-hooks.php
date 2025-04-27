@@ -77,8 +77,9 @@ class Settings_Hooks {
 					];
 					Scrap_Actions::add_first_queued_show( $show_data );
 					Scrap_Actions::cartelera_process_one_single_show();
-					$message = sprintf( __( 'Processed theatre show: %1$s (%2$s).', 'cartelera-scrap' ), $show_title, $cartelera_href );
-				}           
+					$message   = sprintf( __( 'Processed theatre show: %1$s (%2$s).', 'cartelera-scrap' ), $show_title, $cartelera_href );
+					$scroll_to = '#result-' . sanitize_title( $show_title );
+				}
 			}
 
 
@@ -86,7 +87,7 @@ class Settings_Hooks {
 			wp_safe_redirect(
 				add_query_arg(
 					'message', $message,
-					admin_url( 'options-general.php?page=cartelera-scrap' ) 
+					admin_url( 'options-general.php?page=cartelera-scrap' . (isset( $scroll_to ) ? $scroll_to : '' ) )
 				)
 			);
 			exit;

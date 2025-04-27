@@ -1,3 +1,12 @@
+/**
+ * Behaviour for the button `Filter by results only in tickermaster`
+ * User localstorage to keep the selected option consistent across page loads.
+ */
+
+/**
+ * show/hide the rows depending on the state of the button filter
+ * @param bool activateDeactivate
+ */
 const activateFilter = function( activateDeactivate ) {
   const allRows = document.querySelectorAll('.result-row');
   if (activateDeactivate) {
@@ -8,6 +17,11 @@ const activateFilter = function( activateDeactivate ) {
     allRows.forEach( row => row.classList.remove('hidden') );
   }
 }
+
+/**
+ * handle when clicking the filter button.
+ * @param {*} e
+ */
 const handleClickFilterButton = function(e) {
 
 
@@ -31,13 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
     activateFilter(true);
   }
 
-  // Example: Add a click event to a button with ID 'save-settings'
-
   if (filterButton) {
     filterButton.addEventListener('click', handleClickFilterButton);
   }
 
-
-  // Example: Initialize other settings or UI components
-  // Add your custom logic here
 });

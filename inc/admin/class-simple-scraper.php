@@ -286,7 +286,7 @@ class Simple_Scraper {
 			$date_object_for_time->format( Text_Parser::TIME_COMPARE_FORMAT ) : '❌ Not found';
 
 			$formatted_date = \DateTime::createFromFormat( 'd/m/y', $complete_date->textContent );
-			$formatted_date = $formatted_date->format( 'Y-m-d' );
+			$formatted_date = $formatted_date ? $formatted_date->format( 'Y-m-d' ) : null;
 
 			$result_tickermaster['dates'][] = [
 				'printed_date' => $printed_date->textContent, // may25

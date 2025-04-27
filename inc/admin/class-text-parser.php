@@ -8,6 +8,9 @@
 
 namespace Cartelera_Scrap;
 
+use Cartelera_Scrap\Admin\Settings_Page;
+use Cartelera_Scrap\Cartelera_Scrap_Plugin;
+
 /**
  * Text Parser Class
  * Examples of tests to parse
@@ -97,11 +100,30 @@ class Text_Parser {
 		return false;
 	}
 
+	/**
+	 * Undocumented function
+	 *
+	 * @param array $datetimes
+	 * @return array
+	 */
 	public static function remove_dates_previous_of_today( array $datetimes ): array {
+
 		return array_filter( $datetimes, function ( $datetime ) {
-			$timestamp   = strtotime( $datetime );
-			$today_start = strtotime( 'today 00:01' );
+			$today_start    = strtotime( 'today 00:01' ); // int
+			$timestamp      = strtotime( $datetime ); // int
 			return $timestamp >= $today_start;
+		} );
+	}
+	public static function remove_dates_after_limit( array $datetimes ): array {
+		// grab the settings option to limit the analysis of later dates in time.
+		$days_from_now_limit  = (int) Cartelera_Scrap_Plugin::get_plugin_setting( Settings_Page::$limit_days_forward_compare ) ?? null;
+		$date_limit_timestamp = $days_from_now_limit ? strtotime( "+$days_from_now_limit days" ) : null;
+
+		return array_filter( $datetimes, function ( $datetime ) use ( $date_limit_timestamp ) {
+
+			$timestamp  = strtotime( $datetime ); // int
+			return $date_limit_timestamp ? $timestamp <= $date_limit_timestamp : true;
+
 		} );
 	}
 
@@ -487,7 +509,6 @@ class Text_Parser {
 		} elseif ( 'temporada' === $type ) {
 				preg_match( '/\b20([2-9]\d|[3-9]\d{2}|[1-9]\d{3})\b/', $sanitized_date_sentence, $matches );
 			if ( ! empty( $matches ) ) {
-				echo '<h1>TODELETE:' . $matches[0] . ' </h1>';
 				$year       = (int) $matches[0];
 				$start_date = strtotime( "1 January $year" );
 				$end_date   = strtotime( "31 December $year" );
@@ -496,7 +517,7 @@ class Text_Parser {
 					$all_dates[] = date( self::DATE_COMPARE_FORMAT, $start_date );
 					$start_date  = strtotime( '+1 day', $start_date );
 				}
-			}       
+			}
 		}
 
 		// Remove everything that is not a month or a number
@@ -516,7 +537,15 @@ class Text_Parser {
 		return [];
 	}
 
-	public static function definitive_dates_and_times( array $valid_dates, array $weekday_and_times ) {
+	/**
+	 * Undocumented function
+	 *
+	 * @param array $valid_dates
+	 * @param array $weekday_and_times
+	 * @return array
+	 */
+	public static function definitive_dates_and_times( array $valid_dates, array $weekday_and_times ): array {
+
 		$definitive_dates_and_times = [];
 		foreach ( $valid_dates as $date ) {
 			$weekday = self::get_weekday( $date );
@@ -526,10 +555,13 @@ class Text_Parser {
 				foreach ( $times as $specific_time ) {
 					$date_time                    = $date . ' ' . $specific_time;
 					$date_time                    = date( self::DATE_COMPARE_FORMAT . ' ' . self::TIME_COMPARE_FORMAT, strtotime( $date_time ) );
-					$definitive_dates_and_times[] = $date_time;
+					if ( ! in_array( $date_time, $definitive_dates_and_times, true ) ) {
+						$definitive_dates_and_times[] = $date_time;
+					}
 				}
-			}       
+			}
 		}
+		sort($definitive_dates_and_times);
 		return $definitive_dates_and_times;
 	}
 }

@@ -36,6 +36,9 @@ class Settings_Page {
 	// how many shows to process each time, before calling the next cron job.
 	public static string $number_processed_each_time = 'number_processed_each_time';
 
+	// stop comparing dates after these amount of days.
+	public static string $limit_days_forward_compare = 'limit_days_forward_compare';
+
 	/**
 	 * Constructor for the Settings_Page class.
 	 *
@@ -136,6 +139,7 @@ class Settings_Page {
 					$options[ self::$option_cartelera_url ]       = esc_url_raw( $options[ self::$option_cartelera_url ] );
 					$options[ self::$option_ticketmaster_url ]    = esc_url_raw( $options[ self::$option_ticketmaster_url ] );
 					$options[ self::$number_processed_each_time ] = intval( $options[ self::$number_processed_each_time ] ) ? intval( $options[ self::$number_processed_each_time ] ) : 1;
+					$options[ self::$limit_days_forward_compare ] = intval( $options[ self::$limit_days_forward_compare ] ) ? intval( $options[ self::$limit_days_forward_compare ] ) : 1;
 
 					return $options;
 				},
@@ -172,22 +176,27 @@ class Settings_Page {
 			);
 		} // end for both urls fields
 
-		$field = self::$number_processed_each_time;
-		add_settings_field(
-			self::$number_processed_each_time, // Field ID.
-			__( 'Number of shows to process each time', $this->plugin_name ), // Field title.
-			function () use ( $field ): void {
-				$options      = get_option( $this->all_plugin_options_name ); // Retrieve the saved options.
-				$option_value = $options[ $field ] ?? '';
-				?>
-			<input type="number" step="1" min="1" placeholder="type a number"
-				name="<?php echo esc_attr( $this->all_plugin_options_name ); ?>[<?php echo esc_attr( $field ); ?>]"
-				value="<?php echo esc_attr( $option_value ); ?>">
-				<?php
-			},
-			$this->plugin_name, // Page slug.
-			$this->plugin_name . '_fields__section' // Section ID.
-		);
+		$numberic_fields = [
+			self::$number_processed_each_time => __( 'Number of shows to process each time', $this->plugin_name ),
+			self::$limit_days_forward_compare => __( 'After these amounts of days from today, stop, comparing cartelera and ticketmaster dates.', $this->plugin_name ),
+		];
+		foreach ( $numberic_fields as $field_name => $field_label ) {
+			add_settings_field(
+				$field_name, // Field ID.
+				$field_label, // Field title.
+				function () use ( $field_name ): void {
+					$options      = get_option( $this->all_plugin_options_name ); // Retrieve the saved options.
+					$option_value = $options[ $field_name ] ?? '';
+					?>
+				<input type="number" step="1" min="1" placeholder="type a number"
+					name="<?php echo esc_attr( $this->all_plugin_options_name ); ?>[<?php echo esc_attr( $field_name ); ?>]"
+					value="<?php echo esc_attr( $option_value ); ?>">
+					<?php
+				},
+				$this->plugin_name, // Page slug.
+				$this->plugin_name . '_fields__section' // Section ID.
+			);
+		}
 	}
 
 	/**

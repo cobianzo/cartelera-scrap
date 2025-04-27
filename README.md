@@ -1,13 +1,15 @@
 TODO
 ===
 - apply 'suspende' text
-- apply a setting to ignore dates after certain days in advance.
-
+- sometiems ticketmaster search returns more than onwe show. Apply extra comparison to find the closest one, and open the link: ie. https://www.ticketmaster.com.mx/search?q=Magic
+- evaluate case del-2-marzo-2025  (withut the "al")
+- correct this error: 22-junio-2025 parses into two dates: 2025-06-01 12:00 and 2025-06-22 12:00
+- create bash to deploy plugin.
 
 WHAT IS THIS PROJECT
 ===
 
-This is a plugin of WordPress.
+This is a plugin of WordPress. It's purely managed from a custom settings page (no frontend).
 It's developed in wp-env.
 This projects will scrap the list of theater shows in `https://carteleradeteatro.mx/`,
 and compare it with the same shows in `http://ticketmaster.com.mx/`.

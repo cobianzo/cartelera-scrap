@@ -1,12 +1,19 @@
+html {
+  scroll-behavior: smooth;
+}
+
 .muted {
   color: #958787;
 }
 
-table.equal-width-columns tr {
-  &.hidden {
-    display: none;
-  }
+.color-success {
+  color: #2b9335;
 }
+
+.color-danger {
+  color: #d32323;
+}
+
 table.equal-width-columns tr:nth-child(odd) {
   background-color: #f9f9f9; /* Light gray for odd rows */
 }
@@ -15,34 +22,47 @@ table.equal-width-columns tr:nth-child(even) {
   background-color: #ffffff; /* White for even rows */
 }
 
-.equal-width-columns tr td, .equal-width-columns tr th {
-  flex: 1 1 200px; /* Ensures all columns are the same width, with a minimum width of 200px */
-  max-width: 300px; /* Prevents columns from becoming too wide */
-  box-sizing: border-box; /* Includes padding and border in the element's total width and height */
 
+table.equal-width-columns tr {
+  &.hidden {
+    display: none;
+  }
+
+  &.comparison-success {
+    background-color: #a5b8a1;
+  }
+  &.comparison-fail {
+    background-color: #e09a83;
+  }
+}
+
+.equal-width-columns tr td, .equal-width-columns tr th {
+  place-content: flex-start;
   padding: 0.25rem;
 }
 
+/* re scrap */
 .col-actions {
   align-items: center;
   border: 1px solid lightblue;
-  width: 100px;
+  width: 50px;
   form {
     justify-content: center;
   }
 }
 .col-index {
-  width: 50px;
+  width: 20px;
   text-align: center;
 }
 .col-title {
-  width: 200px;
+  width: 100px;
 }
 .col-ticketmaster-dates {
   width: 150px;
 }
 .col-cartelera-text {
-  width: 200px
+  width: 200px;
+  max-width: 200px;
 }
 .col-cartelera-dates {
   width: 150px
