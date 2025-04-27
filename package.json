@@ -9,6 +9,7 @@
     "tcli": "wp-env run tests-cli",
     "test:php": "wp-env run tests-wordpress --env-cwd='wp-content/plugins/cartelera-scrap' composer run punit",
     "test:php:watch": "wp-env run tests-wordpress --env-cwd='wp-content/plugins/cartelera-scrap' composer run punit-watch",
+    "test:php:single": "npm run test:php tests/E2ETest.php",
     "cs": "composer run lint .",
     "cbf": "composer run format .",
     "build": "wp-scripts build",

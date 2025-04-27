@@ -206,44 +206,45 @@ class Scrap_Output {
 								// add success or fail to the class of the date.
 								foreach ( $datetimes_tickermaster as $tm_date ) {
 
-									$tm_timestamp = strtotime($tm_date);
+									$tm_timestamp = strtotime( $tm_date );
 
 									// not founf in cartelera? we paint it red.
 									$class = ( false !== strpos(
-											$col_cartelera_dates_html,
-											'data-date="' . esc_attr( $tm_timestamp ). '"'
-											) ) ?  'date-found color-success' : 'date-not-found color-danger';
+										$col_cartelera_dates_html,
+										'data-date="' . esc_attr( $tm_timestamp ) . '"'
+									) ) ? 'date-found color-success' : 'date-not-found color-danger';
 
 									$col_ticketmaster_dates_html = str_replace(
-										'data-date="' . esc_attr( $tm_timestamp ). '" class="',
-										'data-date="' . esc_attr( $tm_timestamp ). '" class="' . $class . ' ',
+										'data-date="' . esc_attr( $tm_timestamp ) . '" class="',
+										'data-date="' . esc_attr( $tm_timestamp ) . '" class="' . $class . ' ',
 										$col_ticketmaster_dates_html
 									);
 								}
 
-								echo $col_ticketmaster_dates_html; ?>
+								echo $col_ticketmaster_dates_html;
+								?>
 							</td>
 
 							<td class="col-cartelera-dates"> <!-- Display the cartelera dates parsed -->
 								<p>CartH: 🎟️🎟️ </p>
 								<?php
 									// add success or fail to the class of the date.
-									foreach ( $datetimes_cartelera as $car_date ) {
+								foreach ( $datetimes_cartelera as $car_date ) {
 
-										$car_timestamp = strtotime($car_date);
+									$car_timestamp = strtotime( $car_date );
 
-										// not founf in cartelera? we paint it red.
-										$class = ( false !== strpos(
-												$col_ticketmaster_dates_html,
-												'data-date="' . esc_attr( $car_timestamp ). '"'
-												) ) ?  'date-found color-success' : 'date-not-found color-danger';
+									// not founf in cartelera? we paint it red.
+									$class = ( false !== strpos(
+										$col_ticketmaster_dates_html,
+										'data-date="' . esc_attr( $car_timestamp ) . '"'
+									) ) ? 'date-found color-success' : 'date-not-found color-danger';
 
-										$col_cartelera_dates_html = str_replace(
-											'data-date="' . esc_attr( $car_timestamp ). '" class="',
-											'data-date="' . esc_attr( $car_timestamp ). '" class="' . $class . ' ',
-											$col_cartelera_dates_html
-										);
-									}
+									$col_cartelera_dates_html = str_replace(
+										'data-date="' . esc_attr( $car_timestamp ) . '" class="',
+										'data-date="' . esc_attr( $car_timestamp ) . '" class="' . $class . ' ',
+										$col_cartelera_dates_html
+									);
+								}
 								?>
 								<?php echo $col_cartelera_dates_html; ?>
 							</td>
@@ -313,11 +314,10 @@ class Scrap_Output {
 				// loop every date we will show as html
 				foreach ( $result['ticketmaster']['dates'] as $date ) {
 					// add the time to the date, we'll return as result of this function
-					$datetime    = $date['date'] . ' ' . $date['time']; // Y-m-d H:i
-					$datetime    = date( Text_Parser::DATE_COMPARE_FORMAT . ' ' . Text_Parser::TIME_COMPARE_FORMAT, strtotime( $datetime ) );
+					$datetime    = $date['date'] . ' ' . $date['time']; // YYYY-mm-dd H:i
 					$datetimes[] = $datetime;
 
-					// check if date is later than our limit for muted output
+					// check if date is later than our limit for muted output, and show it muted
 					$days_from_now_limit  = (int) Cartelera_Scrap_Plugin::get_plugin_setting( Settings_Page::$limit_days_forward_compare ) ?? null;
 					$date_timestamp_limit = $days_from_now_limit ? strtotime( "+$days_from_now_limit days" ) : null;
 					$not_analyzed         = \strtotime( $datetime ) > $date_timestamp_limit;

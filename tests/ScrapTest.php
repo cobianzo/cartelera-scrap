@@ -41,20 +41,30 @@ class ScrapTest extends WP_UnitTestCase {
 		$instance->assertNotFalse( $html_content, '❌Failed to load HTML content from file ' . $filepath );
 
 		// The action !!!
+		// ===============
 		$scrapped_data_extracted = \Cartelera_Scrap\Simple_Scraper::scrap_one_cartelera_show( $html_content );
+
 
 		$instance->assertNotEmpty( $scrapped_data_extracted, 'Failed to extract data from HTML content' );
 		$instance->assertArrayHasKey(
 			'scraped_dates_text', $scrapped_data_extracted,
 			'❌dates text not found in extracted data. Check `scrap_one_cartelera_show` function' . PHP_EOL
-			. print_r( $scrapped_data_extracted, 1 ) 
+			. print_r( $scrapped_data_extracted, 1 )
 		);
 		$instance->assertArrayHasKey( 'scraped_time_text', $scrapped_data_extracted, '❌time text not found in extracted data' . print_r( $scrapped_data_extracted, 1 ) );
 
 		return $scrapped_data_extracted;
 	}
 
-	public function scrap_and_test_cartelera_file( string $cartelera_filename, string $expected_dates_text, string $expected_time_text ) {
+	/**
+	 * Undocumented function
+	 *
+	 * @param string $cartelera_filename
+	 * @param string $expected_dates_text
+	 * @param string $expected_time_text
+	 * @return array
+	 */
+	public function scrap_and_test_cartelera_file( string $cartelera_filename, string $expected_dates_text, string $expected_time_text ): array {
 		$data_example_file       = __DIR__ . '/data/' . $cartelera_filename;
 		$scrapped_data_extracted = self::get_file_contents_html_file( $this, $data_example_file );
 		if ( ! empty( $scrapped_data_extracted['error'] ) ) {
@@ -74,7 +84,7 @@ class ScrapTest extends WP_UnitTestCase {
 			'❌The scraped time text does not match the expected value:' . $scrapped_data_extracted['scraped_time_text']
 		);
 
-		return true;
+		return $scrapped_data_extracted;
 	}
 
 	/**
@@ -83,13 +93,11 @@ class ScrapTest extends WP_UnitTestCase {
 	public function test_html_from_cartelera_page_parses_correctly_date_and_time() {
 		echo "\n ======= TEST 2.1 START 🎬 🤯========";
 
-		$completed = $this->scrap_and_test_cartelera_file(
+		$result = $this->scrap_and_test_cartelera_file(
 			'cartelera-single-show-page.html',
 			'Del 24 de abril al 8 de junio de 2025 (Suspende 1, 10 y 15 de mayo)',
 			'Jueves y viernes, 20:00 horas, sábados 19:00 horas y domingos 18:00 horas.'
 		);
-
-		echo true === $completed ? "\n\n✅✅✅ Test passed 1. \n\n" : "\n\n❌❌❌ Test 1 didnt complete. \n $completed \n";
 	}
 
 
@@ -100,12 +108,10 @@ class ScrapTest extends WP_UnitTestCase {
 	public function test_DELICATED_html_from_cartelera_page_parses_correctly_date_and_time() {
 		echo "\n ======= TEST 2.2 START 🎬 🤯========";
 
-		$completed = $this->scrap_and_test_cartelera_file(
+		$result = $this->scrap_and_test_cartelera_file(
 			'cartelera-single-show-page-2.html',
 			'En temporada 2025.',
 			'Jueves 20:00 horas, viernes 19:00 y 21:00 horas, sábado 18:00 y 20:00 horas y domingo 17:00 y 19:00 horas.'
 		);
-
-		echo true === $completed ? "\n\n✅✅✅ Test passed 2. \n\n" : "\n\n❌❌❌ Test 2 didnt complete. \n $completed \n";
 	}
 }

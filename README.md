@@ -2,9 +2,17 @@ TODO
 ===
 - apply 'suspende' text
 - sometiems ticketmaster search returns more than onwe show. Apply extra comparison to find the closest one, and open the link: ie. https://www.ticketmaster.com.mx/search?q=Magic
+Check 'get_ticketmaster_url', there we can move to the first link for the first show, and analyze that page, not the search resultt
 - evaluate case del-2-marzo-2025  (withut the "al")
-- correct this error: 22-junio-2025 parses into two dates: 2025-06-01 12:00 and 2025-06-22 12:00
+- correct this error: 22-junio-2025 parses into two dates:
+(
+    [0] => 2025-06-22
+    [1] => 2025-06-27
+    [2] => 2025-06-01
+)
 - create bash to deploy plugin.
+
+
 
 WHAT IS THIS PROJECT
 ===
@@ -15,6 +23,8 @@ This projects will scrap the list of theater shows in `https://carteleradeteatro
 and compare it with the same shows in `http://ticketmaster.com.mx/`.
 It will ensure that all timetables are the same.
 In case it finds an error, it will display it, or send an email
+
+> **Note:** The e2e PHPUnit test is very useful to see the entire sequence of what the plugin does.
 
 HOW IT WORKS
 ===

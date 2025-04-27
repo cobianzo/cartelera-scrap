@@ -87,7 +87,7 @@ class Settings_Hooks {
 			wp_safe_redirect(
 				add_query_arg(
 					'message', $message,
-					admin_url( 'options-general.php?page=cartelera-scrap' . (isset( $scroll_to ) ? $scroll_to : '' ) )
+					admin_url( 'options-general.php?page=cartelera-scrap' . ( isset( $scroll_to ) ? $scroll_to : '' ) )
 				)
 			);
 			exit;

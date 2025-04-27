@@ -253,12 +253,17 @@ class Simple_Scraper {
 	 * @return array|\WP_Error
 	 */
 	public static function scrap_one_tickermaster_show( string $url ): array|\WP_Error {
-		$html = wp_remote_get( $url );
-		$html = wp_remote_retrieve_body( ( $html && ! is_wp_error( $html ) ) ? $html : '' );
-		if ( is_wp_error( $html ) ) {
-			return new \WP_Error( 'ticketmaster_url_error', 'Error retrieving ticketmaster URL.' );
-		} elseif ( ! $html ) {
-			return new \WP_Error( 'empty_response', 'Empty response from ticketmaster URL.' );
+		if ( ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
+			$html = $url;
+			$url  = 'unknown';
+		} else {
+			$html = wp_remote_get( $url );
+			$html = wp_remote_retrieve_body( ( $html && ! is_wp_error( $html ) ) ? $html : '' );
+			if ( is_wp_error( $html ) ) {
+				return new \WP_Error( 'ticketmaster_url_error', 'Error retrieving ticketmaster URL.' );
+			} elseif ( ! $html ) {
+				return new \WP_Error( 'empty_response', 'Empty response from ticketmaster URL.' );
+			}
 		}
 
 		// Start scrapping the HTML with DOM.

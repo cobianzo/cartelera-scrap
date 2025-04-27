@@ -23,7 +23,7 @@ class TextAnalyzeTest extends WP_UnitTestCase {
 		foreach ( $array_not_valid_sencences as $text_example ) {
 			$sencences = Cartelera_Scrap\Text_Parser::first_acceptance_of_date_text( $text_example );
 			$this->assertIsArray( $sencences, "Failed asserting that the result is an array for text '$text_example'." );
-			$this->assertEmpty( $sencences, "Failed asserting that the the sencene is refused: '$text_example'." );
+			$this->assertEmpty( $sencences, "Failed asserting that the the sencene is refused: '$text_example': " . print_r( $sencences, 1 ) );
 			// self::deb( $sencences );
 			// $this->assertTrue( $accepted, "Failed asserting that the text '$text_example' is accepted." );
 		}

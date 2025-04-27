@@ -109,8 +109,8 @@ class Text_Parser {
 	public static function remove_dates_previous_of_today( array $datetimes ): array {
 
 		return array_filter( $datetimes, function ( $datetime ) {
-			$today_start    = strtotime( 'today 00:01' ); // int
-			$timestamp      = strtotime( $datetime ); // int
+			$today_start = strtotime( 'today 00:01' ); // int
+			$timestamp   = strtotime( $datetime ); // int
 			return $timestamp >= $today_start;
 		} );
 	}
@@ -121,9 +121,8 @@ class Text_Parser {
 
 		return array_filter( $datetimes, function ( $datetime ) use ( $date_limit_timestamp ) {
 
-			$timestamp  = strtotime( $datetime ); // int
+			$timestamp = strtotime( $datetime ); // int
 			return $date_limit_timestamp ? $timestamp <= $date_limit_timestamp : true;
-
 		} );
 	}
 
@@ -171,7 +170,7 @@ class Text_Parser {
 	 * Sanitize a phrase into a simplified slug using WordPress functions.
 	 *
 	 * This function prepares a text to be used as a clean slug:
-	 * - Uses sanitize_title_with_dashes() for basic slug formatting.
+	 * - Uses sanitize_title() for basic slug formatting.
 	 * - Removes unwanted numbers (only years > 2025 or days 1-31 are allowed).
 	 * - Keeps only specific words (del, suspende, al) and Spanish month names.
 	 *
@@ -180,7 +179,7 @@ class Text_Parser {
 	 */
 	public static function sanitize_dates_sentence( string $dates_sentence ): string {
 		// Convert to lowercase
-		$text = sanitize_title_with_dashes( $dates_sentence );
+		$text = sanitize_title( $dates_sentence );
 
 		// Remove numbers not corresponding to year >= 2025 or day 1-31
 		$text = preg_replace_callback( '/\b\d+\b/', function ( $matches ) {
@@ -275,14 +274,16 @@ class Text_Parser {
 
 		// in order to be valid, the sencence must contain:
 		// at least one number between 1 and 31 and one name of month (in spanish)
-		// $sentences = array_filter( $sentences, function ( $sentence ) {
+		$pattern         = '/\b(3[01]|[12][0-9]|[1-9])\b.*\b(' . implode( '|', array_keys( self::months() ) ) . ')\b/i';
+		$valid_sentences = [];
+		foreach ( $sentences as $i => $phrase ) {
+			$is_valid = preg_match( $pattern, $phrase ) && strlen( trim( $phrase ) );
+			if ( $is_valid ) {
+				$valid_sentences[] = trim( $phrase );
+			}
+		}
 
-		// $pattern = '/\b(3[01]|[12][0-9]|[1-9])\b.*\b(' . implode( '|', array_keys( self::months() ) ) . ')\b/i';
-		// return preg_match( $pattern, $sentence );
-
-		// } );
-
-		return $sentences;
+		return $valid_sentences;
 	}
 
 	/**
@@ -553,15 +554,15 @@ class Text_Parser {
 
 			if ( count( $times ) ) {
 				foreach ( $times as $specific_time ) {
-					$date_time                    = $date . ' ' . $specific_time;
-					$date_time                    = date( self::DATE_COMPARE_FORMAT . ' ' . self::TIME_COMPARE_FORMAT, strtotime( $date_time ) );
+					$date_time = $date . ' ' . $specific_time;
+					$date_time = date( self::DATE_COMPARE_FORMAT . ' ' . self::TIME_COMPARE_FORMAT, strtotime( $date_time ) );
 					if ( ! in_array( $date_time, $definitive_dates_and_times, true ) ) {
 						$definitive_dates_and_times[] = $date_time;
 					}
 				}
 			}
 		}
-		sort($definitive_dates_and_times);
+		sort( $definitive_dates_and_times );
 		return $definitive_dates_and_times;
 	}
 }
