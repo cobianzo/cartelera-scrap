@@ -114,13 +114,31 @@ class Text_Parser {
 			return $timestamp >= $today_start;
 		} );
 	}
-	public static function remove_dates_after_limit( array $datetimes ): array {
-		// grab the settings option to limit the analysis of later dates in time.
+
+	/**
+	 * Return the timestamp of the limit of dates to evaluate in both ticketmaster and cartelera.
+	 * Previous dates to this one won't be used for the comparison.
+	 *
+	 * @return integer|null
+	 */
+	public static function get_limit_datetime(): int | null {
 		$days_from_now_limit  = (int) Cartelera_Scrap_Plugin::get_plugin_setting( Settings_Page::$limit_days_forward_compare ) ?? null;
 		$date_limit_timestamp = $days_from_now_limit ? strtotime( "+$days_from_now_limit days" ) : null;
+		return $date_limit_timestamp;
+	}
 
+	/**
+	 * given an array of dates (normally in format YYYY-mm-dd, exclude the ones too far ahead in time,
+	 * beyond the limit of days set by the user in the settings page)
+	 *
+	 * @param array $datetimes
+	 * @return array
+	 */
+	public static function remove_dates_after_limit( array $datetimes ): array {
+
+		$date_limit_timestamp = Text_Parser::get_limit_datetime();
 		return array_filter( $datetimes, function ( $datetime ) use ( $date_limit_timestamp ) {
-
+			// accept any date beofre the limit date set in settings.
 			$timestamp = strtotime( $datetime ); // int
 			return $date_limit_timestamp ? $timestamp <= $date_limit_timestamp : true;
 		} );
@@ -154,9 +172,9 @@ class Text_Parser {
 	 */
 	public static function cleanup_sentences( array $sentences ) {
 		// Sustitución de "hrs" por "horas"
-		$sentences = array_map( function ( $sencence ) {
+		$sentences = array_map( function ( $sentence ) {
 
-			$input_text = str_ireplace( [ 'hrs.', 'hrs', 'Hrs', 'HRS' ], 'horas', $sencence );
+			$input_text = str_ireplace( [ 'hrs.', 'hrs', 'Hrs', 'HRS' ], 'horas', $sentence );
 
 			// Limpiar espacios y comillas
 			$input_text = trim( trim( $input_text ), '"' );
@@ -272,12 +290,16 @@ class Text_Parser {
 		// converts into lower case with dashes 'del-24-abril-al-8-junio-2025'
 		$sentences = array_map( fn( $s ) => self::sanitize_dates_sentence( $s ), $sentences );
 
-		// in order to be valid, the sencence must contain:
+		// in order to be valid, the sentence must contain:
 		// at least one number between 1 and 31 and one name of month (in spanish)
 		$pattern         = '/\b(3[01]|[12][0-9]|[1-9])\b.*\b(' . implode( '|', array_keys( self::months() ) ) . ')\b/i';
 		$valid_sentences = [];
 		foreach ( $sentences as $i => $phrase ) {
-			$is_valid = preg_match( $pattern, $phrase ) && strlen( trim( $phrase ) );
+			if ( str_contains( $phrase, 'temporada' ) && str_contains( $phrase, '20' ) ) {
+				$is_valid = true;
+			} else {
+				$is_valid = preg_match( $pattern, $phrase ) && strlen( trim( $phrase ) );
+			}
 			if ( $is_valid ) {
 				$valid_sentences[] = trim( $phrase );
 			}
@@ -370,6 +392,12 @@ class Text_Parser {
 		return $valid_weekdays_times;
 	}
 
+	/**
+	 * Given sentences like ['saturday-19:00', 'sunday-19:00'] extracts [ 'saturday', 'sunday' ]
+	 *
+	 * @param array $sentences ie ['saturday-19:00', 'sunday-19:00']
+	 * @return array all days of the week metioned in the array of sentences in english and lowercase
+	 */
 	public static function get_all_days_of_week_in_sentences( array $sentences ): array {
 		$weekdays = [];
 		foreach ( $sentences as $sentence ) {
@@ -384,18 +412,20 @@ class Text_Parser {
 	}
 
 	/**
-	 * Intro text: del-24-abril-al-8-junio-2025 (this format is 'range'),
-	 * 4-11-18-mayo-2025 (format `singledays`)
+	 * Converts texto into array of dates [ yyyy-mm-dd, ... ]
 	 *
-	 * @param string $sanitized_date_sentence
+	 * @param string $sanitized_date_sentence:
+	 * 								Intro text: del-24-abril-al-8-junio-2025 (this format is 'range'),
+	 * 								4-11-18-mayo-2025 (format `singledays`)
 	 * @return array of dates [  '2025-05-17', '2025-05-18'  ... ]
 	 */
-	public static function identify_dates_sencence_daterange_or_singledays( string $sanitized_date_sentence ): array {
+	public static function identify_dates_sentence_daterange_or_singledays( string $sanitized_date_sentence ): array {
 
-		if ( strpos( $sanitized_date_sentence, 'del-' ) === 0 && strpos( $sanitized_date_sentence, '-al-' ) !== false ) {
+		if ( strpos( $sanitized_date_sentence, 'del-' ) === 0 ) { // && strpos( $sanitized_date_sentence, '-al-' ) !== false ) {
 			$type = 'range';
 		} elseif ( strpos( $sanitized_date_sentence, 'temporada' ) === 0 && strpos( $sanitized_date_sentence, '20' ) !== false ) {
 			$type = 'temporada';
+
 		} else {
 			$type = 'singledays';
 		}
@@ -432,6 +462,16 @@ class Text_Parser {
 				}
 			}
 		} elseif ( 'range' === $type ) {
+			/**
+			 * Cases of range:
+			 * del-1-al-30-marzo-2025
+			 * del-1-abril-al-30-marzo-2025
+			 * del-1-abril-2025-al-30-marzo-2025
+			 * del-1-abril
+			 * del-1-abril-2025
+			 */
+
+
 			// Extract months mentioned in the sentence
 			preg_match_all( '/\b(' . implode( '|', array_keys( self::months() ) ) . ')\b/i', $sanitized_date_sentence, $matches );
 			$months  = array_unique( $matches[1] );
@@ -439,9 +479,14 @@ class Text_Parser {
 			// if ! count($months) || count($months) > 2  ==> error
 
 
+			// the text `del-1-al-30-marzo-2025` (contains the name of a month 1 time)
 			if ( 1 === count( $months ) ) {
 				$common_month = $months[0];
-				$from_to      = explode( '-al-', $sanitized_date_sentence );
+				if ( str_contains( $sanitized_date_sentence, '-al-' ) ) {
+					$from_to = explode( '-al-', $sanitized_date_sentence );
+				} else {
+					$from_to = [ $sanitized_date_sentence, '31-diciembre-' . date( 'Y' ) ];
+				}
 				// Filter parts: keep only numbers or month names
 				foreach ( $from_to as $i => $part ) {
 					$words       = explode( '-', $part );
@@ -454,7 +499,16 @@ class Text_Parser {
 				}
 
 				// append month to 'from' part, translated to english.
-				$from_to[0][] = self::months()[ $common_month ];
+				$contains_month = false;
+				foreach ( self::months() as $month_english ) {
+					if ( in_array( $month_english, $from_to[0] ) ) {
+						$contains_month = true;
+						break;
+					}
+				}
+				if ( ! $contains_month ) {
+					$from_to[0][] = self::months()[ $common_month ];
+				}
 
 				// append current year to each part if not included.
 				$from_to = array_map( function ( $words ) use ( $current_year ) {
@@ -464,8 +518,8 @@ class Text_Parser {
 					}
 					return implode( '-', $words );  // convert array into dashed sentence string
 				}, $from_to );
-
 			}
+			// the text `del-1-marzo-al-30-marzo-2025` (contains the name of a month 2 times)
 			if ( 2 === count( $months ) ) {
 				$first_month    = $months[0];
 				$split_position = strpos( $sanitized_date_sentence, $first_month );
@@ -508,7 +562,7 @@ class Text_Parser {
 				}
 			}
 		} elseif ( 'temporada' === $type ) {
-				preg_match( '/\b20([2-9]\d|[3-9]\d{2}|[1-9]\d{3})\b/', $sanitized_date_sentence, $matches );
+			preg_match( '/\b20([2-9]\d|[3-9]\d{2}|[1-9]\d{3})\b/', $sanitized_date_sentence, $matches );
 			if ( ! empty( $matches ) ) {
 				$year       = (int) $matches[0];
 				$start_date = strtotime( "1 January $year" );

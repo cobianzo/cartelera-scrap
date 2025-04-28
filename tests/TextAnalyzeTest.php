@@ -11,20 +11,20 @@ class TextAnalyzeTest extends WP_UnitTestCase {
 		echo "🍆😍🍆😍🍆😍🍆😍🍆😍🍆😍🍆😍🍆😍🍆😍🍆😍🍆😍\n";
 	}
 
-	public function use_first_acceptance_of_date_text( array $array_of_valid_sencences, array $array_not_valid_sencences ) {
-		foreach ( $array_of_valid_sencences as $text_example ) {
-			$sencences = Cartelera_Scrap\Text_Parser::first_acceptance_of_date_text( $text_example );
-			$this->assertIsArray( $sencences, "Failed asserting that the result is an array for text '$text_example'." );
-			$this->assertNotEmpty( $sencences, "Failed asserting that the sentence is accepted as valid '$text_example'." );
-			// self::deb( $sencences );
+	public function use_first_acceptance_of_date_text( array $array_of_valid_sentences, array $array_not_valid_sentences ) {
+		foreach ( $array_of_valid_sentences as $text_example ) {
+			$sentences = Cartelera_Scrap\Text_Parser::first_acceptance_of_date_text( $text_example );
+			$this->assertIsArray( $sentences, "Failed asserting that the result is an array for text '$text_example'." );
+			$this->assertNotEmpty( $sentences, "Failed asserting that the sentence is accepted as valid '$text_example'." );
+			// self::deb( $sentences );
 			// $this->assertTrue( $accepted, "Failed asserting that the text '$text_example' is accepted." );
 		}
 
-		foreach ( $array_not_valid_sencences as $text_example ) {
-			$sencences = Cartelera_Scrap\Text_Parser::first_acceptance_of_date_text( $text_example );
-			$this->assertIsArray( $sencences, "Failed asserting that the result is an array for text '$text_example'." );
-			$this->assertEmpty( $sencences, "Failed asserting that the the sencene is refused: '$text_example': " . print_r( $sencences, 1 ) );
-			// self::deb( $sencences );
+		foreach ( $array_not_valid_sentences as $text_example ) {
+			$sentences = Cartelera_Scrap\Text_Parser::first_acceptance_of_date_text( $text_example );
+			$this->assertIsArray( $sentences, "Failed asserting that the result is an array for text '$text_example'." );
+			$this->assertEmpty( $sentences, "Failed asserting that the the sencene is refused: '$text_example': " . print_r( $sentences, 1 ) );
+			// self::deb( $sentences );
 			// $this->assertTrue( $accepted, "Failed asserting that the text '$text_example' is accepted." );
 		}
 	}
@@ -35,7 +35,7 @@ class TextAnalyzeTest extends WP_UnitTestCase {
 	public function test_indentify_valid_text_patterns_pattern_1() {
 		echo "\n ======= TEST 3.1 START 🎬 🤯========";
 
-		// type 1 of sencences
+		// type 1 of sentences
 		$text_examples           = [
 			'2 de mayo de 2025',
 			'2 y 9 de mayo de 2025',
@@ -62,7 +62,7 @@ class TextAnalyzeTest extends WP_UnitTestCase {
 	public function test_indentify_valid_text_patterns_pattern_2() {
 		echo "\n ======= TEST 3.2 START 🎬 🤯========";
 
-		// type 1 of sencences
+		// type 1 of sentences
 		$text_examples           = [
 			'Del 24 de abril al 8 de junio de 2025',
 			'Del 24 de abril al 8 de junio de 2025 (Suspende 1, 10 y 15 de mayo)',

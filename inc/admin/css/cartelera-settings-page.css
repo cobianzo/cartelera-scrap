@@ -2,7 +2,7 @@ html {
   scroll-behavior: smooth;
 }
 
-.muted {
+.muted, .muted.color-success  {
   color: #958787;
 }
 

@@ -4,6 +4,7 @@ namespace Cartelera_Scrap\Admin;
 
 use Cartelera_Scrap\Scrap_Output;
 use Cartelera_Scrap\Scrap_Actions;
+use Cartelera_Scrap\Text_Parser;
 
 /**
  * Class Settings_Page
@@ -178,19 +179,26 @@ class Settings_Page {
 
 		$numberic_fields = [
 			self::$number_processed_each_time => __( 'Number of shows to process each time', $this->plugin_name ),
-			self::$limit_days_forward_compare => __( 'After these amounts of days from today, stop, comparing cartelera and ticketmaster dates.', $this->plugin_name ),
+			self::$limit_days_forward_compare => [
+				__( 'After these amounts of days from today, stop, comparing cartelera and ticketmaster dates.', $this->plugin_name ),
+				sprintf( __( 'Currently set to %s.', $this->plugin_name ), date( 'Y-m-d H:i', Text_Parser::get_limit_datetime() ) ),
+			],
 		];
-		foreach ( $numberic_fields as $field_name => $field_label ) {
+		foreach ( $numberic_fields as $field_name => $field_label_and_desc ) {
 			add_settings_field(
 				$field_name, // Field ID.
-				$field_label, // Field title.
-				function () use ( $field_name ): void {
+				is_array( $field_label_and_desc ) ?  $field_label_and_desc[0] : $field_label_and_desc, // Field title.
+				function () use ( $field_name, $field_label_and_desc ): void {
 					$options      = get_option( $this->all_plugin_options_name ); // Retrieve the saved options.
 					$option_value = $options[ $field_name ] ?? '';
 					?>
 				<input type="number" step="1" min="1" placeholder="type a number"
 					name="<?php echo esc_attr( $this->all_plugin_options_name ); ?>[<?php echo esc_attr( $field_name ); ?>]"
 					value="<?php echo esc_attr( $option_value ); ?>">
+					<p class="description">
+						<?php echo esc_html( ( is_array( $field_label_and_desc ) && $field_label_and_desc[1] ) ? $field_label_and_desc[1] :
+							 __( 'Enter a numeric value for this setting.', $this->plugin_name ) ); ?>
+					</p>
 					<?php
 				},
 				$this->plugin_name, // Page slug.

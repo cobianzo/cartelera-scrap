@@ -318,13 +318,12 @@ class Scrap_Output {
 					$datetimes[] = $datetime;
 
 					// check if date is later than our limit for muted output, and show it muted
-					$days_from_now_limit  = (int) Cartelera_Scrap_Plugin::get_plugin_setting( Settings_Page::$limit_days_forward_compare ) ?? null;
-					$date_timestamp_limit = $days_from_now_limit ? strtotime( "+$days_from_now_limit days" ) : null;
-					$not_analyzed         = \strtotime( $datetime ) > $date_timestamp_limit;
+					$date_timestamp_limit = Text_Parser::get_limit_datetime();
+					$not_analyzed         = $date_timestamp_limit ? \strtotime( $datetime ) > $date_timestamp_limit : false;
 					echo '<li
 						data-date="' . esc_attr( \strtotime( $datetime ) ) . '" class="'
 						. ( $not_analyzed ? esc_attr( 'muted' ) : '' ) . '">'
-						. esc_html( $datetime )
+						. esc_html( $datetime ) . sprintf( ' <small class="muted">%s</small>', strtolower( date( 'D', strtotime( $datetime ) ) ) )
 						. '</li>';
 				}
 				?>
@@ -346,7 +345,7 @@ class Scrap_Output {
 		// - confirm that the text is a valid dates information,(first_acceptance_of_date_text)
 		// - extracting more than one sentence needed, and sanitize a little
 		// - converts that sanitized text into the dates that it represents
-		// - (identify_dates_sencence_daterange_or_singledays)
+		// - (calling main function identify _ dates _ sentence _ daterange _ or _ singledays)
 		$sentences = [];
 		if ( ! empty( $result['cartelera']['scraped_dates_text'] ) ) {
 			$dates_text = $result['cartelera']['scraped_dates_text'];
@@ -401,7 +400,7 @@ class Scrap_Output {
 		foreach ( $sentences_dates as $dates_in_text ) {
 			$all_dates = array_merge(
 				$all_dates,
-				Text_Parser::identify_dates_sencence_daterange_or_singledays( $dates_in_text )
+				Text_Parser::identify_dates_sentence_daterange_or_singledays( $dates_in_text )
 			);
 		}
 		$datetimes_cartelera = Text_Parser::definitive_dates_and_times( $all_dates, $sentences_times );
@@ -410,12 +409,12 @@ class Scrap_Output {
 		echo '<ul>';
 		foreach ( $datetimes_cartelera as $show_date ) {
 			// check if date is later than our limit
-			$days_from_now_limit  = (int) Cartelera_Scrap_Plugin::get_plugin_setting( Settings_Page::$limit_days_forward_compare ) ?? null;
-			$date_timestamp_limit = $days_from_now_limit ? strtotime( "+$days_from_now_limit days" ) : null;
-			$not_analyzed         = \strtotime( $show_date ) >= $date_timestamp_limit;
+
+			$date_timestamp_limit = Text_Parser::get_limit_datetime();
+			$not_analyzed         = $date_timestamp_limit ? \strtotime( $show_date ) >= $date_timestamp_limit : false;
 			echo '<li data-date="' . esc_attr( \strtotime( $show_date ) ) . '" class="'
 				. ( $not_analyzed ? esc_attr( 'muted' ) : 'normal' ) . '">'
-				. esc_html( $show_date )
+				. esc_html( $show_date ) . sprintf( ' <small class="muted">%s</small>', strtolower( date( 'D', strtotime( $show_date ) ) ) )
 				. '</li>';
 		}
 		echo '</ul>';

@@ -6,6 +6,10 @@ use Cartelera_Scrap\Scrap_Output;
 use Cartelera_Scrap\Text_Parser;
 
 /**
+ * usage
+ * npm run test:php tests/E2ETest.php
+ * or
+ * npm run test:php:single
  */
 class E2ETest extends WP_UnitTestCase {
 
@@ -104,10 +108,10 @@ class E2ETest extends WP_UnitTestCase {
 		echo "\n ======= Step6. Get the simplified senteces for day of the week and time, from cartelera🎬 🤯========";
 		// TODO: test dates in cartelera with
 		// converting 4-11-18-mayo-2025 into array of dates [2025-5-11, ...]
-		$dateYYYYMMDD = Text_Parser::identify_dates_sencence_daterange_or_singledays( $first_accpted_sentence_date );
+		$dateYYYYMMDD = Text_Parser::identify_dates_sentence_daterange_or_singledays( $first_accpted_sentence_date );
 		print_r( $dateYYYYMMDD );
-		$this->assertCount( 1, $dateYYYYMMDD, '❌ - Error. The count of the result of identify_dates_sencence_daterange_or_singledays is not 1, but ' . count( $dateYYYYMMDD ) );
-		$this->assertEquals( $dateYYYYMMDD[0], $first_extracted_date, '❌ - Error. The extracted date is not the expected. From ' . $first_accpted_sentence_date . ' we got ' . print_r( $dateYYYYMMDD, 1 ) . PHP_EOL . 'You need to refine "identify_dates_sencence_daterange_or_singledays" ' );
+		$this->assertCount( 1, $dateYYYYMMDD, '❌ - Error. The count of the result of identify_dates_sentence_daterange_or_singledays is not 1, but ' . count( $dateYYYYMMDD ) );
+		$this->assertEquals( $dateYYYYMMDD[0], $first_extracted_date, '❌ - Error. The extracted date is not the expected. From ' . $first_accpted_sentence_date . ' we got ' . print_r( $dateYYYYMMDD, 1 ) . PHP_EOL . 'You need to refine "identify_dates_sentence_daterange_or_singledays" ' );
 
 
 		// Test the creation of the definitive datetimes of cartelera

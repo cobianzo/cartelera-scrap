@@ -1,4 +1,11 @@
 <?php
+/**
+ * Class responsible for handling settings hooks for the actions in
+ * the settings page for the plugin: wp-admin/options-general.php?page=cartelera-scrap
+ * This means, when you click on a button in that page, it takes you here and do stuff.
+ *
+ * @package CarteleraScrap\Admin
+ */
 
 namespace Cartelera_Scrap\Admin;
 
