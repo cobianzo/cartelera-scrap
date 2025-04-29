@@ -122,7 +122,7 @@ class Text_Parser {
 	 * @return integer|null
 	 */
 	public static function get_limit_datetime(): int | null {
-		$days_from_now_limit  = (int) Cartelera_Scrap_Plugin::get_plugin_setting( Settings_Page::$limit_days_forward_compare ) ?? null;
+		$days_from_now_limit  = (int) Settings_Page::get_plugin_setting( Settings_Page::$limit_days_forward_compare ) ?? null;
 		$date_limit_timestamp = $days_from_now_limit ? strtotime( "+$days_from_now_limit days" ) : null;
 		return $date_limit_timestamp;
 	}

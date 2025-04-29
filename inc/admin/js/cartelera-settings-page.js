@@ -26,6 +26,10 @@ const handleClickFilterButton = function(e) {
 
 
   const filterButton = document.getElementById('filter-by-yes-tickermaster');
+  if (!filterButton) {
+    console.error('didnt find #filter-by-yes-tickermaster', filterButton);
+    return;
+  }
   filterButton.classList.toggle('active');
   const filterActive = filterButton.classList.contains('active');
   activateFilter(filterActive);

@@ -11,10 +11,11 @@ namespace Cartelera_Scrap\Admin;
 
 use Cartelera_Scrap\Scrap_Actions;
 use Cartelera_Scrap\Cartelera_Scrap_Plugin;
+use Cartelera_Scrap\Cron_Job;
 
 class Settings_Hooks {
 
-	const CRONJOB_NAME = 'cartelera_process_next_show';
+	const ONETIMEOFF_CRONJOB_NAME = 'cartelera-scrap_process_next_onetimeoff';
 
 	/**
 	 * Initializes the class by hooking into WordPress actions.
@@ -23,7 +24,10 @@ class Settings_Hooks {
 		// Hook the handle_scrap_action method to the 'admin_init' action.
 		add_action( 'admin_init', [ __CLASS__, 'handle_scrap_action' ] );
 		add_action( 'admin_init', [ __CLASS__, 'handle_export_action' ] );
-		add_action( self::CRONJOB_NAME, [ __CLASS__, 'cartelera_process_one_batch' ] );
+		add_action( self::ONETIMEOFF_CRONJOB_NAME, [ 'Cartelera_Scrap\Scrap_Actions', 'cartelera_process_one_batch' ] );
+
+		add_action('update_option_' . Settings_Page::$all_main_options_name, [ __CLASS__, 'start_or_stop_cron_job' ], 10, 2 );
+
 	}
 
 	/**
@@ -31,6 +35,7 @@ class Settings_Hooks {
 	 */
 	public static function handle_scrap_action(): void {
 
+		// Actions sent when clicking on a button in the Settings page.
 		$valid_actions = [ 'action_start_scrapping_shows', 'action_process_next_scheduled_show', 'action_scrap_single_show' ];
 		if ( ! isset( $_POST['action'] ) ) {
 			return;
@@ -58,7 +63,7 @@ class Settings_Hooks {
 
 			if ( 'action_start_scrapping_shows' === $action ) {
 
-				// Perform the scrap action -> calls the cron job to start processing the shows.
+				// Perform the scrap action -> calls the recurring cron job to start processing the shows.
 				Scrap_Actions::perform_scrap();
 
 				// Redirect back to the admin page after the action is executed.
@@ -67,7 +72,7 @@ class Settings_Hooks {
 
 				update_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count', 0 ); // init the count of the shows being processed in this batch.
 				Scrap_Actions::cartelera_process_one_batch();
-				$shows_per_batch = Cartelera_Scrap_Plugin::get_plugin_setting( Settings_Page::$number_processed_each_time ) ?? 10;
+				$shows_per_batch = Settings_Page::get_plugin_setting( Settings_Page::$number_processed_each_time ) ?? 10;
 				$message         = sprintf( __( 'Processed %s theatre shows.', 'cartelera-scrap' ), $shows_per_batch );
 
 			} elseif ( 'action_scrap_single_show' === $action ) {
@@ -179,6 +184,40 @@ class Settings_Hooks {
 			readfile( $export_filepath );
 			exit;
 
+		}
+	}
+
+	/**
+	 * Executed when any of the registered fields changes value.
+	 *
+	 * @param array $old_value
+	 * @param array $new_value
+	 * @return void
+	 */
+	public static function start_or_stop_cron_job( array $old_value, array $new_value ) {
+
+		// case 1. to schedule or stop the cron job for tonite
+		$frequency = $new_value[Settings_Page::$option_cron_frequency];
+		if ( empty( $frequency ) ) {
+			Cron_Job::stop_schedule_cron_job();
+		} else {
+			Cron_Job::start_schedule_cron_job_at_midnight();
+		}
+
+		// case 2. start the cron job right now. (clicked button 'Save and execute now')
+		$trigger_cron = $new_value[ Settings_Page::$option_cron_save_and_run ] ?? null;
+		if ( ! is_null( $trigger_cron )
+			&& ( empty( $old_value[ Settings_Page::$option_cron_save_and_run ] ) || $trigger_cron !== $old_value[ Settings_Page::$option_cron_save_and_run ] )
+		) {
+			do_action( Cron_Job::CRONJOB_NAME );
+
+			wp_safe_redirect(
+				add_query_arg(
+					'message', 'Cron job executed now',
+					admin_url( 'options-general.php?page=cartelera-scrap' )
+				)
+			);
+			exit;
 		}
 	}
 }

@@ -198,11 +198,11 @@ class Scrap_Actions {
 		self::delete_show_results(); // clean the database and we will start from scratch.
 		self::update_shows_queue_option( $all_shows ); // set up the list of shows that we will process.
 		update_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count', 0 ); // init the count of the shows being processed in this batch.
-		if ( wp_next_scheduled( Settings_Hooks::CRONJOB_NAME ) ) {
-			wp_clear_scheduled_hook( Settings_Hooks::CRONJOB_NAME );
+		if ( wp_next_scheduled( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ) ) {
+			wp_clear_scheduled_hook( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME );
 		}
-		if ( ! wp_next_scheduled( Settings_Hooks::CRONJOB_NAME ) ) {
-			wp_schedule_single_event( time() + 30, Settings_Hooks::CRONJOB_NAME ); // exectute in a few secs.
+		if ( ! wp_next_scheduled( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ) ) {
+			wp_schedule_single_event( time() + 30, Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ); // exectute in a few secs.
 		}
 	}
 
@@ -217,7 +217,7 @@ class Scrap_Actions {
 	public static function cartelera_process_one_batch(): void {
 
 		// processing $batch_count/$shows_per_batch in this cron job.
-		$shows_per_batch = (int) Cartelera_Scrap_Plugin::get_plugin_setting( Settings_Page::$number_processed_each_time ) ?? 10;
+		$shows_per_batch = (int) Settings_Page::get_plugin_setting( Settings_Page::$number_processed_each_time ) ?? 10;
 		$batch_count     = get_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count' );
 		$batch_count     = ( (int) $batch_count ) + 1;
 		if ( $batch_count > $shows_per_batch ) {
@@ -234,8 +234,8 @@ class Scrap_Actions {
 		*  */
 		update_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count', $batch_count );
 		if ( $batch_count === $shows_per_batch ) {
-			if ( ! wp_next_scheduled( Settings_Hooks::CRONJOB_NAME ) ) {
-				wp_schedule_single_event( time() + 5, Settings_Hooks::CRONJOB_NAME ); // ejecuta en 5s.
+			if ( ! wp_next_scheduled( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ) ) {
+				wp_schedule_single_event( time() + 5, Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ); // ejecuta en 5s.
 			}
 		} elseif ( $batch_count < $shows_per_batch ) {
 			self::cartelera_process_one_batch();
@@ -243,6 +243,7 @@ class Scrap_Actions {
 	}
 
 	/**
+	 * Grab first show in the queue and processes it:
 	 *
 	 *
 	 * @return void

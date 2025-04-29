@@ -2,6 +2,7 @@
 
 namespace Cartelera_Scrap\Admin;
 
+use Cartelera_Scrap\Cron_Job;
 use Cartelera_Scrap\Scrap_Output;
 use Cartelera_Scrap\Scrap_Actions;
 use Cartelera_Scrap\Text_Parser;
@@ -21,12 +22,15 @@ class Settings_Page {
 
 	// Plugin name identifier.
 	private string $plugin_name;
+	private string $textdomain;
 
 	// Plugin version identifier.
 	private string $version;
 
+	private string $pageid;
+
 	// Name of the options saved in the database.
-	public string $all_plugin_options_name;
+	public static string $all_main_options_name = 'cartelera-scrap_main_options';
 
 	// Key for scrapping cartelera (checked).
 	public static string $option_cartelera_url = 'cartelera_obras_page';
@@ -40,6 +44,12 @@ class Settings_Page {
 	// stop comparing dates after these amount of days.
 	public static string $limit_days_forward_compare = 'limit_days_forward_compare';
 
+	// Cron job fields
+	public static string $option_cron_frequency = 'cron_frequency';
+
+	// Submit button that when we click, we don't only save but run the cron job
+	public static string $option_cron_save_and_run = 'cron_save_and_run';
+
 	/**
 	 * Constructor for the Settings_Page class.
 	 *
@@ -47,9 +57,11 @@ class Settings_Page {
 	 * @param string $version The version of the plugin.
 	 */
 	public function __construct( string $plugin_name, string $version ) {
-		$this->plugin_name             = $plugin_name;
-		$this->version                 = $version;
-		$this->all_plugin_options_name = $plugin_name . '_options'; // Save the options serialized.
+		$this->plugin_name           = $plugin_name;
+		$this->textdomain            = $plugin_name;
+		$this->version               = $version;
+		$this->pageid                = $plugin_name . '_page';
+
 
 		// Hook to add the settings page to the admin menu.
 		add_action( 'admin_menu', [ $this, 'add_admin_menu' ] );
@@ -62,8 +74,18 @@ class Settings_Page {
 	}
 
 	/**
+	 * Helper
+	 *
+	 * @param string $option_name
+	 * @return string
+	 */
+	public static function get_plugin_setting( string $option_name ): string {
+		$options = get_option( Settings_Page::$all_main_options_name );
+		return $options[ $option_name ] ?? '';
+	}
+
+	/**
 	 * Enqueue styles and scripts for the settings page.
-	 * NOT IN USE YET: todelete.
 	 */
 	public function enqueue_scripts_styles(): void {
 		wp_enqueue_style(
@@ -92,25 +114,42 @@ class Settings_Page {
 			'Cartelera Scrap', // Menu title.
 			'manage_options', // Capability required to access the page.
 			$this->plugin_name, // Menu slug.
-			[ $this, 'options_page' ] // Callback function to render the page.
+			[ $this, 'render_options_page' ] // Callback function to render the page.
 		);
 	}
 
 	/**
 	 * Render the settings page.
 	 */
-	public function options_page(): void {
+	public function render_options_page(): void {
 		?>
+		<a id="top"></a>
+		<a href="#top" class="scroll-to-top">⬆</a>
 		<div class="wrap">
 			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1> <!-- Display the page title. -->
-			<form action="options.php" method="post"> <!-- Form to save settings. -->
-				<?php
-				settings_fields( $this->all_plugin_options_name ); // Output nonce, action, and option group.
-				do_settings_sections( $this->plugin_name ); // Output settings sections and fields.
-				submit_button(); // Output the submit button.
-				?>
-			</form>
 
+
+				<form action="options.php" method="post"> <!-- Form to save settings. -->
+					<?php
+					// Output nonce, action, and option group.
+					settings_fields( self::$all_main_options_name );
+					?>
+
+					<div class="cartelera-scrap-settings-columns-wrapper">
+						<div class="cartelera-scrap-settings-column cartelera-scrap-settings-column__left">
+						<?php
+						// section left columns and right column
+						do_settings_sections( $this->pageid );
+						?>
+						</div>
+					</div>
+
+					<?php
+					// Save button
+					submit_button( 'Save cartelera options' ); // Output the submit button.
+					?>
+
+				</form>
 			<!-- Button to export -->
 			<?php
 			$count_results = count( Scrap_Actions::get_show_results() );
@@ -131,9 +170,10 @@ class Settings_Page {
 	 */
 	public function settings_init(): void {
 		// Register the settings option in the database.
+		// Settings for section
 		register_setting(
-			$this->all_plugin_options_name,
-			$this->all_plugin_options_name,
+			self::$all_main_options_name,
+			self::$all_main_options_name,
 			[
 				'sanitize_callback' => function ( array $options ) {
 					// Sanitize the options before saving them. $options is an associative array ( optionname=>value).
@@ -147,66 +187,161 @@ class Settings_Page {
 			]
 		);
 
-		// Add a settings section to the settings page.
+
+
+
+		// Section:
+		// Left column section: urls, number process per batch.
 		add_settings_section(
-			$this->plugin_name . '_fields__section', // Section ID.
-			__( 'Settings', $this->plugin_name ), // Section title.
+			$this->plugin_name . '_fields__section_leftcolumn', // Section ID.
+			__( 'Settings', $this->textdomain ), // Section title.
 			function (): void {
-				echo '<p>' . __( 'Configure the settings for Cartelera Scrap.', $this->plugin_name ) . '</p>'; // Section description.
+				echo '<p>' . __( 'Configure the settings for Cartelera Scrap.', $this->textdomain ) . '</p>'; // Section description.
 			},
-			$this->plugin_name // Page slug.
+			$this->pageid // Page slug.
+		);
+		// Right column section: cron job related fields
+		add_settings_section(
+			$this->plugin_name . '_fields__section_rightcolumn', // Section ID.
+			 __( 'Cron Job settings', $this->textdomain ), // Section title.
+			function (): void {
+				echo Cron_Job::get_next_cronjob_execution_time();
+			},
+			$this->pageid // Page slug.
 		);
 
-		foreach ( [ self::$option_cartelera_url, self::$option_ticketmaster_url ] as $option_name ) {
+		// Register fields Left column
+		// ===============================
 
-			// Add a settings field for the token key.
-			add_settings_field(
-				$option_name, // Field ID.
-				ucwords( str_replace( '_', ' ', $option_name ) ), // Field title.
-				function () use ( $option_name ): void {
-					$options      = get_option( $this->all_plugin_options_name ); // Retrieve the saved options.
-					$option_value = $options[ $option_name ] ?? '';
-					?>
-				<input type="text" class="regular-text"
-					name="<?php echo esc_attr( $this->all_plugin_options_name ); ?>[<?php echo esc_attr( $option_name ); ?>]"
-					value="<?php echo esc_attr( $option_value ); ?>">
-					<?php
-				},
-				$this->plugin_name, // Page slug.
-				$this->plugin_name . '_fields__section' // Section ID.
-			);
-		} // end for both urls fields
+		// Add a settings fields for the urls
+		// cartelera-scrap_main_options[cartelera_obras_page]
+		// cartelera-scrap_main_options[ticketmaster_search_page]
+		// ...
 
-		$numberic_fields = [
-			self::$number_processed_each_time => __( 'Number of shows to process each time', $this->plugin_name ),
-			self::$limit_days_forward_compare => [
-				__( 'After these amounts of days from today, stop, comparing cartelera and ticketmaster dates.', $this->plugin_name ),
-				sprintf( __( 'Currently set to %s.', $this->plugin_name ), date( 'Y-m-d H:i', Text_Parser::get_limit_datetime() ) ),
-			],
-		];
-		foreach ( $numberic_fields as $field_name => $field_label_and_desc ) {
-			add_settings_field(
-				$field_name, // Field ID.
-				is_array( $field_label_and_desc ) ?  $field_label_and_desc[0] : $field_label_and_desc, // Field title.
-				function () use ( $field_name, $field_label_and_desc ): void {
-					$options      = get_option( $this->all_plugin_options_name ); // Retrieve the saved options.
-					$option_value = $options[ $field_name ] ?? '';
-					?>
-				<input type="number" step="1" min="1" placeholder="type a number"
-					name="<?php echo esc_attr( $this->all_plugin_options_name ); ?>[<?php echo esc_attr( $field_name ); ?>]"
-					value="<?php echo esc_attr( $option_value ); ?>">
-					<p class="description">
-						<?php echo esc_html( ( is_array( $field_label_and_desc ) && $field_label_and_desc[1] ) ? $field_label_and_desc[1] :
-							 __( 'Enter a numeric value for this setting.', $this->plugin_name ) ); ?>
-					</p>
-					<?php
-				},
-				$this->plugin_name, // Page slug.
-				$this->plugin_name . '_fields__section' // Section ID.
-			);
-		}
+		$this->register_input_field( self::$option_cartelera_url, $this->plugin_name . '_fields__section_leftcolumn' );
+		$this->register_input_field( self::$option_ticketmaster_url, $this->plugin_name . '_fields__section_leftcolumn' );
+
+		$this->register_input_field( self::$number_processed_each_time, $this->plugin_name . '_fields__section_leftcolumn', [
+			'type'  => 'number',
+			'label' => __( 'Number of shows to process each time', $this->textdomain ),
+		] );
+		$this->register_input_field( self::$limit_days_forward_compare, $this->plugin_name . '_fields__section_leftcolumn', [
+			'type'  => 'number',
+			'label'       => __( 'After these amounts of days from today, stop, comparing cartelera and ticketmaster dates.', $this->textdomain ),
+			'description' => sprintf( __( 'Currently set to %s.', $this->textdomain ), date( 'Y-m-d H:i', Text_Parser::get_limit_datetime() ) ),
+		] );
+
+		// Register fields Right column
+		// ===============================
+		// ...
+		$this->register_dropdown_field(
+			self::$option_cron_frequency,
+			$this->plugin_name . '_fields__section_rightcolumn',
+			[ '' => 'Deactivate current cron', 'daily' => 'Daily', 'weekly' => 'Weekly', 'twicedaily' => 'Two times per day' ],
+			[
+				'append' =>  '
+
+				'
+			] );
+
+		add_settings_field(
+			self::$option_cron_save_and_run,
+			'',
+			function() {
+				$new_value = (int) self::get_plugin_setting( self::$option_cron_save_and_run ) ? 0 : 1;
+				echo '<button type="submit" name="'
+				. esc_attr( self::$all_main_options_name ) . '[' . esc_attr( self::$option_cron_save_and_run ) . ']"
+				value="' . esc_attr( $new_value ) . '" class="button button-secondary">Save and exectute now</button>
+				'; },
+			$this->pageid,
+			$this->plugin_name . '_fields__section_rightcolumn'
+		);
+
 	}
 
+	/**
+	 * helper
+	 *
+	 * @param string $field_name
+	 * @param string $section_id
+	 * @param array $more_parems
+	 * @return void
+	 */
+	public function register_input_field( string $field_name, string $section_id, $more_parems = [] ) {
+		$more_parems = array_merge( [
+			'label'       => ucwords( str_replace( '_', ' ', $field_name ) ), // Field title.
+			'description' => __( 'Enter a numeric value for this setting.', $this->textdomain ),
+			'type'        => 'text',
+		], $more_parems );
+
+		add_settings_field(
+			$field_name, // Field ID.
+			$more_parems['label'],
+			function () use ( $field_name, $more_parems ): void {
+				$options      = get_option( self::$all_main_options_name ); // Retrieve the saved options.
+				$option_value = $options[ $field_name ] ?? '';
+				?>
+			<input <?php if ( "number" === $more_parems['type'] ) {
+					echo 'type="number" step="1" min="1" placeholder="type a number"';
+				} else {
+					echo 'type="text" class="regular-text"';
+				}
+				?> name="<?php echo esc_attr( self::$all_main_options_name ); ?>[<?php echo esc_attr( $field_name ); ?>]"
+				value="<?php echo esc_attr( $option_value ); ?>">
+				<p class="description">
+					<?php echo esc_html( $more_parems['description'] ); ?>
+				</p>
+				<?php
+			},
+			$this->pageid, // Page slug.
+			$section_id,  // Section ID.
+		);
+
+	}
+
+	/**
+	 * Render a dropdown field for the settings page.
+	 *
+	 * @param string $field_name
+	 * @param string $section_id
+	 * @param array  $options_array Associative array of options (value => label).
+	 * @param array  $more_params Additional parameters for customization.
+	 * @return void
+	 */
+	public function register_dropdown_field( string $field_name, string $section_id, array $options_array, $more_params = [] ) {
+		$more_params = array_merge( [
+			'label'       => ucwords( str_replace( '_', ' ', $field_name ) ), // Field title.
+			'description' => __( 'Select an option for this setting.', $this->textdomain ),
+			'append'      => '',
+		], $more_params );
+
+		add_settings_field(
+			$field_name, // Field ID.
+			$more_params['label'],
+			function () use ( $field_name, $options_array, $more_params ): void {
+				$options      = get_option( self::$all_main_options_name ); // Retrieve the saved options.
+				$option_value = $options[ $field_name ] ?? '';
+				?>
+				<select name="<?php echo esc_attr( self::$all_main_options_name ); ?>[<?php echo esc_attr( $field_name ); ?>]">
+					<?php foreach ( $options_array as $value => $label ) : ?>
+						<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $option_value, $value ); ?>>
+							<?php echo esc_html( $label ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+				<p class="description">
+					<?php echo esc_html( $more_params['description'] ); ?>
+				</p>
+				<?php
+				// Display additional information below the dropdown if provided.
+				if ( ! empty( $more_params['append'] ) ) {
+					echo '<div class="dropdown-append">' . $more_params['append'] . '</div>';
+				}
+			},
+			$this->pageid, // Page slug.
+			$section_id,  // Section ID.
+		);
+	}
 	/**
 	 * Creates a form with an action which is evaluated in settings - hooks.php
 	 *

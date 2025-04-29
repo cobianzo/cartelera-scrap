@@ -54,9 +54,10 @@ class Cartelera_Scrap_Plugin {
 		}
 
 		// admin area
-		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-settings-hooks.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-settings-page.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-settings-hooks.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-scrap-output.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-cron-job.php';
 
 		// static functions
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-text-parser.php';
@@ -90,7 +91,7 @@ class Cartelera_Scrap_Plugin {
 	 */
 	public static function get_cartelera_url(): string {
 		// first compare the option in the database.
-		$plugin_options = get_option( ( new Settings_Page( 'cartelera-scrap', self::VERSION ) )->all_plugin_options_name );
+		$plugin_options = get_option( Settings_Page::$all_main_options_name );
 		return $plugin_options[ Settings_Page::$option_cartelera_url ] ?? 'https://carteleradeteatro.mx/todas/';
 	}
 
@@ -102,7 +103,7 @@ class Cartelera_Scrap_Plugin {
 	 */
 	public static function get_ticketmaster_url( string $show_title ): string {
 		// first compare the option in the database.
-		$plugin_options = get_option( ( new Settings_Page( 'cartelera-scrap', self::VERSION ) )->all_plugin_options_name );
+		$plugin_options = get_option( Settings_Page::$all_main_options_name );
 		$url            = $plugin_options[ Settings_Page::$option_ticketmaster_url ] ?? 'https://ticketmaster.com.mx/search';
 		if ( $show_title ) {
 			$url .= '?q=' . urlencode( $show_title );
@@ -117,7 +118,7 @@ class Cartelera_Scrap_Plugin {
 	 * @return string
 	 */
 	public static function get_plugin_setting( string $option_name ): string {
-		$options = get_option( ( new Settings_Page( 'cartelera-scrap', CARTELERA_SCRAP_VERSION ) )->all_plugin_options_name );
+		$options = get_option( Settings_Page::$all_main_options_name );
 		return $options[ $option_name ] ?? '';
 	}
 }

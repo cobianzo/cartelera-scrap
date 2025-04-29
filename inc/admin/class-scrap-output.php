@@ -43,7 +43,7 @@ class Scrap_Output {
 	public static function render_scrap_status() {
 
 		// check if the cron job is running
-		if ( wp_next_scheduled( Settings_Hooks::CRONJOB_NAME ) ) {
+		if ( wp_next_scheduled( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ) ) {
 			_e( '<h3>Scrapping is running as a cron job</h3>', 'cartelera-scrap' );
 			printf( __( '<p>Shows in the processing queue waiting to be processed: %s<br />', 'cartelera-scrap' ), Scrap_Actions::get_queued_count() );
 			printf( __( 'Already processed shows: %s</p>', 'cartelera-scrap' ), count( Scrap_Actions::get_show_results() ) );
@@ -54,13 +54,15 @@ class Scrap_Output {
 				echo '<p>Nothing in the queue to scrap</p>';
 			}
 		} else {
-			echo '<p>Scrapping ' . Settings_Hooks::CRONJOB_NAME . ' is not running as a cron job</p>';
+			echo '<p>Scrapping ' . Settings_Hooks::ONETIMEOFF_CRONJOB_NAME . ' is not running as a cron job</p>';
 		}
 		?>
 		<div class="wrap" style="display: flex; gap: 10px;">
 
 			<?php
-			Settings_Page::create_form_button_with_action( 'action_start_scrapping_shows', __( 'Start processing from scratch', 'cartelera-scrap' ) );
+			Settings_Page::create_form_button_with_action(
+				'action_start_scrapping_shows',
+				__( 'Cleanup results and start processing NOW', 'cartelera-scrap' ) );
 
 			$next_show = Scrap_Actions::get_first_queued_show();
 			if ( $next_show ) :
@@ -69,7 +71,7 @@ class Scrap_Output {
 					<?php wp_nonce_field( 'nonce_action_field', 'nonce_action_scrapping' ); ?>
 					<input type="hidden" name="action" value="action_process_next_scheduled_show">
 					<div style="display:flex; align-items: center; gap: 10px;">
-						<input type="submit" class="button button-primary" value="<?php echo esc_attr( sprintf( __( 'Process next batch of', 'cartelera-scrap' ), Cartelera_Scrap_Plugin::get_plugin_setting( Settings_Page::$number_processed_each_time ) ) ); ?>" />
+						<input type="submit" class="button button-primary" value="<?php echo esc_attr( sprintf( __( 'Process next batch of %s', 'cartelera-scrap' ), Settings_Page::get_plugin_setting( Settings_Page::$number_processed_each_time ) ) ); ?>" />
 						<strong><?php echo esc_html( $next_show['text'] ); ?></strong>
 					</div>
 				</form>
@@ -97,7 +99,7 @@ class Scrap_Output {
 		$results = Scrap_Actions::get_show_results();
 		if ( $results ) :
 			?>
-			<h2>Results</h2>
+			<h2>Results (<?php echo esc_html( count( $results ) ); ?>) </h2>
 			<table style="width: 100%; border-collapse: collapse; border: 1px solid #ccc;"
 				class="equal-width-columns">
 				<thead>
@@ -105,8 +107,8 @@ class Scrap_Output {
 						<th class="col-actions">actions</th>
 						<th class="col-index">#</th>
 						<th class="col-title">Title and urls</th>
-						<th class="col-cartelera-text">cartelera dates in text</th>
-						<th class="col-ticketmaster-dates">ticketmaster dates</th>
+						<th class="col-cartelera-text">cartelera dates in text (scraped)</th>
+						<th class="col-ticketmaster-dates">ticketmaster dates (scraped)</th>
 						<th class="col-cartelera-dates">cartelera dates parsed</th>
 						<th class="col-comparison">coincidence check</th>
 					</tr>
@@ -386,8 +388,8 @@ class Scrap_Output {
 			echo '<div class="times-sentences">';
 			echo '   <small class="muted">Parsed text for weekday and time:</small> <br/>';
 			echo '   <em>' . implode( '</em><br/><em>', $sentences ) . '</em>';
-			echo '   <br/><small class="muted">Show is played these days of the week:</small> <br/>';
-			echo implode( ', ', Text_Parser::get_all_days_of_week_in_sentences( $sentences ) );
+			// echo '   <br/><small class="muted">Show is played these days of the week:</small> <br/>';
+			// echo implode( ', ', Text_Parser::get_all_days_of_week_in_sentences( $sentences ) );
 			echo '</div>';
 		}
 		return $sentences;
@@ -432,6 +434,10 @@ class Scrap_Output {
 	public static function render_col_comparison( array $dates_cart, array $dates_tick ): bool|null {
 		if ( empty( $dates_cart ) && empty( $dates_tick ) ) {
 			echo 'Both dates are empty';
+			return null;
+		}
+		if ( empty( $dates_tick ) ) {
+			echo 'No information from ticketmaster';
 			return null;
 		}
 

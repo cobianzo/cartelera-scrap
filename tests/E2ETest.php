@@ -2,7 +2,6 @@
 
 use Cartelera_Scrap\Simple_Scraper;
 use Cartelera_Scrap\Scrap_Actions;
-use Cartelera_Scrap\Scrap_Output;
 use Cartelera_Scrap\Text_Parser;
 
 /**

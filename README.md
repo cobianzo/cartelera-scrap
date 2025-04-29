@@ -1,5 +1,6 @@
 TODO
 ===
+- Add the title in tickermaster to the info in the results.
 - apply 'suspende' text
 - sometiems ticketmaster search returns more than onwe show. Apply extra comparison to find the closest one, and open the link: ie. https://www.ticketmaster.com.mx/search?q=Magic
 Check 'get_ticketmaster_url', there we can move to the first link for the first show, and analyze that page, not the search resultt
@@ -10,7 +11,9 @@ Check 'get_ticketmaster_url', there we can move to the first link for the first 
     [1] => 2025-06-27
     [2] => 2025-06-01
 )
-- create bash to deploy plugin.
+- create /bin bash to deploy plugin.
+- Refactor: ideally we loop all shows and save all relevan information in the results option table.
+then we render those results in the table. (at the mo it calculates de output results as we render that table html)
 
 
 
@@ -119,6 +122,18 @@ Then we can access locally o inside the container to wp-content/plugins/carteler
 - ~~wp-phpunit/wp-phpunit~~: not needed, all the bootstrap is handled by `wp-env run tests-wordpress`
 
 # TESTS PHP
+
+Since we use cron jobs, and we can't run then naturally in local, I created a couple of scripts
+to run it.
+There are two cron jobs in this project:
+- 'cartelera-scrap_automated_cron' : runs every day at midnight, if activated in the settings page
+- 'cartelera-scrap_process_next_onetimeoff' : recursive one-time-off cron that calls itself until the option 'cartelera-scrap_shows_queue' is emptied
+
+Use
+
+`npm run test:listcron` - to show all cron jobs scheduled
+`npm run test:runcron`  - to run the next recursive one time off cron job
+`npm run test:options`  - to see the settings about this plugin saved in the DB.
 
 ## Cases to Test
 - when the cartelera title is not in ticketmaster

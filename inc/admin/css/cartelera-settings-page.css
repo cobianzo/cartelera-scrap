@@ -2,7 +2,9 @@ html {
   scroll-behavior: smooth;
 }
 
-.muted, .muted.color-success  {
+
+.muted,
+.muted.color-success {
   color: #958787;
 }
 
@@ -14,6 +16,13 @@ html {
   color: #d32323;
 }
 
+.cartelera-scrap-settings-columns-wrapper {
+ columns: 2;
+ h2 {
+  break-before: column;
+ }
+}
+
 table.equal-width-columns tr:nth-child(odd) {
   background-color: #f9f9f9; /* Light gray for odd rows */
 }
@@ -21,7 +30,6 @@ table.equal-width-columns tr:nth-child(odd) {
 table.equal-width-columns tr:nth-child(even) {
   background-color: #ffffff; /* White for even rows */
 }
-
 
 table.equal-width-columns tr {
   &.hidden {
@@ -36,7 +44,8 @@ table.equal-width-columns tr {
   }
 }
 
-.equal-width-columns tr td, .equal-width-columns tr th {
+.equal-width-columns tr td,
+.equal-width-columns tr th {
   place-content: flex-start;
   padding: 0.25rem;
 }
@@ -65,15 +74,35 @@ table.equal-width-columns tr {
   max-width: 200px;
 }
 .col-cartelera-dates {
-  width: 150px
+  width: 150px;
 }
 .col-comparison {
   width: 150px;
 }
 
-
-.dates-sentences, .times-sentences {
+.dates-sentences,
+.times-sentences {
   border: 1px solid pink;
   padding: 0.25rem 1rem 0.25rem;
   background: lightgray;
+}
+
+.scroll-to-top {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  background-color: #0073aa;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
 }
