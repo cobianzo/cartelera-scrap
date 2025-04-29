@@ -65,8 +65,8 @@ class Simple_Scraper {
 	 * @return void
 	 */
 	public static function debug_nodes( \DOMNodeList $nodes, $asHTML = false ): void {
-		echo '<div style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">';
-		echo '<h2>Debugging nodes</h2>';
+		echo '<div style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">' . PHP_EOL;
+		echo '<h2>Debugging nodes</h2>' . PHP_EOL;
 		foreach ( $nodes as $node ) {
 			if ( $asHTML && $node instanceof DOMElement ) {
 				$doc      = new DOMDocument();
@@ -245,6 +245,27 @@ class Simple_Scraper {
 		return $shows; // Returns array of [ text => 'El Rey Leon', href => 'http://cartelera.com/el-rey-leon' ].
 	}
 
+	public function ticketmaster_scrap_number_results( $search_criteria ) {
+		$root = $this->xpath; // DOMXPath
+		$nodes = $root->query('//main[@id="main-content"]//ul/li');
+
+		// When we visit the results of a ticketmaster search normally we'll get only one occurrence.
+		// but potentially there could be more.
+		$shows_results = [];
+		foreach ( $nodes as $node ) {
+			$paragraphs      = $node->getElementsByTagName('p');
+			foreach ( $paragraphs as $paragraph ) {
+				if ( str_contains( $paragraph, $search_criteria ) ) {
+					$shows_results[] = self::cleanup_node_text( $paragraph );
+				}
+			}
+
+		}
+
+		print_r( $shows_results );
+
+	}
+
 	/**
 	 * Scrapes a single show from Ticketmaster.
 	 * ie https://www.ticketmaster.com.mx/search?q=el+rey+leon
@@ -268,6 +289,13 @@ class Simple_Scraper {
 
 		// Start scrapping the HTML with DOM.
 		$scraper  = new Simple_Scraper( $html );
+
+		// First, check the top of the page
+		// See if there is more than one show result with that name
+		$scraper->ticketmaster_scrap_number_results();
+
+
+
 		$li_nodes = $scraper->get_root()->query( '//ul[@data-testid="eventList"]/li' );
 
 		$result_tickermaster = [

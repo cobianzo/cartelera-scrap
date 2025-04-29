@@ -26,8 +26,7 @@ class Settings_Hooks {
 		add_action( 'admin_init', [ __CLASS__, 'handle_export_action' ] );
 		add_action( self::ONETIMEOFF_CRONJOB_NAME, [ 'Cartelera_Scrap\Scrap_Actions', 'cartelera_process_one_batch' ] );
 
-		add_action('update_option_' . Settings_Page::$all_main_options_name, [ __CLASS__, 'start_or_stop_cron_job' ], 10, 2 );
-
+		add_action( 'update_option_' . Settings_Page::$all_main_options_name, [ __CLASS__, 'start_or_stop_cron_job' ], 10, 2 );
 	}
 
 	/**
@@ -197,7 +196,7 @@ class Settings_Hooks {
 	public static function start_or_stop_cron_job( array $old_value, array $new_value ) {
 
 		// case 1. to schedule or stop the cron job for tonite
-		$frequency = $new_value[Settings_Page::$option_cron_frequency];
+		$frequency = $new_value[ Settings_Page::$option_cron_frequency ];
 		if ( empty( $frequency ) ) {
 			Cron_Job::stop_schedule_cron_job();
 		} else {

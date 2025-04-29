@@ -80,8 +80,7 @@ class Cron_Job {
 			} else {
 				$text .= sprintf( 'The next batch will should have been executed in %s <br/>
 				You can click the button "Process Next Batch" to trigger it manually', $readable_difference );
-			}
-
+			}       
 		}
 
 		return $text;

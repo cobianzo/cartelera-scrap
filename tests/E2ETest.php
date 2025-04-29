@@ -23,13 +23,21 @@ class E2ETest extends WP_UnitTestCase {
 			require __DIR__ . '/ScrapTest.php';
 		}
 
+		// mocked html files to scrap (instead of urls)
 		$tm_mocked_page_html   = 'ticketmaster-single-show-page-3.html';
 		$cart_mocked_page_html = 'cartelera-single-show-page-3.html';
+
+		/**
+		 * List o fthe expected results for the scrapping
+		 */
 		$show_title            = 'Las cuatro estaciones de Vivaldi';
 
 		$result_text_date = '22 de junio de 2025.';
 		$result_text_time = 'Domingo 12:00 horas.';
 
+		/**
+		 * Expected results for Text processing
+		 */
 		$first_accpted_sentence_date = '22-junio-2025';
 		$first_accpted_sentence_time = 'sunday-12:00';
 
@@ -45,6 +53,14 @@ class E2ETest extends WP_UnitTestCase {
 		);
 		echo '$result_cartelera =';
 		print_r( $result_cartelera );
+		/*
+		Output
+		(
+			[url] => unknown
+			[scraped_dates_text] => 22 de junio de 2025.
+			[scraped_time_text] => Domingo 12:00 horas.
+		)
+		*/
 
 		echo "\n ======= Step 2. retrieve texts from ticketmaster (Simple_Scraper::scrap_one_tickermaster_show)🎬 🤯========";
 		$filepath            = __DIR__ . "/data/$tm_mocked_page_html";
@@ -52,11 +68,26 @@ class E2ETest extends WP_UnitTestCase {
 		$result_tickermaster = Simple_Scraper::scrap_one_tickermaster_show( $html_content );
 		echo '$result_tickermaster =';
 		print_r( $result_tickermaster );
+		/*
+		Output
+		(
+		[url] => unknown
+		[dates] => Array
+		(
+			[0] => Array
+				(
+					[printed_date] => jun22
+					[time_12h] => 12:00 p.m.
+					[date] => 2025-06-22
+					[time] => 12:00
+				)
+
+		)
+		*/
+
+
 		$this->assertEquals( '2025-06-22', $result_tickermaster['dates'][0]['date'], '❌ - Error. date from tickermaster scrapped is not the expected' );
 		$this->assertEquals( '12:00', $result_tickermaster['dates'][0]['time'], '❌ - Error. time from tickermaster scrapped is not the expected' );
-
-		// TODO: assert
-
 
 		echo "\n ======= Step3. Save the result int results option in DB🎬 🤯========";
 		$saved_result = [
@@ -71,6 +102,36 @@ class E2ETest extends WP_UnitTestCase {
 		$this->assertEquals( $saved_result, $first_show_result_to_process, '❌ - Error. The saved result does not match the first element of show results.' );
 		echo PHP_EOL . 'Saved on DB';
 		print_r( $first_show_result_to_process );
+		// Output
+		/*
+		(
+		[title] => Las cuatro estaciones de Vivaldi
+		[cartelera] => Array
+		(
+			[url] => unknown
+			[scraped_dates_text] => 22 de junio de 2025.
+			[scraped_time_text] => Domingo 12:00 horas.
+		)
+
+		[ticketmaster] => Array
+		(
+			[url] => unknown
+			[dates] => Array
+				(
+					[0] => Array
+						(
+							[printed_date] => jun22
+							[time_12h] => 12:00 p.m.
+							[date] => 2025-06-22
+							[time] => 12:00
+						)
+
+				)
+
+		)
+		)
+		*/
+
 		// NOW, with the result in the DB, we perform the transformations and checks which are shown
 		// in class-scrap-output.php
 		echo "\n ======= Step4. Get the simplified senteces for day dates, from cartelera🎬 🤯========";
@@ -86,6 +147,13 @@ class E2ETest extends WP_UnitTestCase {
 		);
 
 		print_r( $date_sentences );
+		// Output
+		/*
+		(
+		[0] => 22-junio-2025
+		)
+		*/
+
 
 
 		echo "\n ======= Step5. Get the simplified senteces for day of the week and time, from cartelera🎬 🤯========";
@@ -95,6 +163,12 @@ class E2ETest extends WP_UnitTestCase {
 		// these two things do more or less the same thing (render_... is wrapper of the first_acceptance...)
 		// $sentences_cartelera_dates = Scrap_Output::render_col_cartelera_text_datetimes( $first_show_result_to_process );
 		print_r( $time_sentences );
+		// Output
+		/*
+		(
+		[0] => sunday-12:00
+		)
+		 */
 		$this->assertIsArray( $time_sentences, '❌ - Error. $time_sentences is not an array.' . print_r( $time_sentences, 1 ) );
 		$this->assertEquals(
 			$first_accpted_sentence_time,
@@ -109,6 +183,14 @@ class E2ETest extends WP_UnitTestCase {
 		// converting 4-11-18-mayo-2025 into array of dates [2025-5-11, ...]
 		$dateYYYYMMDD = Text_Parser::identify_dates_sentence_daterange_or_singledays( $first_accpted_sentence_date );
 		print_r( $dateYYYYMMDD );
+		// Output
+		/*
+		(
+		[0] => 2025-06-22
+		[1] => 2025-06-29
+		[2] => 2025-06-01
+		)
+		 */
 		$this->assertCount( 1, $dateYYYYMMDD, '❌ - Error. The count of the result of identify_dates_sentence_daterange_or_singledays is not 1, but ' . count( $dateYYYYMMDD ) );
 		$this->assertEquals( $dateYYYYMMDD[0], $first_extracted_date, '❌ - Error. The extracted date is not the expected. From ' . $first_accpted_sentence_date . ' we got ' . print_r( $dateYYYYMMDD, 1 ) . PHP_EOL . 'You need to refine "identify_dates_sentence_daterange_or_singledays" ' );
 
@@ -124,8 +206,8 @@ class E2ETest extends WP_UnitTestCase {
 
 		// Last test:
 		echo "\n ======= Step8. Compare ticketmaster dates and cartelera datesa (Text_Parser::compare_arrays)🎬 🤯========";
-		$tm_dates = array_map( fn( $tm_record ) => $tm_record['date'] . ' ' . $tm_record['time'], $result_tickermaster['dates'] );
+		$tm_dates       = array_map( fn( $tm_record ) => $tm_record['date'] . ' ' . $tm_record['time'], $result_tickermaster['dates'] );
 		$result_compare = Text_Parser::compare_arrays( $datetimes, $tm_dates );
-		print_r($result_compare);
+		print_r( $result_compare );
 	}
 }

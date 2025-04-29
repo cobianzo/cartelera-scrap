@@ -110,7 +110,6 @@ class Cartelera_Scrap_Plugin {
 		}
 		return $url;
 	}
-
 }
 
 

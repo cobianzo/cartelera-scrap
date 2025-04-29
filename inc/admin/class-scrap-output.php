@@ -62,7 +62,8 @@ class Scrap_Output {
 			<?php
 			Settings_Page::create_form_button_with_action(
 				'action_start_scrapping_shows',
-				__( 'Cleanup results and start processing NOW', 'cartelera-scrap' ) );
+				__( 'Cleanup results and start processing NOW', 'cartelera-scrap' ) 
+			);
 
 			$next_show = Scrap_Actions::get_first_queued_show();
 			if ( $next_show ) :

@@ -57,10 +57,10 @@ class Settings_Page {
 	 * @param string $version The version of the plugin.
 	 */
 	public function __construct( string $plugin_name, string $version ) {
-		$this->plugin_name           = $plugin_name;
-		$this->textdomain            = $plugin_name;
-		$this->version               = $version;
-		$this->pageid                = $plugin_name . '_page';
+		$this->plugin_name = $plugin_name;
+		$this->textdomain  = $plugin_name;
+		$this->version     = $version;
+		$this->pageid      = $plugin_name . '_page';
 
 
 		// Hook to add the settings page to the admin menu.
@@ -80,7 +80,7 @@ class Settings_Page {
 	 * @return string
 	 */
 	public static function get_plugin_setting( string $option_name ): string {
-		$options = get_option( Settings_Page::$all_main_options_name );
+		$options = get_option( self::$all_main_options_name );
 		return $options[ $option_name ] ?? '';
 	}
 
@@ -203,7 +203,7 @@ class Settings_Page {
 		// Right column section: cron job related fields
 		add_settings_section(
 			$this->plugin_name . '_fields__section_rightcolumn', // Section ID.
-			 __( 'Cron Job settings', $this->textdomain ), // Section title.
+			__( 'Cron Job settings', $this->textdomain ), // Section title.
 			function (): void {
 				echo Cron_Job::get_next_cronjob_execution_time();
 			},
@@ -226,7 +226,7 @@ class Settings_Page {
 			'label' => __( 'Number of shows to process each time', $this->textdomain ),
 		] );
 		$this->register_input_field( self::$limit_days_forward_compare, $this->plugin_name . '_fields__section_leftcolumn', [
-			'type'  => 'number',
+			'type'        => 'number',
 			'label'       => __( 'After these amounts of days from today, stop, comparing cartelera and ticketmaster dates.', $this->textdomain ),
 			'description' => sprintf( __( 'Currently set to %s.', $this->textdomain ), date( 'Y-m-d H:i', Text_Parser::get_limit_datetime() ) ),
 		] );
@@ -237,17 +237,23 @@ class Settings_Page {
 		$this->register_dropdown_field(
 			self::$option_cron_frequency,
 			$this->plugin_name . '_fields__section_rightcolumn',
-			[ '' => 'Deactivate current cron', 'daily' => 'Daily', 'weekly' => 'Weekly', 'twicedaily' => 'Two times per day' ],
 			[
-				'append' =>  '
+				''           => 'Deactivate current cron',
+				'daily'      => 'Daily',
+				'weekly'     => 'Weekly',
+				'twicedaily' => 'Two times per day',
+			],
+			[
+				'append' => '
 
-				'
-			] );
+				',
+			] 
+		);
 
 		add_settings_field(
 			self::$option_cron_save_and_run,
 			'',
-			function() {
+			function () {
 				$new_value = (int) self::get_plugin_setting( self::$option_cron_save_and_run ) ? 0 : 1;
 				echo '<button type="submit" name="'
 				. esc_attr( self::$all_main_options_name ) . '[' . esc_attr( self::$option_cron_save_and_run ) . ']"
@@ -256,7 +262,6 @@ class Settings_Page {
 			$this->pageid,
 			$this->plugin_name . '_fields__section_rightcolumn'
 		);
-
 	}
 
 	/**
@@ -264,7 +269,7 @@ class Settings_Page {
 	 *
 	 * @param string $field_name
 	 * @param string $section_id
-	 * @param array $more_parems
+	 * @param array  $more_parems
 	 * @return void
 	 */
 	public function register_input_field( string $field_name, string $section_id, $more_parems = [] ) {
@@ -281,12 +286,15 @@ class Settings_Page {
 				$options      = get_option( self::$all_main_options_name ); // Retrieve the saved options.
 				$option_value = $options[ $field_name ] ?? '';
 				?>
-			<input <?php if ( "number" === $more_parems['type'] ) {
+			<input 
+				<?php
+				if ( 'number' === $more_parems['type'] ) {
 					echo 'type="number" step="1" min="1" placeholder="type a number"';
 				} else {
 					echo 'type="text" class="regular-text"';
 				}
-				?> name="<?php echo esc_attr( self::$all_main_options_name ); ?>[<?php echo esc_attr( $field_name ); ?>]"
+				?>
+				name="<?php echo esc_attr( self::$all_main_options_name ); ?>[<?php echo esc_attr( $field_name ); ?>]"
 				value="<?php echo esc_attr( $option_value ); ?>">
 				<p class="description">
 					<?php echo esc_html( $more_parems['description'] ); ?>
@@ -296,7 +304,6 @@ class Settings_Page {
 			$this->pageid, // Page slug.
 			$section_id,  // Section ID.
 		);
-
 	}
 
 	/**

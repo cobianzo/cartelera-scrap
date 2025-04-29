@@ -1,4 +1,7 @@
 <?php
+
+use Cartelera_Scrap\Simple_Scraper;
+
 /**
  * Tests dedicated to check if we can scrap and retrieve the text that
  * we need.
@@ -20,14 +23,10 @@ class ScrapTest extends WP_UnitTestCase {
 		echo "----------------------\n";
 	}
 
-	/**
-	 * Helper function to load the HTML content from a file and extract data using the scraper.
-	 *
-	 * @param string $filepath
-	 * @return array
-	 */
-	public static function get_file_contents_html_file( WP_UnitTestCase $instance, string $filepath ): array {
-
+	/** helper 1/3
+	 * Reusable for cartelera scrap and ticketmaster scrap
+	*/
+	public static function get_file_contents_html_file( WP_UnitTestCase $instance, string $filepath ): string {
 		if ( ! file_exists( $filepath ) ) {
 			return [ 'error' => '❌File not found: ' . $filepath ];
 		}
@@ -39,6 +38,18 @@ class ScrapTest extends WP_UnitTestCase {
 		}
 
 		$instance->assertNotFalse( $html_content, '❌Failed to load HTML content from file ' . $filepath );
+
+		return $html_content;
+	}
+	/**
+	 * Helper 2/3 function to load the HTML content from a file and extract data using the scraper.
+	 *
+	 * @param string $filepath
+	 * @return array
+	 */
+	public static function get_file_contents_html_file_and_scrap_cartelera( WP_UnitTestCase $instance, string $filepath ): array {
+
+		$html_content = $instance->get_file_contents_html_file( $instance, $filepath );
 
 		// The action !!!
 		// ===============
@@ -57,7 +68,7 @@ class ScrapTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Undocumented function
+	 * Helper 3/3
 	 *
 	 * @param string $cartelera_filename
 	 * @param string $expected_dates_text
@@ -66,7 +77,7 @@ class ScrapTest extends WP_UnitTestCase {
 	 */
 	public function scrap_and_test_cartelera_file( string $cartelera_filename, string $expected_dates_text, string $expected_time_text ): array {
 		$data_example_file       = __DIR__ . '/data/' . $cartelera_filename;
-		$scrapped_data_extracted = self::get_file_contents_html_file( $this, $data_example_file );
+		$scrapped_data_extracted = self::get_file_contents_html_file_and_scrap_cartelera( $this, $data_example_file );
 		if ( ! empty( $scrapped_data_extracted['error'] ) ) {
 			return $scrapped_data_extracted['error'];
 		}
@@ -91,7 +102,7 @@ class ScrapTest extends WP_UnitTestCase {
 	 * Test 1. Test the HTML content from a simple cartelera page.
 	 */
 	public function test_html_from_cartelera_page_parses_correctly_date_and_time() {
-		echo "\n ======= TEST 2.1 START 🎬 🤯========";
+		echo "\n ======= TEST 2.1 Cartelera scrap START 🎬 🤯========";
 
 		$result = $this->scrap_and_test_cartelera_file(
 			'cartelera-single-show-page.html',
@@ -104,9 +115,11 @@ class ScrapTest extends WP_UnitTestCase {
 	/**
 	 * Test 2. @testdox Test the HTML content from a different cartelera page, more delicated. PD:
 	 * testdox doesnt work when I call it with `phpunit --testdox`  .
+	 *
+	 * NOTE: I use this test to see the output more than confirming that everything is ok.
 	 */
 	public function test_DELICATED_html_from_cartelera_page_parses_correctly_date_and_time() {
-		echo "\n ======= TEST 2.2 START 🎬 🤯========";
+		echo "\n ======= TEST 2.2 Cartelera scrap START 🎬 🤯========";
 
 		$result = $this->scrap_and_test_cartelera_file(
 			'cartelera-single-show-page-2.html',
@@ -114,4 +127,40 @@ class ScrapTest extends WP_UnitTestCase {
 			'Jueves 20:00 horas, viernes 19:00 y 21:00 horas, sábado 18:00 y 20:00 horas y domingo 17:00 y 19:00 horas.'
 		);
 	}
+
+	public function test_html_from_TICKETMASTER_page_parses_correctly_date_and_time() {
+		echo "\n ======= TEST 2.3 Ticketmaster START 🎬 🤯========";
+		$filename             = 'ticketmaster-single-show-page-3.html';
+		$tm_html_example_file = __DIR__ . '/data/' . $filename;
+		$tm_html_page = self::get_file_contents_html_file( $this, $tm_html_example_file );
+
+		$result_tickermaster = Simple_Scraper::scrap_one_tickermaster_show( $tm_html_page );
+		echo '$result_tickermaster = ';
+		print_r( $result_tickermaster );
+
+		$this->assertCount( 2, $result_tickermaster['dates'], '❌ - Error. Expected two dates from scrapping ticketmaster file' . $filename . ': ' . count( $result_tickermaster['dates'] ) );
+		$this->assertEquals( '2025-04-30', $result_tickermaster['dates'][0]['date'], '❌ - Error. date from tickermaster scrapped is not the expected' );
+		$this->assertEquals( '2025-05-07', $result_tickermaster['dates'][1]['date'], '❌ - Error. date from tickermaster scrapped is not the expected' );
+		$this->assertEquals( '20:00', $result_tickermaster['dates'][0]['time'], '❌ - Error. time from tickermaster scrapped is not the expected' );
+		$this->assertEquals( '20:00', $result_tickermaster['dates'][1]['time'], '❌ - Error. time from tickermaster scrapped is not the expected' );
+
+		echo '✅ test 2.3 completed';
+	}
+
+	public function test_html_from_TICKETMASTER_page_parses_correctly_number_of_results() {
+		echo "\n ======= TEST 2.4 Ticketmaster START 🎬 🤯========";
+		$filename             = 'ticketmaster-single-show-page-4.html';
+		$tm_html_example_file = __DIR__ . '/data/' . $filename;
+		$tm_html_page = self::get_file_contents_html_file( $this, $tm_html_example_file );
+
+		$scrapper = new Simple_Scraper( $tm_html_page );
+		$scrapper->ticketmaster_scrap_number_results();
+		echo '$result_tickermaster = ';
+		// print_r( $result_tickermaster );
+
+
+		echo '✅ test 2.4 completed';
+
+	}
+
 }

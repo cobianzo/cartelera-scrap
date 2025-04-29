@@ -245,7 +245,6 @@ class Scrap_Actions {
 	/**
 	 * Grab first show in the queue and processes it:
 	 *
-	 *
 	 * @return void
 	 */
 	public static function cartelera_process_one_single_show(): void {

@@ -121,7 +121,7 @@ class Text_Parser {
 	 *
 	 * @return integer|null
 	 */
-	public static function get_limit_datetime(): int | null {
+	public static function get_limit_datetime(): int|null {
 		$days_from_now_limit  = (int) Settings_Page::get_plugin_setting( Settings_Page::$limit_days_forward_compare ) ?? null;
 		$date_limit_timestamp = $days_from_now_limit ? strtotime( "+$days_from_now_limit days" ) : null;
 		return $date_limit_timestamp;
@@ -136,7 +136,7 @@ class Text_Parser {
 	 */
 	public static function remove_dates_after_limit( array $datetimes ): array {
 
-		$date_limit_timestamp = Text_Parser::get_limit_datetime();
+		$date_limit_timestamp = self::get_limit_datetime();
 		return array_filter( $datetimes, function ( $datetime ) use ( $date_limit_timestamp ) {
 			// accept any date beofre the limit date set in settings.
 			$timestamp = strtotime( $datetime ); // int
@@ -415,8 +415,8 @@ class Text_Parser {
 	 * Converts texto into array of dates [ yyyy-mm-dd, ... ]
 	 *
 	 * @param string $sanitized_date_sentence:
-	 * 								Intro text: del-24-abril-al-8-junio-2025 (this format is 'range'),
-	 * 								4-11-18-mayo-2025 (format `singledays`)
+	 *                              Intro text: del-24-abril-al-8-junio-2025 (this format is 'range'),
+	 *                              4-11-18-mayo-2025 (format `singledays`)
 	 * @return array of dates [  '2025-05-17', '2025-05-18'  ... ]
 	 */
 	public static function identify_dates_sentence_daterange_or_singledays( string $sanitized_date_sentence ): array {
