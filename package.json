@@ -33,7 +33,8 @@
   "author": "@cobianzo",
   "license": "GPL-2.0-or-later",
   "devDependencies": {
+    "@wordpress/env": "^10.2.0",
     "@wordpress/scripts": "^26.0.0",
-    "@wordpress/env": "^10.2.0"
+    "archiver": "^7.0.1"
   }
 }

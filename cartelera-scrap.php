@@ -111,21 +111,11 @@ class Cartelera_Scrap_Plugin {
 		return $url;
 	}
 
-	/**
-	 * Basic function to get the value of a specific plugin setting.
-	 *
-	 * @param string $option_name the name of the option to retrieve.
-	 * @return string
-	 */
-	public static function get_plugin_setting( string $option_name ): string {
-		$options = get_option( Settings_Page::$all_main_options_name );
-		return $options[ $option_name ] ?? '';
-	}
 }
 
 
 /**
- * Debugging functions
+ * Debugging functions @TODELETE:
  *
  * @param mixed $var
  * @return void

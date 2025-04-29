@@ -1,18 +1,18 @@
 TODO
 ===
+- BUG:When deployed in a server, the main cron calling the recursive onetimeoff job is not wokring ok.
+- Send email with report. Add it to the settings options.
 - Add the title in tickermaster to the info in the results.
 - apply 'suspende' text
 - sometiems ticketmaster search returns more than onwe show. Apply extra comparison to find the closest one, and open the link: ie. https://www.ticketmaster.com.mx/search?q=Magic
 Check 'get_ticketmaster_url', there we can move to the first link for the first show, and analyze that page, not the search resultt
-- evaluate case del-2-marzo-2025  (withut the "al")
 - correct this error: 22-junio-2025 parses into two dates:
 (
     [0] => 2025-06-22
     [1] => 2025-06-27
     [2] => 2025-06-01
 )
-- create /bin bash to deploy plugin.
-- Refactor: ideally we loop all shows and save all relevan information in the results option table.
+- Refactor: ideally we loop all shows and save all relevant information in the results option table.
 then we render those results in the table. (at the mo it calculates de output results as we render that table html)
 
 
