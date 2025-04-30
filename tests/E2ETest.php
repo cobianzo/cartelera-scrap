@@ -30,7 +30,7 @@ class E2ETest extends WP_UnitTestCase {
 		/**
 		 * List o fthe expected results for the scrapping
 		 */
-		$show_title            = 'Las cuatro estaciones de Vivaldi';
+		$show_title = 'Las cuatro estaciones de Vivaldi';
 
 		$result_text_date = '22 de junio de 2025.';
 		$result_text_time = 'Domingo 12:00 horas.';
@@ -43,7 +43,6 @@ class E2ETest extends WP_UnitTestCase {
 
 		$first_extracted_date     = '2025-06-22';
 		$first_extracted_datetime = '2025-06-22 12:00';
-		$confirm_weekday          = 'sunday';
 
 		echo "\n ======= Step 1. retrieve texts from cartelera (Simple_Scraper::scrap_one_cartelera_show)🎬 🤯========";
 		$result_cartelera = ( new ScrapTest() )->scrap_and_test_cartelera_file(
@@ -62,7 +61,7 @@ class E2ETest extends WP_UnitTestCase {
 		)
 		*/
 
-		echo "\n ======= Step 2. retrieve texts from ticketmaster (Simple_Scraper::scrap_one_tickermaster_show)🎬 🤯========";
+		echo "\n ======= Step 2. retrieve texts from ticketmaster (Simple_Scraper::scrap_ one_ tickermaster_ show)🎬 🤯========";
 		$filepath            = __DIR__ . "/data/$tm_mocked_page_html";
 		$html_content        = file_get_contents( $filepath );
 		$result_tickermaster = Simple_Scraper::scrap_one_tickermaster_show( $html_content );

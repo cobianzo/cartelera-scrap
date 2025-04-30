@@ -4,8 +4,7 @@ TODO
 - Send email with report. Add it to the settings options.
 - Add the title in tickermaster to the info in the results.
 - apply 'suspende' text
-- sometiems ticketmaster search returns more than onwe show. Apply extra comparison to find the closest one, and open the link: ie. https://www.ticketmaster.com.mx/search?q=Magic
-Check 'get_ticketmaster_url', there we can move to the first link for the first show, and analyze that page, not the search resultt
+- Put a limit of dates from ticketmaster. Set it to 20, dont compare any further.
 - correct this error: 22-junio-2025 parses into two dates:
 (
     [0] => 2025-06-22

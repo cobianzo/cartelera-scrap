@@ -25,7 +25,7 @@ class ScrapTest extends WP_UnitTestCase {
 
 	/** helper 1/3
 	 * Reusable for cartelera scrap and ticketmaster scrap
-	*/
+	 */
 	public static function get_file_contents_html_file( WP_UnitTestCase $instance, string $filepath ): string {
 		if ( ! file_exists( $filepath ) ) {
 			return [ 'error' => '❌File not found: ' . $filepath ];
@@ -132,7 +132,7 @@ class ScrapTest extends WP_UnitTestCase {
 		echo "\n ======= TEST 2.3 Ticketmaster START 🎬 🤯========";
 		$filename             = 'ticketmaster-single-show-page-3.html';
 		$tm_html_example_file = __DIR__ . '/data/' . $filename;
-		$tm_html_page = self::get_file_contents_html_file( $this, $tm_html_example_file );
+		$tm_html_page         = self::get_file_contents_html_file( $this, $tm_html_example_file );
 
 		$result_tickermaster = Simple_Scraper::scrap_one_tickermaster_show( $tm_html_page );
 		echo '$result_tickermaster = ';
@@ -149,18 +149,29 @@ class ScrapTest extends WP_UnitTestCase {
 
 	public function test_html_from_TICKETMASTER_page_parses_correctly_number_of_results() {
 		echo "\n ======= TEST 2.4 Ticketmaster START 🎬 🤯========";
+		$search_title_term    = 'ARTE'; // we looked for a show called ARTE. but we received many shows in the search
 		$filename             = 'ticketmaster-single-show-page-4.html';
 		$tm_html_example_file = __DIR__ . '/data/' . $filename;
-		$tm_html_page = self::get_file_contents_html_file( $this, $tm_html_example_file );
+		$tm_html_page         = self::get_file_contents_html_file( $this, $tm_html_example_file );
 
-		$scrapper = new Simple_Scraper( $tm_html_page );
-		$scrapper->ticketmaster_scrap_number_results();
-		echo '$result_tickermaster = ';
-		// print_r( $result_tickermaster );
-
+		$scrapper          = new Simple_Scraper( $tm_html_page );
+		$shows_occurrences = $scrapper->ticketmaster_scrap_number_results( $search_title_term );
+		// Output
+		/*
+		(
+				[/arte-boletos/artist/3512904] => Arte
+				[/palacio-de-bellas-artes-boletos-mexico-cdmx/venue/499716] => Palacio de Bellas Artes
+				[/orquesta-de-camara-de-bellas-artes-boletos/artist/1386471] => Orquesta de Cámara de Bellas Artes
+				[/sala-manuel-m-ponce-palacio-de-boletos-mexico/venue/499921] => Sala Manuel M. Ponce - Palacio de Bellas Artes
+			)
+		 */
+		print_r( $shows_occurrences );
+		$this->assertCount( 4, array_values( $shows_occurrences ), '❌ Error. We should find 4 results: ' );
+		$this->assertEquals( 'Arte', array_values( $shows_occurrences )[0], '❌ Error. The first occurrence is not "Arte".' );
+		$this->assertEquals( 'Palacio de Bellas Artes', array_values( $shows_occurrences )[1], '❌ Error. The second occurrence is not "Palacio de Bellas Artes".' );
+		$this->assertEquals( 'Orquesta de Cámara de Bellas Artes', array_values( $shows_occurrences )[2], '❌ Error. The third occurrence is not "Orquesta de Cámara de Bellas Artes".' );
+		$this->assertEquals( 'Sala Manuel M. Ponce - Palacio de Bellas Artes', array_values( $shows_occurrences )[3], '❌ Error. The fourth occurrence is not "Sala Manuel M. Ponce - Palacio de Bellas Artes".' );
 
 		echo '✅ test 2.4 completed';
-
 	}
-
 }

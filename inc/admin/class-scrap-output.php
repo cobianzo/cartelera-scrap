@@ -62,7 +62,7 @@ class Scrap_Output {
 			<?php
 			Settings_Page::create_form_button_with_action(
 				'action_start_scrapping_shows',
-				__( 'Cleanup results and start processing NOW', 'cartelera-scrap' ) 
+				__( 'Cleanup results and start processing NOW', 'cartelera-scrap' )
 			);
 
 			$next_show = Scrap_Actions::get_first_queued_show();
@@ -116,6 +116,20 @@ class Scrap_Output {
 				</thead>
 				<tbody>
 					<?php
+					// WIP: calculate all computed, and show utput based on these calculations
+					// if I dont finish this, @TOELETE.
+					// calculate all the computed values based on what we scrapped.
+					foreach ( $results as $i => $result ) :
+						$dates_text = $result['cartelera']['scraped_dates_text'] ?? '';
+						$times_text = $result['cartelera']['scraped_time_text'] ?? '';
+						$computed   = [];
+						// cartelera computed: sentences cartelera dates and times
+						$computed['sentences_cartelera_dates'] = Text_Parser::first_acceptance_of_date_text( $dates_text );
+						$computed['sentences_cartelera_times'] = Text_Parser::first_acceptance_of_times_text( $times_text );
+
+						
+					endforeach;
+
 					foreach ( $results as $i => $result ) :
 						$no_tickermaster = ( empty( $result['ticketmaster']['dates'] ) || ! isset( $result['ticketmaster']['url'] ) );
 
@@ -138,14 +152,14 @@ class Scrap_Output {
 						// column ticketmaster parsed dates
 						$datetimes_tickermaster      = self::render_col_ticketmaster_dates( $result );
 						$col_ticketmaster_dates_html = ob_get_clean();
-						// now that we have rendered them, remove aldo the dates outside the limit,
+						// now that we have rendered them, remove also the dates outside the limit,
 						// we don't want to compared them with ticketmasters.
 						$datetimes_ticketmaster = Text_Parser::remove_dates_after_limit( $datetimes_tickermaster );
 
 						ob_start();
 						$datetimes_cartelera      = self::render_col_cartelera_datetimes( $sentences_cartelera_dates, $sentences_cartelera_times );
 						$col_cartelera_dates_html = ob_get_clean();
-						// now that we have rendered them, remove aldo the dates outside the limit,
+						// now that we have rendered them, remove also the dates outside the limit,
 						// we don't want to compared them with ticketmasters.
 						$datetimes_cartelera = Text_Parser::remove_dates_after_limit( $datetimes_cartelera );
 
@@ -231,7 +245,7 @@ class Scrap_Output {
 							<td class="col-cartelera-dates"> <!-- Display the cartelera dates parsed -->
 								<p>CartH: 🎟️🎟️ </p>
 								<?php
-									// add success or fail to the class of the date.
+								// adds success or fail to the class of the date.
 								foreach ( $datetimes_cartelera as $car_date ) {
 
 									$car_timestamp = strtotime( $car_date );
@@ -287,15 +301,53 @@ class Scrap_Output {
 			<?php else : ?>
 				<li>
 					<a href="<?php echo esc_url( $result['ticketmaster']['url'] ); ?>" target="_blank">
-						<?php echo __( 'ticketmaster link', 'cartelera-scrap' ); ?>
+						<?php echo __( 'ticketmaster search link', 'cartelera-scrap' ); ?>
 					</a>
 				</li>
 			<?php endif; ?>
+			<li>
+				Title in tm:
+				<?php
+				$title_tm = $result['ticketmaster']['tm_title'] ?? '';
+				printf(
+					'<b>%s %s</b>',
+					( strtolower( $title_tm ) === strtolower( $result['title'] ) ) ? '✅' : '⚠️',
+					esc_html( $title_tm ? $title_tm : 'not found' )
+				);
+				?>
+				<?php
+				if ( isset( $result['ticketmaster']['search_results'] ) && (int) $result['ticketmaster']['search_results'] > 1 ) {
+					printf( '<br/>⚠️ Attention. Ticketmaster found more than one show with similar title to %s', $result['title'] );
+				}
+				?>
+				<br/>
+				<?php if ( ! empty( $result['ticketmaster']['single_page_url'] ) ) : ?>
+				<a href="<?php echo esc_url( $result['ticketmaster']['single_page_url'] ); ?>" target="_blank">
+					<?php echo __( 'ticketmaster single page', 'cartelera-scrap' ); ?>
+					</a>
+				<?php endif ?>
+			</li>
 			<!-- // cartelera url -->
 			<li>
 				<a href="<?php echo esc_url( $result['cartelera']['url'] ); ?>" target="_blank">
 					<?php echo __( 'cartelera link', 'cartelera-scrap' ); ?>
 				</a>
+			</li>
+			<li>
+				<div class="accordion">
+					<label for="toggle-<?php echo esc_attr( sanitize_title( $result['title'] ) ); ?>" class="accordion-label">
+						<input type="checkbox" id="toggle-<?php echo esc_attr( sanitize_title( $result['title'] ) ); ?>"
+									class="accordion-toggle"> Show debug info
+						<div class="accordion-content">
+								<?php
+								$result['ticketmaster']['dates'] = count( $result['ticketmaster']['dates'] ) . ' elements';
+								echo '<pre>';
+								print_r( $result );
+								echo '</pre>';
+								?>
+						</div>
+					</label>
+				</div>
 			</li>
 		</ul>
 		<?php
@@ -315,7 +367,7 @@ class Scrap_Output {
 			<ul>
 				<?php
 				// loop every date we will show as html
-				foreach ( $result['ticketmaster']['dates'] as $date ) {
+				foreach ( $result['ticketmaster']['dates'] as $k => $date ) {
 					// add the time to the date, we'll return as result of this function
 					$datetime    = $date['date'] . ' ' . $date['time']; // YYYY-mm-dd H:i
 					$datetimes[] = $datetime;
@@ -326,8 +378,14 @@ class Scrap_Output {
 					echo '<li
 						data-date="' . esc_attr( \strtotime( $datetime ) ) . '" class="'
 						. ( $not_analyzed ? esc_attr( 'muted' ) : '' ) . '">'
-						. esc_html( $datetime ) . sprintf( ' <small class="muted">%s</small>', strtolower( date( 'D', strtotime( $datetime ) ) ) )
+						. esc_html( $datetime ) . sprintf( ' <small class="dark-muted">%s</small>', strtolower( date( 'D', strtotime( $datetime ) ) ) )
 						. '</li>';
+
+					if ( $not_analyzed ) {
+						$not_analyzed_left = ( count( $result['ticketmaster']['dates'] ) - ( $k + 1 ) );
+						echo $not_analyzed_left ? '<li>... and ' . $not_analyzed_left . ' more </li>' : '';
+						break;
+					}
 				}
 				?>
 			</ul>
@@ -342,6 +400,12 @@ class Scrap_Output {
 		return $datetimes;
 	}
 
+	/**
+	 * Undocumented function
+	 *
+	 * @param [type] $result
+	 * @return array
+	 */
 	public static function render_col_cartelera_text_datetimes( $result ): array {
 		// Dates
 		// To extract the dates from the text we:
@@ -373,6 +437,12 @@ class Scrap_Output {
 		return $sentences;
 	}
 
+	/**
+	 * Undocumented function
+	 *
+	 * @param array $result
+	 * @return void
+	 */
 	public static function render_times_parsed_sentences( array $result ) {
 		// Weekday and times
 		$sentences = [];
@@ -396,6 +466,13 @@ class Scrap_Output {
 		return $sentences;
 	}
 
+	/**
+	 * Undocumented function
+	 *
+	 * @param array $sentences_dates
+	 * @param array $sentences_times
+	 * @return array
+	 */
 	public static function render_col_cartelera_datetimes( array $sentences_dates, array $sentences_times ): array {
 		// Day sof month
 		// parse dates to get specific calendar dates.
@@ -406,23 +483,32 @@ class Scrap_Output {
 				Text_Parser::identify_dates_sentence_daterange_or_singledays( $dates_in_text )
 			);
 		}
-		$datetimes_cartelera = Text_Parser::definitive_dates_and_times( $all_dates, $sentences_times );
-		$datetimes_cartelera = Text_Parser::remove_dates_previous_of_today( $datetimes_cartelera );
+		$datetimes_cartelera             = Text_Parser::definitive_dates_and_times( $all_dates, $sentences_times, $sentences_dates );
+		$datetimes_cartelera_after_today = Text_Parser::remove_dates_previous_of_today( $datetimes_cartelera );
+		if ( empty( $datetimes_cartelera_after_today ) && ! empty( $datetimes_cartelera ) ) {
+			printf( __( '<p>All dates are previous of today. Nothing to compare</p>', 'cartelera-scrap' ) );
+		}
 		// dont show dates previous of today, but show dates outside of analysis for being to far ahread in time
 		echo '<ul>';
-		foreach ( $datetimes_cartelera as $show_date ) {
-			// check if date is later than our limit
+		foreach ( $datetimes_cartelera_after_today as $i => $show_date ) {
 
+			// check if date is later than our limit
 			$date_timestamp_limit = Text_Parser::get_limit_datetime();
 			$not_analyzed         = $date_timestamp_limit ? \strtotime( $show_date ) >= $date_timestamp_limit : false;
 			echo '<li data-date="' . esc_attr( \strtotime( $show_date ) ) . '" class="'
 				. ( $not_analyzed ? esc_attr( 'muted' ) : 'normal' ) . '">'
-				. esc_html( $show_date ) . sprintf( ' <small class="muted">%s</small>', strtolower( date( 'D', strtotime( $show_date ) ) ) )
+				. esc_html( $show_date ) . sprintf( ' <small class="dark-muted">%s</small>', strtolower( date( 'D', strtotime( $show_date ) ) ) )
 				. '</li>';
+
+			if ( $not_analyzed ) { // don't show more dates out of the range, simply mention how many left there are.
+				$not_analyzed_left = ( count( $datetimes_cartelera_after_today ) - ( $i + 1 ) );
+				echo $not_analyzed_left ? '<li>... and ' . $not_analyzed_left . ' more </li>' : '';
+				break;
+			}
 		}
 		echo '</ul>';
 
-		return $datetimes_cartelera;
+		return $datetimes_cartelera_after_today;
 	}
 
 	/**
@@ -438,7 +524,8 @@ class Scrap_Output {
 			return null;
 		}
 		if ( empty( $dates_tick ) ) {
-			echo 'No information from ticketmaster';
+			echo 'No information from ticketmaster, at least within the range of dates of your criteria.';
+			echo '<br/>No comparison has been made. Check it manually.';
 			return null;
 		}
 

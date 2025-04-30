@@ -264,9 +264,7 @@ class Scrap_Actions {
 			 */
 
 			// Get the ticketmaster URL.
-			$title               = $show['text'];
-			$ticketmaster_url    = Cartelera_Scrap_Plugin::get_ticketmaster_url( $title );
-			$result_tickermaster = Simple_Scraper::scrap_one_tickermaster_show( $ticketmaster_url );
+			$result_tickermaster = Simple_Scraper::scrap_one_tickermaster_show( $show['text'] );
 			if ( $result_tickermaster && ! is_wp_error( $result_tickermaster ) ) {
 
 				/**

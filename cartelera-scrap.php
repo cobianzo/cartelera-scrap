@@ -101,11 +101,11 @@ class Cartelera_Scrap_Plugin {
 	 * @param string $show_title The title of the show to search for.
 	 * @return string url
 	 */
-	public static function get_ticketmaster_url( string $show_title ): string {
+	public static function get_ticketmaster_url( string $show_title = '' ): string {
 		// first compare the option in the database.
 		$plugin_options = get_option( Settings_Page::$all_main_options_name );
 		$url            = $plugin_options[ Settings_Page::$option_ticketmaster_url ] ?? 'https://ticketmaster.com.mx/search';
-		if ( $show_title ) {
+		if ( ! empty( $show_title ) ) {
 			$url .= '?q=' . urlencode( $show_title );
 		}
 		return $url;

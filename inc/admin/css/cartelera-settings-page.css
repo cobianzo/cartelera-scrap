@@ -2,7 +2,9 @@ html {
   scroll-behavior: smooth;
 }
 
-
+.dark-muted {
+  color: #534b4b;
+}
 .muted,
 .muted.color-success {
   color: #958787;
@@ -105,4 +107,55 @@ table.equal-width-columns tr {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s;
+}
+
+
+/*
+ACCORDION STYLES
+*/
+/* Estilos básicos */
+.accordion {
+  width: min-content;
+  max-width: 200px;;
+  input { display: none; }
+}
+
+/* Ocultamos el checkbox */
+.accordion-toggle {
+  display: none;
+}
+
+/* Estilo del label que actuará como botón */
+.accordion-label {
+  display: block;
+  padding: 5px 8px;
+  background: #3498db55;
+  color: white;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+.accordion-label:hover {
+  background: #2980b9;
+}
+
+/* Contenido del accordion - oculto por defecto */
+.accordion-content {
+  max-height: 0px; /* hidden */
+  overflow-y: hidden;
+  overflow-x: visible;
+  transition: max-height 0.3s ease-out, padding 0.3s ease;
+}
+
+/* Cuando el checkbox está marcado, mostramos el contenido */
+.accordion-toggle:checked ~ .accordion-content {
+  overflow: visible;
+  max-height: 500px; /* Ajusta este valor según tu contenido */
+}
+
+/* Cambiamos el color del label cuando está activo */
+.accordion-toggle:checked ~ .accordion-label {
+  background: #2980b9;
+  border-radius: 4px 4px 0 0;
 }
