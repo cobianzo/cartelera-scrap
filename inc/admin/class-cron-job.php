@@ -32,7 +32,7 @@ class Cron_Job {
 	 */
 	public static function start_schedule_cron_job_at_midnight(): void {
 		if ( ! wp_next_scheduled( self::CRONJOB_NAME ) ) {
-			$frequency = Settings_Page::get_plugin_setting( Settings_Page::$option_cron_frequency );
+			$frequency = Settings_Page::get_plugin_setting( Settings_Page::OPTION_CRON_FREQUENCY );
 			$midnight  = strtotime( 'tomorrow midnight' );
 			wp_schedule_event( $midnight, $frequency, self::CRONJOB_NAME );
 		}
@@ -80,7 +80,7 @@ class Cron_Job {
 			} else {
 				$text .= sprintf( 'The next batch will should have been executed in %s <br/>
 				You can click the button "Process Next Batch" to trigger it manually', $readable_difference );
-			}       
+			}
 		}
 
 		return $text;

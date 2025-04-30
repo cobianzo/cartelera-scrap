@@ -30,25 +30,28 @@ class Settings_Page {
 	private string $pageid;
 
 	// Name of the options saved in the database.
-	public static string $all_main_options_name = 'cartelera-scrap_main_options';
+	const ALL_MAIN_OPTIONS_NAME = 'cartelera-scrap_main_options';
 
 	// Key for scrapping cartelera (checked).
-	public static string $option_cartelera_url = 'cartelera_obras_page';
+	const OPTION_CARTELERA_URL = 'cartelera_obras_page';
 
 	// Key for scrapping tickemaster (source).
-	public static string $option_ticketmaster_url = 'ticketmaster_search_page';
+	const OPTION_TICKETMASTER_URL = 'ticketmaster_search_page';
 
 	// how many shows to process each time, before calling the next cron job.
-	public static string $number_processed_each_time = 'number_processed_each_time';
+	const NUMBER_PROCESSED_EACH_TIME = 'number_processed_each_time';
 
 	// stop comparing dates after these amount of days.
-	public static string $limit_days_forward_compare = 'limit_days_forward_compare';
+	const LIMIT_DAYS_FORWARD_COMPARE = 'limit_days_forward_compare';
+
+	// stop comparing dates after showing this amount of event dates.
+	const LIMIT_NUMBER_DATES_COMPARE = 'limit_number_dates_compare';
 
 	// Cron job fields
-	public static string $option_cron_frequency = 'cron_frequency';
+	const OPTION_CRON_FREQUENCY = 'cron_frequency';
 
 	// Submit button that when we click, we don't only save but run the cron job
-	public static string $option_cron_save_and_run = 'cron_save_and_run';
+	const OPTION_CRON_SAVE_AND_RUN = 'cron_save_and_run';
 
 	/**
 	 * Constructor for the Settings_Page class.
@@ -80,7 +83,7 @@ class Settings_Page {
 	 * @return string
 	 */
 	public static function get_plugin_setting( string $option_name ): string {
-		$options = get_option( self::$all_main_options_name );
+		$options = get_option( self::ALL_MAIN_OPTIONS_NAME );
 		return $options[ $option_name ] ?? '';
 	}
 
@@ -132,7 +135,7 @@ class Settings_Page {
 				<form action="options.php" method="post"> <!-- Form to save settings. -->
 					<?php
 					// Output nonce, action, and option group.
-					settings_fields( self::$all_main_options_name );
+					settings_fields( self::ALL_MAIN_OPTIONS_NAME );
 					?>
 
 					<div class="cartelera-scrap-settings-columns-wrapper">
@@ -172,15 +175,16 @@ class Settings_Page {
 		// Register the settings option in the database.
 		// Settings for section
 		register_setting(
-			self::$all_main_options_name,
-			self::$all_main_options_name,
+			self::ALL_MAIN_OPTIONS_NAME,
+			self::ALL_MAIN_OPTIONS_NAME,
 			[
 				'sanitize_callback' => function ( array $options ) {
 					// Sanitize the options before saving them. $options is an associative array ( optionname=>value).
-					$options[ self::$option_cartelera_url ]       = esc_url_raw( $options[ self::$option_cartelera_url ] );
-					$options[ self::$option_ticketmaster_url ]    = esc_url_raw( $options[ self::$option_ticketmaster_url ] );
-					$options[ self::$number_processed_each_time ] = intval( $options[ self::$number_processed_each_time ] ) ? intval( $options[ self::$number_processed_each_time ] ) : 1;
-					$options[ self::$limit_days_forward_compare ] = intval( $options[ self::$limit_days_forward_compare ] ) ? intval( $options[ self::$limit_days_forward_compare ] ) : 1;
+					$options[ self::OPTION_CARTELERA_URL ]       = esc_url_raw( $options[ self::OPTION_CARTELERA_URL ] );
+					$options[ self::OPTION_TICKETMASTER_URL ]    = esc_url_raw( $options[ self::OPTION_TICKETMASTER_URL ] );
+					$options[ self::NUMBER_PROCESSED_EACH_TIME ] = intval( $options[ self::NUMBER_PROCESSED_EACH_TIME ] ) ? intval( $options[ self::NUMBER_PROCESSED_EACH_TIME ] ) : 1;
+					$options[ self::LIMIT_DAYS_FORWARD_COMPARE ] = intval( $options[ self::LIMIT_DAYS_FORWARD_COMPARE ] ) ? intval( $options[ self::LIMIT_DAYS_FORWARD_COMPARE ] ) : 1;
+					$options[ self::LIMIT_NUMBER_DATES_COMPARE ] = intval( $options[ self::LIMIT_NUMBER_DATES_COMPARE ] ) ? intval( $options[ self::LIMIT_NUMBER_DATES_COMPARE ] ) : 1;
 
 					return $options;
 				},
@@ -218,24 +222,28 @@ class Settings_Page {
 		// cartelera-scrap_main_options[ticketmaster_search_page]
 		// ...
 
-		$this->register_input_field( self::$option_cartelera_url, $this->plugin_name . '_fields__section_leftcolumn' );
-		$this->register_input_field( self::$option_ticketmaster_url, $this->plugin_name . '_fields__section_leftcolumn' );
+		$this->register_input_field( self::OPTION_CARTELERA_URL, $this->plugin_name . '_fields__section_leftcolumn' );
+		$this->register_input_field( self::OPTION_TICKETMASTER_URL, $this->plugin_name . '_fields__section_leftcolumn' );
 
-		$this->register_input_field( self::$number_processed_each_time, $this->plugin_name . '_fields__section_leftcolumn', [
+		$this->register_input_field( self::NUMBER_PROCESSED_EACH_TIME, $this->plugin_name . '_fields__section_leftcolumn', [
 			'type'  => 'number',
 			'label' => __( 'Number of shows to process each time', $this->textdomain ),
 		] );
-		$this->register_input_field( self::$limit_days_forward_compare, $this->plugin_name . '_fields__section_leftcolumn', [
+		$this->register_input_field( self::LIMIT_DAYS_FORWARD_COMPARE, $this->plugin_name . '_fields__section_leftcolumn', [
 			'type'        => 'number',
-			'label'       => __( 'After these amounts of days from today, stop, comparing cartelera and ticketmaster dates.', $this->textdomain ),
+			'label'       => __( 'After these amounts of days from today, stop comparing cartelera and ticketmaster dates.', $this->textdomain ),
 			'description' => sprintf( __( 'Currently set to %s.', $this->textdomain ), date( 'Y-m-d H:i', Text_Parser::get_limit_datetime() ) ),
+		] );
+		$this->register_input_field( self::LIMIT_NUMBER_DATES_COMPARE, $this->plugin_name . '_fields__section_leftcolumn', [
+			'type'  => 'number',
+			'label' => __( 'After showing this amount of dates, stop comparing cartelera and ticketmaster dates.', $this->textdomain ),
 		] );
 
 		// Register fields Right column
 		// ===============================
 		// ...
 		$this->register_dropdown_field(
-			self::$option_cron_frequency,
+			self::OPTION_CRON_FREQUENCY,
 			$this->plugin_name . '_fields__section_rightcolumn',
 			[
 				''           => 'Deactivate current cron',
@@ -247,16 +255,16 @@ class Settings_Page {
 				'append' => '
 
 				',
-			] 
+			]
 		);
 
 		add_settings_field(
-			self::$option_cron_save_and_run,
+			self::OPTION_CRON_SAVE_AND_RUN,
 			'',
 			function () {
-				$new_value = (int) self::get_plugin_setting( self::$option_cron_save_and_run ) ? 0 : 1;
+				$new_value = (int) self::get_plugin_setting( self::OPTION_CRON_SAVE_AND_RUN ) ? 0 : 1;
 				echo '<button type="submit" name="'
-				. esc_attr( self::$all_main_options_name ) . '[' . esc_attr( self::$option_cron_save_and_run ) . ']"
+				. esc_attr( self::ALL_MAIN_OPTIONS_NAME ) . '[' . esc_attr( self::OPTION_CRON_SAVE_AND_RUN ) . ']"
 				value="' . esc_attr( $new_value ) . '" class="button button-secondary">Save and exectute now</button>
 				'; },
 			$this->pageid,
@@ -283,10 +291,10 @@ class Settings_Page {
 			$field_name, // Field ID.
 			$more_parems['label'],
 			function () use ( $field_name, $more_parems ): void {
-				$options      = get_option( self::$all_main_options_name ); // Retrieve the saved options.
+				$options      = get_option( self::ALL_MAIN_OPTIONS_NAME ); // Retrieve the saved options.
 				$option_value = $options[ $field_name ] ?? '';
 				?>
-			<input 
+			<input
 				<?php
 				if ( 'number' === $more_parems['type'] ) {
 					echo 'type="number" step="1" min="1" placeholder="type a number"';
@@ -294,7 +302,7 @@ class Settings_Page {
 					echo 'type="text" class="regular-text"';
 				}
 				?>
-				name="<?php echo esc_attr( self::$all_main_options_name ); ?>[<?php echo esc_attr( $field_name ); ?>]"
+				name="<?php echo esc_attr( self::ALL_MAIN_OPTIONS_NAME ); ?>[<?php echo esc_attr( $field_name ); ?>]"
 				value="<?php echo esc_attr( $option_value ); ?>">
 				<p class="description">
 					<?php echo esc_html( $more_parems['description'] ); ?>
@@ -326,10 +334,10 @@ class Settings_Page {
 			$field_name, // Field ID.
 			$more_params['label'],
 			function () use ( $field_name, $options_array, $more_params ): void {
-				$options      = get_option( self::$all_main_options_name ); // Retrieve the saved options.
+				$options      = get_option( self::ALL_MAIN_OPTIONS_NAME ); // Retrieve the saved options.
 				$option_value = $options[ $field_name ] ?? '';
 				?>
-				<select name="<?php echo esc_attr( self::$all_main_options_name ); ?>[<?php echo esc_attr( $field_name ); ?>]">
+				<select name="<?php echo esc_attr( self::ALL_MAIN_OPTIONS_NAME ); ?>[<?php echo esc_attr( $field_name ); ?>]">
 					<?php foreach ( $options_array as $value => $label ) : ?>
 						<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $option_value, $value ); ?>>
 							<?php echo esc_html( $label ); ?>

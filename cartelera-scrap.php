@@ -91,8 +91,8 @@ class Cartelera_Scrap_Plugin {
 	 */
 	public static function get_cartelera_url(): string {
 		// first compare the option in the database.
-		$plugin_options = get_option( Settings_Page::$all_main_options_name );
-		return $plugin_options[ Settings_Page::$option_cartelera_url ] ?? 'https://carteleradeteatro.mx/todas/';
+		$plugin_options = get_option( Settings_Page::ALL_MAIN_OPTIONS_NAME );
+		return $plugin_options[ Settings_Page::OPTION_CARTELERA_URL ] ?? 'https://carteleradeteatro.mx/todas/';
 	}
 
 	/**
@@ -103,8 +103,8 @@ class Cartelera_Scrap_Plugin {
 	 */
 	public static function get_ticketmaster_url( string $show_title = '' ): string {
 		// first compare the option in the database.
-		$plugin_options = get_option( Settings_Page::$all_main_options_name );
-		$url            = $plugin_options[ Settings_Page::$option_ticketmaster_url ] ?? 'https://ticketmaster.com.mx/search';
+		$plugin_options = get_option( Settings_Page::ALL_MAIN_OPTIONS_NAME );
+		$url            = $plugin_options[ Settings_Page::OPTION_TICKETMASTER_URL ] ?? 'https://ticketmaster.com.mx/search';
 		if ( ! empty( $show_title ) ) {
 			$url .= '?q=' . urlencode( $show_title );
 		}

@@ -2,8 +2,6 @@ TODO
 ===
 - BUG:When deployed in a server, the main cron calling the recursive onetimeoff job is not wokring ok.
 - Send email with report. Add it to the settings options.
-- Add the title in tickermaster to the info in the results.
-- apply 'suspende' text
 - Put a limit of dates from ticketmaster. Set it to 20, dont compare any further.
 - correct this error: 22-junio-2025 parses into two dates:
 (
@@ -12,8 +10,8 @@ TODO
     [2] => 2025-06-01
 )
 - Refactor: ideally we loop all shows and save all relevant information in the results option table.
-then we render those results in the table. (at the mo it calculates de output results as we render that table html)
-
+then we render those results in the table. (at the mo it calculates de output results as we render that table html) - WIP
+- Don't evaluate 'Eventos Internacionales' ie https://www.ticketmaster.com.mx/search?q=Waitress&region=804
 
 
 WHAT IS THIS PROJECT

@@ -26,7 +26,7 @@ class Settings_Hooks {
 		add_action( 'admin_init', [ __CLASS__, 'handle_export_action' ] );
 		add_action( self::ONETIMEOFF_CRONJOB_NAME, [ 'Cartelera_Scrap\Scrap_Actions', 'cartelera_process_one_batch' ] );
 
-		add_action( 'update_option_' . Settings_Page::$all_main_options_name, [ __CLASS__, 'start_or_stop_cron_job' ], 10, 2 );
+		add_action( 'update_option_' . Settings_Page::ALL_MAIN_OPTIONS_NAME, [ __CLASS__, 'start_or_stop_cron_job' ], 10, 2 );
 	}
 
 	/**
@@ -71,7 +71,7 @@ class Settings_Hooks {
 
 				update_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count', 0 ); // init the count of the shows being processed in this batch.
 				Scrap_Actions::cartelera_process_one_batch();
-				$shows_per_batch = Settings_Page::get_plugin_setting( Settings_Page::$number_processed_each_time ) ?? 10;
+				$shows_per_batch = Settings_Page::get_plugin_setting( Settings_Page::NUMBER_PROCESSED_EACH_TIME ) ?? 10;
 				$message         = sprintf( __( 'Processed %s theatre shows.', 'cartelera-scrap' ), $shows_per_batch );
 
 			} elseif ( 'action_scrap_single_show' === $action ) {
@@ -196,7 +196,7 @@ class Settings_Hooks {
 	public static function start_or_stop_cron_job( array $old_value, array $new_value ) {
 
 		// case 1. to schedule or stop the cron job for tonite
-		$frequency = $new_value[ Settings_Page::$option_cron_frequency ];
+		$frequency = $new_value[ Settings_Page::OPTION_CRON_FREQUENCY ];
 		if ( empty( $frequency ) ) {
 			Cron_Job::stop_schedule_cron_job();
 		} else {
@@ -204,9 +204,9 @@ class Settings_Hooks {
 		}
 
 		// case 2. start the cron job right now. (clicked button 'Save and execute now')
-		$trigger_cron = $new_value[ Settings_Page::$option_cron_save_and_run ] ?? null;
+		$trigger_cron = $new_value[ Settings_Page::OPTION_CRON_SAVE_AND_RUN ] ?? null;
 		if ( ! is_null( $trigger_cron )
-			&& ( empty( $old_value[ Settings_Page::$option_cron_save_and_run ] ) || $trigger_cron !== $old_value[ Settings_Page::$option_cron_save_and_run ] )
+			&& ( empty( $old_value[ Settings_Page::OPTION_CRON_SAVE_AND_RUN ] ) || $trigger_cron !== $old_value[ Settings_Page::OPTION_CRON_SAVE_AND_RUN ] )
 		) {
 			do_action( Cron_Job::CRONJOB_NAME );
 

@@ -72,7 +72,7 @@ class Scrap_Output {
 					<?php wp_nonce_field( 'nonce_action_field', 'nonce_action_scrapping' ); ?>
 					<input type="hidden" name="action" value="action_process_next_scheduled_show">
 					<div style="display:flex; align-items: center; gap: 10px;">
-						<input type="submit" class="button button-primary" value="<?php echo esc_attr( sprintf( __( 'Process next batch of %s', 'cartelera-scrap' ), Settings_Page::get_plugin_setting( Settings_Page::$number_processed_each_time ) ) ); ?>" />
+						<input type="submit" class="button button-primary" value="<?php echo esc_attr( sprintf( __( 'Process next batch of %s', 'cartelera-scrap' ), Settings_Page::get_plugin_setting( Settings_Page::NUMBER_PROCESSED_EACH_TIME ) ) ); ?>" />
 						<strong><?php echo esc_html( $next_show['text'] ); ?></strong>
 					</div>
 				</form>
@@ -84,6 +84,14 @@ class Scrap_Output {
 			<!-- click haction handled with js -->
 			<button type="button" id="filter-by-yes-tickermaster" class="button toggle-button">
 				Filter by results only in tickermaster
+			</button>
+			<!-- click haction handled with js -->
+			<button type="button" id="filter-by-fail-tickermaster" class="button toggle-button">
+				Filter by only failing matches
+			</button>
+			<!-- click haction handled with js -->
+			<button type="button" id="hide-full-url" class="button toggle-button">
+				Hide full url
 			</button>
 
 
@@ -162,7 +170,6 @@ class Scrap_Output {
 						// now that we have rendered them, remove also the dates outside the limit,
 						// we don't want to compared them with ticketmasters.
 						$datetimes_cartelera = Text_Parser::remove_dates_after_limit( $datetimes_cartelera );
-
 						ob_start();
 						$comparison_success         = self::render_col_comparison( $datetimes_cartelera, $datetimes_ticketmaster );
 						$col_comparison_result_html = ob_get_clean();
@@ -302,6 +309,7 @@ class Scrap_Output {
 				<li>
 					<a href="<?php echo esc_url( $result['ticketmaster']['url'] ); ?>" target="_blank">
 						<?php echo __( 'ticketmaster search link', 'cartelera-scrap' ); ?>
+						<span class="full-url"><?php echo esc_url( $result['ticketmaster']['url'] ); ?></span>
 					</a>
 				</li>
 			<?php endif; ?>
@@ -309,11 +317,15 @@ class Scrap_Output {
 				Title in tm:
 				<?php
 				$title_tm = $result['ticketmaster']['tm_title'] ?? '';
-				printf(
+				printf( // show the title if there is a thumbnail with it on the top of the results page
 					'<b>%s %s</b>',
 					( strtolower( $title_tm ) === strtolower( $result['title'] ) ) ? '✅' : '⚠️',
 					esc_html( $title_tm ? $title_tm : 'not found' )
 				);
+				if ( ! empty( $result['ticketmaster']['tm_titles_list'] ) ) {
+					echo '<br/> - ';
+					echo implode( '<br/> - ', $result['ticketmaster']['tm_titles_list'] );
+				}
 				?>
 				<?php
 				if ( isset( $result['ticketmaster']['search_results'] ) && (int) $result['ticketmaster']['search_results'] > 1 ) {
@@ -322,8 +334,8 @@ class Scrap_Output {
 				?>
 				<br/>
 				<?php if ( ! empty( $result['ticketmaster']['single_page_url'] ) ) : ?>
-				<a href="<?php echo esc_url( $result['ticketmaster']['single_page_url'] ); ?>" target="_blank">
-					<?php echo __( 'ticketmaster single page', 'cartelera-scrap' ); ?>
+					<a href="<?php echo esc_url( $result['ticketmaster']['single_page_url'] ); ?>" target="_blank">
+						<?php echo __( 'ticketmaster single page', 'cartelera-scrap' ); ?>
 					</a>
 				<?php endif ?>
 			</li>
@@ -331,6 +343,7 @@ class Scrap_Output {
 			<li>
 				<a href="<?php echo esc_url( $result['cartelera']['url'] ); ?>" target="_blank">
 					<?php echo __( 'cartelera link', 'cartelera-scrap' ); ?>
+					<span class="full-url"><?php echo esc_url( $result['cartelera']['url'] ); ?></span>
 				</a>
 			</li>
 			<li>
@@ -373,11 +386,13 @@ class Scrap_Output {
 					$datetimes[] = $datetime;
 
 					// check if date is later than our limit for muted output, and show it muted
+					$number_events_limit  = (int) Settings_Page::get_plugin_setting( Settings_Page::LIMIT_NUMBER_DATES_COMPARE ) ?? 20;
 					$date_timestamp_limit = Text_Parser::get_limit_datetime();
 					$not_analyzed         = $date_timestamp_limit ? \strtotime( $datetime ) > $date_timestamp_limit : false;
+					$not_analyzed         = $not_analyzed || $k >= $number_events_limit;
 					echo '<li
 						data-date="' . esc_attr( \strtotime( $datetime ) ) . '" class="'
-						. ( $not_analyzed ? esc_attr( 'muted' ) : '' ) . '">'
+						. ( $not_analyzed ? esc_attr( ( ( $k >= $number_events_limit ) ? 'dark-' : '' ) . 'muted' ) : '' ) . '">'
 						. esc_html( $datetime ) . sprintf( ' <small class="dark-muted">%s</small>', strtolower( date( 'D', strtotime( $datetime ) ) ) )
 						. '</li>';
 
@@ -480,7 +495,7 @@ class Scrap_Output {
 		foreach ( $sentences_dates as $dates_in_text ) {
 			if ( 0 === strpos( $dates_in_text, 'suspende' ) ) {
 				$removing_dates = Text_Parser::identify_dates_sentence_daterange_or_singledays( $dates_in_text );
-				$all_dates = array_diff($all_dates, $removing_dates);
+				$all_dates      = array_diff( $all_dates, $removing_dates );
 			} else {
 				$all_dates = array_merge(
 					$all_dates,
@@ -495,14 +510,18 @@ class Scrap_Output {
 		}
 		// dont show dates previous of today, but show dates outside of analysis for being to far ahread in time
 		echo '<ul>';
+		$count = 0;
 		foreach ( $datetimes_cartelera_after_today as $i => $show_date ) {
-
+			$count++;
 			// check if date is later than our limit
 			$date_timestamp_limit = Text_Parser::get_limit_datetime();
+			$number_events_limit  = (int) Settings_Page::get_plugin_setting( Settings_Page::LIMIT_NUMBER_DATES_COMPARE ) ?? 20;
 			$not_analyzed         = $date_timestamp_limit ? \strtotime( $show_date ) >= $date_timestamp_limit : false;
+			$not_analyzed         = $not_analyzed || $count > $number_events_limit;
 			echo '<li data-date="' . esc_attr( \strtotime( $show_date ) ) . '" class="'
-				. ( $not_analyzed ? esc_attr( 'muted' ) : 'normal' ) . '">'
-				. esc_html( $show_date ) . sprintf( ' <small class="dark-muted">%s</small>', strtolower( date( 'D', strtotime( $show_date ) ) ) )
+				. ( $not_analyzed ? esc_attr( ( ( $count >= $number_events_limit ) ? 'dark-' : '' ) . 'muted' ) : '' ) . '">'
+					. esc_html( $show_date )
+					. sprintf( ' <small class="dark-muted">%s</small>', strtolower( date( 'D', strtotime( $show_date ) ) ) )
 				. '</li>';
 
 			if ( $not_analyzed ) { // don't show more dates out of the range, simply mention how many left there are.

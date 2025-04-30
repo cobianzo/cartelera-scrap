@@ -160,7 +160,7 @@ class Text_Parser {
 	 * @return integer|null
 	 */
 	public static function get_limit_datetime(): int|null {
-		$days_from_now_limit  = (int) Settings_Page::get_plugin_setting( Settings_Page::$limit_days_forward_compare ) ?? null;
+		$days_from_now_limit  = (int) Settings_Page::get_plugin_setting( Settings_Page::LIMIT_DAYS_FORWARD_COMPARE ) ?? null;
 		$date_limit_timestamp = $days_from_now_limit ? strtotime( "+$days_from_now_limit days" ) : null;
 		return $date_limit_timestamp;
 	}
@@ -174,12 +174,18 @@ class Text_Parser {
 	 */
 	public static function remove_dates_after_limit( array $datetimes ): array {
 
-		$date_limit_timestamp = self::get_limit_datetime();
-		return array_filter( $datetimes, function ( $datetime ) use ( $date_limit_timestamp ) {
+		$max_count = (int) Settings_Page::get_plugin_setting( Settings_Page::LIMIT_NUMBER_DATES_COMPARE );
+		$datetimes = array_slice( $datetimes, 0, $max_count );
+
+		$date_limit_timestamp   = self::get_limit_datetime();
+		$dates_limit_by_faraway = array_filter( $datetimes, function ( $datetime ) use ( $date_limit_timestamp ) {
 			// accept any date beofre the limit date set in settings.
 			$timestamp = strtotime( $datetime ); // int
 			return $date_limit_timestamp ? $timestamp <= $date_limit_timestamp : true;
 		} );
+
+
+		return $dates_limit_by_faraway;
 	}
 
 	// to compare both ticketmaster and cartelera datetimes.
@@ -528,7 +534,7 @@ class Text_Parser {
 					$numbers = array_filter( $numbers, fn( $numb ) => is_numeric( $numb ) );
 					$months  = array_filter( $matches[2] ); // only one
 
-					if ( ( empty( $numbers) ) || ( empty( $numbers) ) ) {
+					if ( ( empty( $numbers ) ) || ( empty( $numbers ) ) ) {
 						continue;
 					}
 					// Combine numbers and months into valid dates
@@ -543,7 +549,7 @@ class Text_Parser {
 						foreach ( $months as $month ) {
 							$month_english = self::months()[ strtolower( $month ) ];
 							// echo "<h1>converting $number $month_english $year_for_this_part</h1>"; // TODELETE
-							$all_dates[]   = date( self::DATE_COMPARE_FORMAT, strtotime( "$number $month_english $year_for_this_part" ) );
+							$all_dates[] = date( self::DATE_COMPARE_FORMAT, strtotime( "$number $month_english $year_for_this_part" ) );
 						}
 					}
 				}

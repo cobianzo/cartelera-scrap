@@ -2,13 +2,17 @@ html {
   scroll-behavior: smooth;
 }
 
-.dark-muted {
-  color: #534b4b;
+.dark-muted,
+.dark-muted.color-danger,
+.dark-muted.color-success {
+  color: #3b353e;
 }
+
+
 .muted,
 .muted.color-danger,
 .muted.color-success {
-  color: #958787;
+  color: #534b4b;
 }
 
 .color-success {
@@ -22,7 +26,7 @@ html {
 .cartelera-scrap-settings-columns-wrapper {
  columns: 2;
  h2 {
-  break-before: column;
+  /* break-before: column; */
  }
 }
 

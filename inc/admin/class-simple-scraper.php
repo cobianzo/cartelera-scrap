@@ -345,7 +345,9 @@ class Simple_Scraper {
 			'search_results'  => count( $tm_found_results ),
 			'single_page_url' => $tm_show_page_link,
 			'tm_title'        => $tm_show_title,   // @TODO: retrieve title from the ticketmaster scrapped text
+			'tm_titles_list'  => [], // different titles in the search results items in the tm page
 			'dates'           => [],
+
 		];
 
 		foreach ( $li_nodes as $i => $li_item ) {
@@ -365,9 +367,21 @@ class Simple_Scraper {
 				];
 				continue; // Skip this iteration if $div is not a DOMElement or $all_divs is null.
 			}
+
 			$printed_date  = $all_divs ? $all_divs->item( 0 ) : null; // may25
 			$complete_date = $all_spans ? $all_spans->item( 0 ) : null;
 			$time_12h      = $all_spans ? $all_spans->item( 10 ) : null; // 8:30 p.m. (the span number 10th)
+			$title_maybe_1 = $all_spans ? $all_spans->item( 13 ) : null;
+			$title_maybe_2 = $all_spans ? $all_spans->item( 14 ) : null;
+
+			if ( str_contains( strtolower( $title_maybe_1->textContent ), strtolower( $title ) ) &&
+				! str_contains( strtolower( $title_maybe_2->textContent ), strtolower( $title ) ) ) {
+					$title_maybe_2 = $title_maybe_1;
+			}
+
+			if ( ! in_array( $title_maybe_2->textContent, $result_tickermaster['tm_titles_list'] ) ) {
+				$result_tickermaster['tm_titles_list'][] = self::cleanup_node_text( $title_maybe_2 );
+			}
 
 			$date_object_for_time = ! empty( $time_12h->textContent ) ?
 				\DateTime::createFromFormat( 'g:i a', str_replace( '.', '', strtolower( $time_12h->textContent ) ) ) : false;
