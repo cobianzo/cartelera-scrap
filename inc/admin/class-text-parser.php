@@ -56,30 +56,30 @@ class Text_Parser {
 
 	public static function split_by_months( string $phrase ): array {
 		$months_names   = array_keys( self::months() );
-    $months_pattern = implode('|', array_map('preg_quote', $months_names));
-    $pattern = '/((?:\d+-)?(?:' . $months_pattern . '))/';
+		$months_pattern = implode( '|', array_map( 'preg_quote', $months_names ) );
+		$pattern        = '/((?:\d+-)?(?:' . $months_pattern . '))/';
 
-    $parts = preg_split($pattern, $phrase, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+		$parts = preg_split( $pattern, $phrase, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY );
 
-    // Filtrar y agrupar correctamente
-    $result = [];
-    $buffer = '';
+		// Filtrar y agrupar correctamente
+		$result = [];
+		$buffer = '';
 
-    foreach ($parts as $part) {
-        if (preg_match('/^(?:\d+-)?(?:' . $months_pattern . ')$/', $part)) {
-            $result[] = $buffer . $part;
-            $buffer = '';
-        } else {
-            $buffer .= $part;
-        }
-    }
+		foreach ( $parts as $part ) {
+			if ( preg_match( '/^(?:\d+-)?(?:' . $months_pattern . ')$/', $part ) ) {
+				$result[] = $buffer . $part;
+				$buffer   = '';
+			} else {
+				$buffer .= $part;
+			}
+		}
 
-    if (!empty($buffer)) {
-        $result[] = $buffer;
-    }
+		if ( ! empty( $buffer ) ) {
+			$result[] = $buffer;
+		}
 
-    return array_filter($result);
-}
+		return array_filter( $result );
+	}
 
 	public static function weekdays(): array {
 		return [
@@ -135,7 +135,7 @@ class Text_Parser {
 	 * @return boolean
 	 */
 	public static function is_year( string $word ) {
-		return ( is_numeric($word) &&  4 === strlen( $word ) && 0 === strpos( $word, '20', 0 ) ) ;
+		return ( is_numeric( $word ) && 4 === strlen( $word ) && 0 === strpos( $word, '20', 0 ) );
 	}
 
 	/**
@@ -469,17 +469,19 @@ class Text_Parser {
 			$type = 'temporada';
 		} elseif ( strpos( $sanitized_date_sentence, 'finalizo' ) === 0 && strpos( $sanitized_date_sentence, '20' ) !== false ) {
 			$type = 'finalizo';
+		} elseif ( strpos( $sanitized_date_sentence, 'suspende' ) === 0 ) {
+			$type = 'suspende';
 		} else {
 			$type = 'singledays';
 		}
 
-		echo "<br><h1>$type</h1>";
+		// echo "<br><h1>$type</h1>"; // TODELETE
 
 		$months_names = array_keys( self::months() );
 		$current_year = date( 'Y' );
 		$all_dates    = [];
 
-		if ( 'singledays' === $type || 'finalizo' === $type ) {
+		if ( 'singledays' === $type || 'finalizo' === $type || 'suspende' === $type ) {
 			// Split the sentence with the separator of a year text (4-digit numbers starting with 20)
 			// $year_pattern = '/\b20\d{2}\b/';
 			$year_pattern = '/(20\d{2})/';  // Note the capturing parentheses
@@ -488,26 +490,27 @@ class Text_Parser {
 			// normally only one part.
 			// Every part should have among its elements at least one number (for day of month), one month name and end with the year.,
 			// if it's missing the month or the year, we append it (and make sure that the month is in english).
-			echo "<h2>Evaluates </h2>"; dd($parts);
+			// echo '<h2>Evaluates </h2>'; // TODELETE
+			// dd( $parts );
 			// parts  is
 			/*
 			(
-    			[0] => 13-27-abril-4-mayo-
-    			[1] => 2025
+				[0] => 13-27-abril-4-mayo-
+				[1] => 2025
 					.. and potentially there could be more, but in practice I didnt find more
 				) */
 			// evaluate a set of dates like '12-13-abril-2025' or '12-abril'
 			foreach ( $parts as $idx => $part ) {
 
-				if ( self::is_year( $part[0] ) ) {
+				if ( self::is_year( $part ) ) {
 					continue;
 				}
 
 				// get closest year
 				$year_for_this_part = date( 'Y' );
-				for ( $j = $idx + 1, $j < count ( $part ); $j++ ) {
-					if ( self:is_year( $part[ $j ] ) ) {
-						$year_for_this_part = $part[ $j ];
+				for ( $j = ( $idx + 1 ); $j < count( $parts ); $j++ ) {
+					if ( self::is_year( $parts[ $j ] ) ) {
+						$year_for_this_part = $parts[ $j ];
 						break;
 					}
 				}
@@ -516,8 +519,8 @@ class Text_Parser {
 				$subparts = self::split_by_months( $part );
 
 				foreach ( $subparts as $subpart ) {
-					echo "<h1>Evaluating subpart</h1>";
-					print_r($subpart);
+					// echo '<h1>Evaluating subpart</h1>'; // TODELETE
+					// print_r( $subpart );
 
 					// Extract numbers and the month name
 					preg_match_all( '/\b(3[01]|[12][0-9]|[1-9])\b|\b(' . implode( '|', $months_names ) . ')\b/i', $subpart, $matches );
@@ -525,23 +528,29 @@ class Text_Parser {
 					$numbers = array_filter( $numbers, fn( $numb ) => is_numeric( $numb ) );
 					$months  = array_filter( $matches[2] ); // only one
 
+					if ( ( empty( $numbers) ) || ( empty( $numbers) ) ) {
+						continue;
+					}
 					// Combine numbers and months into valid dates
-					echo '<h1>numbers</h1>'; dd($numbers);
-					echo '<h1>months</h1>'; dd($months);
+					// TODELETE
+					// echo '<h1>numbers</h1>';
+					// dd( $numbers );
+					// echo '<h1>months</h1>';
+					// dd( $months );
 
 					// Translate the month from spanihs to english
 					foreach ( $numbers as $number ) {
 						foreach ( $months as $month ) {
 							$month_english = self::months()[ strtolower( $month ) ];
-							$all_dates[]   = date( self::DATE_COMPARE_FORMAT, strtotime( "$number $month_english" ) );
+							// echo "<h1>converting $number $month_english $year_for_this_part</h1>"; // TODELETE
+							$all_dates[]   = date( self::DATE_COMPARE_FORMAT, strtotime( "$number $month_english $year_for_this_part" ) );
 						}
 					}
 				}
-
 			}
 
-			dd( $parts );
-			dd( $all_dates );
+			// dd( $parts ); // TODELETE
+			// dd( $all_dates );
 			// finished with $all_dates filled in.
 
 		} elseif ( 'range' === $type ) {
@@ -632,7 +641,7 @@ class Text_Parser {
 					}
 					// return [$first_part, $second_part];
 				}
-			}
+			} // end if range
 
 			$all_dates  = [];
 			$start_date = strtotime( $from_to[0] );
@@ -667,7 +676,7 @@ class Text_Parser {
 	 * with params (sunday, saturday-sunday-18:00-21:00) returns [`18:00`, `21:00`]
 	 *
 	 * @param string $weekday
-	 * @param array $weekday_and_times_sentences
+	 * @param array  $weekday_and_times_sentences
 	 * @return array
 	 */
 	public static function get_times_for_weekday( string $weekday, array $weekday_and_times_sentences ): array {
@@ -691,7 +700,7 @@ class Text_Parser {
 	public static function definitive_dates_and_times( array $valid_dates, array $weekday_and_times, array $sentences_dates ): array {
 
 		$definitive_dates_and_times = [];
-		print_r( $valid_dates );
+		// print_r( $valid_dates ); // TODELETE
 		foreach ( $valid_dates as $date ) {
 
 			if ( ! empty( $sentences_dates ) && 0 === strpos( $sentences_dates[0], 'finalizo-', 0 ) ) {

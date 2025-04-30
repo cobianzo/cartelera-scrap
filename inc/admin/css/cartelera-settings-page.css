@@ -6,6 +6,7 @@ html {
   color: #534b4b;
 }
 .muted,
+.muted.color-danger,
 .muted.color-success {
   color: #958787;
 }

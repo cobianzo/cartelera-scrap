@@ -127,7 +127,7 @@ class Scrap_Output {
 						$computed['sentences_cartelera_dates'] = Text_Parser::first_acceptance_of_date_text( $dates_text );
 						$computed['sentences_cartelera_times'] = Text_Parser::first_acceptance_of_times_text( $times_text );
 
-						
+
 					endforeach;
 
 					foreach ( $results as $i => $result ) :
@@ -478,10 +478,15 @@ class Scrap_Output {
 		// parse dates to get specific calendar dates.
 		$all_dates = [];
 		foreach ( $sentences_dates as $dates_in_text ) {
-			$all_dates = array_merge(
-				$all_dates,
-				Text_Parser::identify_dates_sentence_daterange_or_singledays( $dates_in_text )
-			);
+			if ( 0 === strpos( $dates_in_text, 'suspende' ) ) {
+				$removing_dates = Text_Parser::identify_dates_sentence_daterange_or_singledays( $dates_in_text );
+				$all_dates = array_diff($all_dates, $removing_dates);
+			} else {
+				$all_dates = array_merge(
+					$all_dates,
+					Text_Parser::identify_dates_sentence_daterange_or_singledays( $dates_in_text )
+				);
+			}
 		}
 		$datetimes_cartelera             = Text_Parser::definitive_dates_and_times( $all_dates, $sentences_times, $sentences_dates );
 		$datetimes_cartelera_after_today = Text_Parser::remove_dates_previous_of_today( $datetimes_cartelera );

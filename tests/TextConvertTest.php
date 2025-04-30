@@ -14,44 +14,30 @@ class TextConvertTest extends WP_UnitTestCase {
 		return $dates;
 	}
 
-	private function evaluate_case( string $label, string $input, array $expected ): void {
-		$result = Text_Parser::identify_dates_sentence_daterange_or_singledays( $input );
-		echo "\n--- [$label] INPUT: $input ---\n";
-		print_r( $result );
-		$this->assertEquals( $expected, $result );
+	private function evaluate_case( string $label, array $expected ): void {
+		$result = Text_Parser::identify_dates_sentence_daterange_or_singledays( $label );
+		echo "\n--- [$label] ---\n";
+		$this->assertEquals( $expected, $result , 'Error evaluating ' . $label . '  ' );
 	}
 
 	public function test_all_date_formats() {
-		$cases = [
-			'singledays'             => [
-				'input'    => '17-18-24-25-mayo-2025',
-				'expected' => [ '2025-05-17', '2025-05-18', '2025-05-24', '2025-05-25' ],
-			],
-			'range_simple'           => [
-				'input'    => 'del-1-al-30-marzo-2025',
-				'expected' => $this->date_range( '2025-03-01', '2025-03-30' ),
-			],
-			'range_full'             => [
-				'input'    => 'del-3-mayo-al-28-junio-2025',
-				'expected' => $this->date_range( '2025-05-03', '2025-06-28' ),
-			],
-			'temporada'              => [
-				'input'    => 'temporada-2025',
-				'expected' => $this->date_range( '2025-01-01', '2025-12-31' ),
-			],
-			'finalizo'               => [
-				'input'    => 'finalizo-28-abril-2025',
-				'expected' => [ '2025-04-28' ],
-			],
-			'multi_month_singledays' => [
-				'input'    => '13-27-abril-4-mayo-2025',
-				'expected' => [ '2025-04-13', '2025-04-27', '2025-05-04' ],
-			],
-		];
+		$path = __DIR__ . '/data/sentences-to-dates.json';
 
-		foreach ( $cases as $label => $case ) {
-						echo "----- Test $label => $case" . PHP_EOL . PHP_EOL;
-			$this->evaluate_case( $label, $case['input'], $case['expected'] );
+		if (!file_exists($path)) {
+			die("Archivo no encontrado: $path");
+		}
+
+		$json = file_get_contents($path);
+		$data = json_decode($json, true); // true => devuelve array asociativo
+
+		if (json_last_error() !== JSON_ERROR_NONE) {
+				die("Error al decodificar JSON: " . json_last_error_msg());
+		}
+
+		foreach ( $data as $sentence => $all_expected_dates ) {
+			echo PHP_EOL . "----- Test $sentence " . PHP_EOL . PHP_EOL;
+			echo "----- Expecting " . print_r( $all_expected_dates, 1) . PHP_EOL;
+			$this->evaluate_case( $sentence, $all_expected_dates );
 		}
 	}
 }
