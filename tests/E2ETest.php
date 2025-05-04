@@ -3,6 +3,7 @@
 use Cartelera_Scrap\Simple_Scraper;
 use Cartelera_Scrap\Scrap_Actions;
 use Cartelera_Scrap\Text_Parser;
+use Cartelera_Scrap\Helpers\Queue_And_Results;
 
 /**
  * usage
@@ -94,9 +95,9 @@ class E2ETest extends WP_UnitTestCase {
 			'cartelera'    => $result_cartelera,
 			'ticketmaster' => $result_tickermaster,
 		];
-		Scrap_Actions::add_show_result( $saved_result );
+		Queue_And_Results::add_show_result( $saved_result );
 
-		$show_results                 = Scrap_Actions::get_show_results();
+		$show_results                 = Queue_And_Results::get_show_results();
 		$first_show_result_to_process = $show_results[0];
 		$this->assertEquals( $saved_result, $first_show_result_to_process, '❌ - Error. The saved result does not match the first element of show results.' );
 		echo PHP_EOL . 'Saved on DB';

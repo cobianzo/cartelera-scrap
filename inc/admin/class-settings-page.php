@@ -6,6 +6,7 @@ use Cartelera_Scrap\Cron_Job;
 use Cartelera_Scrap\Scrap_Output;
 use Cartelera_Scrap\Scrap_Actions;
 use Cartelera_Scrap\Text_Parser;
+use Cartelera_Scrap\Helpers\Queue_And_Results;
 
 /**
  * Class Settings_Page
@@ -155,7 +156,7 @@ class Settings_Page {
 				</form>
 			<!-- Button to export -->
 			<?php
-			$count_results = count( Scrap_Actions::get_show_results() );
+			$count_results = count( Queue_And_Results::get_show_results() );
 			if ( $count_results ) :
 				$text = sprintf( __( 'Download json file for %s results', 'cartelera-scrap' ), $count_results );
 				self::create_form_button_with_action( 'action_export_scraping_results', $text, [ 'button-class' => 'button button-secondary' ] );

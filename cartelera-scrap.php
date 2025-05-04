@@ -56,13 +56,14 @@ class Cartelera_Scrap_Plugin {
 		// admin area
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-settings-page.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-settings-hooks.php';
-		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-scrap-output.php';
-		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-cron-job.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-queue-and-results.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-scrap-output.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-cron-job.php';
 
 		// static functions
-		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-text-parser.php';
-		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-simple-scraper.php';
-		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-scrap-actions.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-text-parser.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-simple-scraper.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-scrap-actions.php';
 	}
 
 	/**

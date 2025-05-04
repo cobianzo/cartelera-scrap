@@ -16,6 +16,7 @@ namespace Cartelera_Scrap;
 
 use Cartelera_Scrap\Admin\Settings_Hooks;
 use Cartelera_Scrap\Admin\Settings_Page;
+use Cartelera_Scrap\Helpers\Queue_And_Results;
 
 class Scrap_Output {
 
@@ -45,9 +46,9 @@ class Scrap_Output {
 		// check if the cron job is running
 		if ( wp_next_scheduled( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ) ) {
 			_e( '<h3>Scrapping is running as a cron job</h3>', 'cartelera-scrap' );
-			printf( __( '<p>Shows in the processing queue waiting to be processed: %s<br />', 'cartelera-scrap' ), Scrap_Actions::get_queued_count() );
-			printf( __( 'Already processed shows: %s</p>', 'cartelera-scrap' ), count( Scrap_Actions::get_show_results() ) );
-			$queue = Scrap_Actions::get_first_queued_show();
+			printf( __( '<p>Shows in the processing queue waiting to be processed: %s<br />', 'cartelera-scrap' ), Queue_And_Results::get_queued_count() );
+			printf( __( 'Already processed shows: %s</p>', 'cartelera-scrap' ), count( Queue_And_Results::get_show_results() ) );
+			$queue = Queue_And_Results::get_first_queued_show();
 			if ( $queue ) {
 				echo '<p>Next show to Scrap:  ' . $queue['text'] . '</p>';
 			} else {
@@ -65,7 +66,7 @@ class Scrap_Output {
 				__( 'Cleanup results and start processing NOW', 'cartelera-scrap' )
 			);
 
-			$next_show = Scrap_Actions::get_first_queued_show();
+			$next_show = Queue_And_Results::get_first_queued_show();
 			if ( $next_show ) :
 				?>
 				<form method="post" style="display: flex; align-items: center; gap: 10px;">
@@ -105,7 +106,7 @@ class Scrap_Output {
 	}
 
 	public static function render_table_with_results() {
-		$results = Scrap_Actions::get_show_results();
+		$results = Queue_And_Results::get_show_results();
 		if ( $results ) :
 			?>
 			<h2>Results (<?php echo esc_html( count( $results ) ); ?>) </h2>

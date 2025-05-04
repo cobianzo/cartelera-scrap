@@ -1,5 +1,10 @@
 TODO
 ===
+- Refactor code in
+  --- Text_Sanitizers
+	--- Text_Into_Dates
+	--- Simple_Parser
+
 - BUG:When deployed in a server, the main cron calling the recursive onetimeoff job is not wokring ok.
 - Send email with report. Add it to the settings options.
 - Put a limit of dates from ticketmaster. Set it to 20, dont compare any further.
@@ -12,7 +17,6 @@ TODO
 - Refactor: ideally we loop all shows and save all relevant information in the results option table.
 then we render those results in the table. (at the mo it calculates de output results as we render that table html) - WIP
 - Don't evaluate 'Eventos Internacionales' ie https://www.ticketmaster.com.mx/search?q=Waitress&region=804
-
 
 WHAT IS THIS PROJECT
 ===
@@ -132,7 +136,29 @@ Use
 `npm run test:runcron`  - to run the next recursive one time off cron job
 `npm run test:options`  - to see the settings about this plugin saved in the DB.
 
-## Cases to Test
+## Cases to Test (todelete, this is old)
 - when the cartelera title is not in ticketmaster
 - when the cartelera title has more than one show title occurrence in ticketmaster
 - when the cartelera title has a result in ticketmaster
+
+## Useful WP CLI commands
+
+// === USEFUL ACTIONS
+
+// check the queue
+wp-env run cli wp option get cartelera-scrap_shows_queue
+
+// results
+wp-env run cli wp option get cartelera-scrap_shows_results
+
+// check option
+wp-env run cli wp option get test-updated
+
+// check cron jobs scheduled
+wp-env run cli wp cron event list
+
+// delete the cron job
+wp-env run cli wp cron event delete cartelera_process_next_show
+
+// run of the cron job
+wp-env run cli wp cron event run cartelera_process_next_show
