@@ -11,7 +11,7 @@
  * Text Domain: cartelera-scrap
  * Domain Path: /languages
  *
- * @package CarteleraScrap
+ * @package Cartelera_Scrap
  */
 
 namespace Cartelera_Scrap;
@@ -53,16 +53,23 @@ class Cartelera_Scrap_Plugin {
 			require_once CARTELERA_SCRAP_PLUGIN_DIR . 'vendor/autoload.php';
 		}
 
-		// admin area
+		// admin area.
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-settings-page.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-settings-hooks.php';
-		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-queue-and-results.php';
+
+		// hepers.
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/helpers/class-months-and-days.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/helpers/class-queue-and-results.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/helpers/class-text-sanization.php';
+
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-scrap-output.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-cron-job.php';
 
-		// static functions
+		// static functions.
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-text-parser.php';
-		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-simple-scraper.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-scraper.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-scraper-cartelera.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-scraper-ticketmaster.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-scrap-actions.php';
 	}
 
@@ -107,17 +114,17 @@ class Cartelera_Scrap_Plugin {
 		$plugin_options = get_option( Settings_Page::ALL_MAIN_OPTIONS_NAME );
 		$url            = $plugin_options[ Settings_Page::OPTION_TICKETMASTER_URL ] ?? 'https://ticketmaster.com.mx/search';
 		if ( ! empty( $show_title ) ) {
-			$url .= '?q=' . urlencode( $show_title );
+			$url .= '?q=' . rawurlencode( $show_title );
 		}
 		return $url;
 	}
 }
 
-
+// phpcs:disable
 /**
  * Debugging functions @TODELETE:
  *
- * @param mixed $var
+ * @param mixed $var Any var.
  * @return void
  */
 function dd( mixed $var ) {
@@ -135,6 +142,7 @@ function ddie( mixed $var ) {
 	dd( $var );
 	wp_die();
 }
+// phpcs:enable
 
 // Initialize the plugin.
 new Cartelera_Scrap_Plugin();

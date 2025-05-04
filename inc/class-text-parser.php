@@ -10,6 +10,7 @@ namespace Cartelera_Scrap;
 
 use Cartelera_Scrap\Admin\Settings_Page;
 use Cartelera_Scrap\Cartelera_Scrap_Plugin;
+use Cartelera_Scrap\Helpers\Months_And_Days;
 
 /**
  * Text Parser Class
@@ -32,30 +33,8 @@ class Text_Parser {
 	const DATE_COMPARE_FORMAT = 'Y-m-d';
 	const TIME_COMPARE_FORMAT = 'H:i';
 
-	/**
-	 * List of months
-	 *
-	 * @return array
-	 */
-	public static function months(): array {
-		return [
-			'enero'      => 'january',
-			'febrero'    => 'february',
-			'marzo'      => 'march',
-			'abril'      => 'april',
-			'mayo'       => 'may',
-			'junio'      => 'june',
-			'julio'      => 'july',
-			'agosto'     => 'august',
-			'septiembre' => 'september',
-			'octubre'    => 'october',
-			'noviembre'  => 'november',
-			'diciembre'  => 'december',
-		];
-	}
-
 	public static function split_by_months( string $phrase ): array {
-		$months_names   = array_keys( self::months() );
+		$months_names   = array_keys( Months_And_Days::months() );
 		$months_pattern = implode( '|', array_map( 'preg_quote', $months_names ) );
 		$pattern        = '/((?:\d+-)?(?:' . $months_pattern . '))/';
 
@@ -81,22 +60,7 @@ class Text_Parser {
 		return array_filter( $result );
 	}
 
-	public static function weekdays(): array {
-		return [
-			'lunes'     => 'monday',
-			'martes'    => 'tuesday',
-			'miercoles' => 'wednesday',
-			'miércoles' => 'wednesday',
-			'jueves'    => 'thursday',
-			'viernes'   => 'friday',
-			'sábado'    => 'saturday',
-			'sabado'    => 'saturday',
-			'sabados'   => 'saturday',
-			'sábados'   => 'saturday',
-			'domingo'   => 'sunday',
-			'domingos'  => 'sunday',
-		];
-	}
+
 
 	public static function get_weekday( string $date ) {
 		if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date ) ) {
@@ -107,36 +71,8 @@ class Text_Parser {
 		}
 		return null; // Return null if the date format is invalid or conversion fails
 	}
-	/**
-	 * Checks if the text contains the current year or a month's name
-	 *
-	 * @param string $text
-	 * @return boolean
-	 */
-	public static function text_contains_a_date( string $text ): bool {
-		$this_year = date( 'Y' );
-		if ( stripos( $text, 'de ' . $this_year ) !== false
-		|| stripos( $text, 'temporada ' . $this_year ) !== false ) {
-			return true;
-		}
-		foreach ( self::months() as $month => $number ) {
-			if ( strpos( $text, 'de ' . $month ) !== false ) {
-				return true;
-			}
-		}
 
-		return false;
-	}
 
-	/**
-	 * if @word is 4 digits and starts by 20
-	 *
-	 * @param string $word ie 2025
-	 * @return boolean
-	 */
-	public static function is_year( string $word ) {
-		return ( is_numeric( $word ) && 4 === strlen( $word ) && 0 === strpos( $word, '20', 0 ) );
-	}
 
 	/**
 	 * Undocumented function
@@ -253,7 +189,7 @@ class Text_Parser {
 		}, $text );
 
 		// Define allowed Spanish month names
-		$months = array_map( fn( string $month_name ) => $month_name, array_keys( self::months() ) );
+		$months = array_map( fn( string $month_name ) => $month_name, array_keys( Months_And_Days::months() ) );
 
 		// Allow only "del-", "-al-", "suspende", months, numbers, hyphens, and years numbers
 		$allowed_pattern = '/(?:del\-|suspende|cierre|finalizo|\-de\-temporada|temporada|(?:' . implode( '|', $months ) . ')|-al-[0-9]{1,2}|\b[0-9]{1,2}\b|\b20[0-9]{2}\b|-)/';
@@ -274,11 +210,11 @@ class Text_Parser {
 		// 2. Paréntesis de apertura '(' -> separador
 		// 3. Año de 4 dígitos mayor que 2025 -> separador
 		$pattern = '/
-        (\.\s+|\.?$)             # Punto seguido de espacio o final de texto
+        (\.\s+|\.?$)
         |
-        (\()                    # Paréntesis de apertura
+        (\()
         |
-        (\b(202[6-9]|20[3-9]\d|2[1-9]\d{2}|[3-9]\d{3})\b) # Año > 2025
+        (\b(202[6-9]|20[3-9]\d|2[1-9]\d{2}|[3-9]\d{3})\b)
     /x';
 
 		// Realizar la separación
@@ -303,7 +239,7 @@ class Text_Parser {
 		// Lista de patrones válidos
 		// esto funciona bastante bien pero opte por otro metodo.
 		/*
-		$pattern_meses = implode( '|', array_map( fn( string $month_name ) => $month_name, array_keys( self::months() ) ) );
+		$pattern_meses = implode( '|', array_map( fn( string $month_name ) => $month_name, array_keys( Months_And_Days::months() ) ) );
 		$valid_patterns = [
 			// 23, 25 y 30 de marzo y 6 abril de 2025.
 			'/(?:(?:\d{1,2}(?:, ?)?)+(?: y \d{1,2})? de (?:' . $pattern_meses . ')(?:,? ?))+de \d{4}\b|(?:\d{1,2}(?:, ?)?)+(?: y \d{1,2})? de (?:' . $pattern_meses . ')\b/',
@@ -336,7 +272,7 @@ class Text_Parser {
 
 		// in order to be valid, the sentence must contain:
 		// at least one number between 1 and 31 and one name of month (in spanish)
-		$pattern         = '/\b(3[01]|[12][0-9]|[1-9])\b.*\b(' . implode( '|', array_keys( self::months() ) ) . ')\b/i';
+		$pattern         = '/\b(3[01]|[12][0-9]|[1-9])\b.*\b(' . implode( '|', array_keys( Months_And_Days::months() ) ) . ')\b/i';
 		$valid_sentences = [];
 		foreach ( $sentences as $i => $phrase ) {
 			if ( str_contains( $phrase, 'temporada' ) && str_contains( $phrase, '20' ) ) {
@@ -362,7 +298,7 @@ class Text_Parser {
 	public static function first_acceptance_of_times_text( string $input_time_text ): array {
 
 		// Lista de patrones válidos
-		$pattern_weekdays = implode( '|', array_keys( self::weekdays() ) );
+		$pattern_weekdays = implode( '|', array_keys( Months_And_Days::weekdays() ) );
 
 		$valid_patterns = [
 
@@ -408,7 +344,7 @@ class Text_Parser {
 					$palabra_lower = mb_strtolower( $palabra );
 
 					// Mantener si es día de la semana
-				if ( in_array( $palabra_lower, array_keys( self::weekdays() ) ) ) {
+				if ( in_array( $palabra_lower, array_keys( Months_And_Days::weekdays() ) ) ) {
 						return true;
 				}
 
@@ -421,7 +357,7 @@ class Text_Parser {
 			} );
 
 			$resultado = array_map( function ( $palabra ) {
-				$array_weekdays_translation = self::weekdays();
+				$array_weekdays_translation = Months_And_Days::weekdays();
 				// Translate if it's a day of the week
 				if ( isset( $array_weekdays_translation[ $palabra ] ) ) {
 					return $array_weekdays_translation[ $palabra ];
@@ -447,7 +383,7 @@ class Text_Parser {
 		foreach ( $sentences as $sentence ) {
 			$words = explode( '-', $sentence );
 			foreach ( $words as $word ) {
-				if ( in_array( $word, self::weekdays() ) ) {
+				if ( in_array( $word, Months_And_Days::weekdays() ) ) {
 					$weekdays[] = $word;
 				}
 			}
@@ -483,7 +419,7 @@ class Text_Parser {
 
 		// echo "<br><h1>$type</h1>"; // TODELETE
 
-		$months_names = array_keys( self::months() );
+		$months_names = array_keys( Months_And_Days::months() );
 		$current_year = date( 'Y' );
 		$all_dates    = [];
 
@@ -508,14 +444,14 @@ class Text_Parser {
 			// evaluate a set of dates like '12-13-abril-2025' or '12-abril'
 			foreach ( $parts as $idx => $part ) {
 
-				if ( self::is_year( $part ) ) {
+				if ( Months_And_Days::is_year( $part ) ) {
 					continue;
 				}
 
 				// get closest year
 				$year_for_this_part = date( 'Y' );
 				for ( $j = ( $idx + 1 ); $j < count( $parts ); $j++ ) {
-					if ( self::is_year( $parts[ $j ] ) ) {
+					if ( Months_And_Days::is_year( $parts[ $j ] ) ) {
 						$year_for_this_part = $parts[ $j ];
 						break;
 					}
@@ -547,7 +483,7 @@ class Text_Parser {
 					// Translate the month from spanihs to english
 					foreach ( $numbers as $number ) {
 						foreach ( $months as $month ) {
-							$month_english = self::months()[ strtolower( $month ) ];
+							$month_english = Months_And_Days::months()[ strtolower( $month ) ];
 							// echo "<h1>converting $number $month_english $year_for_this_part</h1>"; // TODELETE
 							$all_dates[] = date( self::DATE_COMPARE_FORMAT, strtotime( "$number $month_english $year_for_this_part" ) );
 						}
@@ -571,7 +507,7 @@ class Text_Parser {
 
 
 			// Extract months mentioned in the sentence
-			preg_match_all( '/\b(' . implode( '|', array_keys( self::months() ) ) . ')\b/i', $sanitized_date_sentence, $matches );
+			preg_match_all( '/\b(' . implode( '|', array_keys( Months_And_Days::months() ) ) . ')\b/i', $sanitized_date_sentence, $matches );
 			$months  = array_unique( $matches[1] );
 			$from_to = [];
 			// if ! count($months) || count($months) > 2  ==> error
@@ -592,20 +528,20 @@ class Text_Parser {
 						return is_numeric( $word ) || in_array( strtolower( $word ), $months_names );
 					} );
 					// Translate months into english
-					$valid_words   = array_map( fn( $word ) => in_array( $word, $months_names ) ? self::months()[ $word ] : $word, $valid_words );
+					$valid_words   = array_map( fn( $word ) => in_array( $word, $months_names ) ? Months_And_Days::months()[ $word ] : $word, $valid_words );
 					$from_to[ $i ] = $valid_words;
 				}
 
 				// append month to 'from' part, translated to english.
 				$contains_month = false;
-				foreach ( self::months() as $month_english ) {
+				foreach ( Months_And_Days::months() as $month_english ) {
 					if ( in_array( $month_english, $from_to[0] ) ) {
 						$contains_month = true;
 						break;
 					}
 				}
 				if ( ! $contains_month ) {
-					$from_to[0][] = self::months()[ $common_month ];
+					$from_to[0][] = Months_And_Days::months()[ $common_month ];
 				}
 
 				// append current year to each part if not included.
@@ -635,7 +571,7 @@ class Text_Parser {
 							return is_numeric( $word ) || in_array( strtolower( $word ), $months_names );
 						} );
 						// Translate months into english
-						$valid_words = array_map( fn( $word ) => in_array( $word, $months_names ) ? self::months()[ $word ] : $word, $valid_words );
+						$valid_words = array_map( fn( $word ) => in_array( $word, $months_names ) ? Months_And_Days::months()[ $word ] : $word, $valid_words );
 
 						// if the $valid_words doesnt finish in a year later than 2024, then add the current year to the text
 						$last_word = end( $valid_words );

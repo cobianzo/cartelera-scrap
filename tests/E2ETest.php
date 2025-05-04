@@ -4,6 +4,7 @@ use Cartelera_Scrap\Simple_Scraper;
 use Cartelera_Scrap\Scrap_Actions;
 use Cartelera_Scrap\Text_Parser;
 use Cartelera_Scrap\Helpers\Queue_And_Results;
+use Cartelera_Scrap\Helpers\Text_Sanization;
 
 /**
  * usage
@@ -91,7 +92,7 @@ class E2ETest extends WP_UnitTestCase {
 
 		echo "\n ======= Step3. Save the result int results option in DB🎬 🤯========";
 		$saved_result = [
-			'title'        => Simple_Scraper::sanitize_scraped_text( $show_title ),
+			'title'        => Text_Sanization::sanitize_scraped_text( $show_title ),
 			'cartelera'    => $result_cartelera,
 			'ticketmaster' => $result_tickermaster,
 		];

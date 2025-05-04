@@ -7,10 +7,8 @@
  * This class is responsible for managing a queue and storing results.
  * It provides methods to handle tasks in a queue and retrieve the processed results.
  *
- *
- *
- * @package CarteleraScrap
- * @subpackage Inc
+ * @package Cartelera_Scrap
+ * @subpackage Helpers
  */
 
 namespace Cartelera_Scrap\Helpers;

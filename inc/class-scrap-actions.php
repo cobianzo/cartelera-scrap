@@ -2,16 +2,19 @@
 /**
  * This file contains the implementation of [describe the purpose of the file briefly].
  *
- * @package CarteleraScrap
+ * @package Cartelera_Scrap
  *
  * @description [Provide a brief description of the file's functionality or purpose.]
  */
 
 namespace Cartelera_Scrap;
 
+use Cartelera_Scrap\Scraper\Scraper_Cartelera;
+use Cartelera_Scrap\Scraper\Scraper_Ticketmaster;
 use Cartelera_Scrap\Admin\Settings_Page;
 use Cartelera_Scrap\Admin\Settings_Hooks;
 use Cartelera_Scrap\Helpers\Queue_And_Results;
+use Cartelera_Scrap\Helpers\Text_Sanization;
 
 /**
  * The class Scrap_Actions handles the custom action triggered via a POST request
@@ -29,7 +32,7 @@ class Scrap_Actions {
 
 		// Retrieve all html for the cartelera URL.
 		// and set them to the processing queue.
-		$all_shows = Simple_Scraper::scrap_all_shows_in_cartelera();
+		$all_shows = Scraper_Cartelera::scrap_all_shows_in_cartelera();
 		if ( ! $all_shows || is_wp_error( $all_shows ) ) {
 			wp_safe_redirect( add_query_arg(
 				'error', 'Error: No shows found in cartelera.',
@@ -107,21 +110,21 @@ class Scrap_Actions {
 			 */
 
 			// Get the ticketmaster URL.
-			$result_tickermaster = Simple_Scraper::scrap_one_tickermaster_show( $show['text'] );
+			$result_tickermaster = Scraper_Ticketmaster::scrap_one_tickermaster_show( $show['text'] );
 			if ( $result_tickermaster && ! is_wp_error( $result_tickermaster ) ) {
 
 				/**
 				 * =============================================
 				 * 2. GET THE DATA (dates) about the show FROM cartelera https://carteleradeteatro.mx/2025/name-of-show
 				 */
-				$result_cartelera = Simple_Scraper::scrap_one_cartelera_show( $show['href'] );
+				$result_cartelera = Scraper_Cartelera::scrap_one_cartelera_show( $show['href'] );
 
 				/**
 				 * =============================================
 				 * 3. SAVE BOTH DATA IN THE DB Results
 				 */
 				Queue_And_Results::add_show_result( [
-					'title'        => Simple_Scraper::sanitize_scraped_text( $show['text'] ),
+					'title'        => Text_Sanization::sanitize_scraped_text( $show['text'] ),
 					'cartelera'    => $result_cartelera,
 					'ticketmaster' => $result_tickermaster,
 				] );

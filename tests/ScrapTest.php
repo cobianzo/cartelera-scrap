@@ -1,6 +1,6 @@
 <?php
 
-use Cartelera_Scrap\Simple_Scraper;
+use Cartelera_Scrap\Scraper\Scraper_Ticketmaster;
 
 /**
  * Tests dedicated to check if we can scrap and retrieve the text that
@@ -154,7 +154,7 @@ class ScrapTest extends WP_UnitTestCase {
 		$tm_html_example_file = __DIR__ . '/data/' . $filename;
 		$tm_html_page         = self::get_file_contents_html_file( $this, $tm_html_example_file );
 
-		$scrapper          = new Simple_Scraper( $tm_html_page );
+		$scrapper          = new Scraper_Ticketmaster( $tm_html_page );
 		$shows_occurrences = $scrapper->ticketmaster_scrap_number_results( $search_title_term );
 		// Output
 		/*
