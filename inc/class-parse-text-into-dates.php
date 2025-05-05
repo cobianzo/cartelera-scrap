@@ -101,7 +101,7 @@ class Parse_Text_Into_Dates {
 	public static function remove_dates_previous_of_today( array $datetimes ): array {
 
 		return array_filter( $datetimes, function ( $datetime ) {
-			$today_start = strtotime( 'today 00:01' ); // int
+			$today_start = strtotime( 'now' ); // int
 			$timestamp   = strtotime( $datetime ); // int
 			return $timestamp >= $today_start;
 		} );
@@ -773,7 +773,7 @@ class Parse_Text_Into_Dates {
 		return $computed_tm_result;
 	}
 
-	public static function computed_data_comparison_result( array $result ): array {
+	public static function computed_dates_comparison_result( array $result ): array {
 
 		$dates_ca     = $result['computed']['cartelera']['definitive_datetimes']['output'] ?? [];
 		$dates_tm     = $result['computed']['ticketmaster']['definitive_datetimes']['output'] ?? [];
@@ -790,5 +790,76 @@ class Parse_Text_Into_Dates {
 		}
 
 		return $comparison;
+	}
+
+	/**
+	 * If we remove the previous dates to today, and the dates that exceed the limit in count and
+	 * days forward (set in setttings), then we can check if the comparison was successful.
+	 *
+	 * @param array $result
+	 * @return boolean
+	 */
+	public static function computed_is_comparison_successful( array &$result ): bool {
+
+		// retrieve the already computed data for comparisons and we
+		// add an extra layer of validation: we don't compare dates outside
+		// of the given ranges.
+		$dates_info   = $result['computed']['comparison'];
+		$limit_below  = strtotime( 'now' );
+		$limit_above  = self::get_limit_datetime();
+		$number_events_limit  = (int) Settings_Page::get_plugin_setting( Settings_Page::LIMIT_NUMBER_DATES_COMPARE ) ?? 20;
+
+		$count_valid_dates_cart = 0;
+		$count_valid_dates_tm   = 0;
+		$is_successful          = true;
+		foreach ( $dates_info as $timestamp => $date_info ) {
+			// init. We'll append this data into $result[computer][comparison][<the timestamp>][extra] .
+			$extra_info = [
+				'invalid-for-comparison' => '',
+			];
+
+			if ( $timestamp < $limit_below ) {
+				$extra_info['invalid-for-comparison'] .= $extra_info['invalid-for-comparison'] ? ', ' : '' . 'date already passed';
+			}
+			if ( $timestamp > $limit_above ) {
+				$extra_info['invalid-for-comparison'] .= $extra_info['invalid-for-comparison'] ? ', ' : '' . 'date too far ahead';
+			}
+
+			// Now we dont evaluate the date if it's over the limit of comparable events.
+			if ( empty( $extra_info['invalid-for-comparison'] ) ) {
+				if ( $date_info['cartelera'] ) {
+					$count_valid_dates_cart++;
+					$extra_info['count-in-cartelera'] = $count_valid_dates_cart;
+					if ( $count_valid_dates_cart > $number_events_limit
+						&& ! $date_info['success'] ) {
+							$extra_info['invalid-for-comparison'] .= $extra_info['invalid-for-comparison'] ? ', ' : '' . 'cartelera dates already passed the limit';
+					}
+				}
+				if ( $date_info['ticketmaster'] ) {
+					$count_valid_dates_tm++;
+					$extra_info['count-in-ticketmaster'] = $count_valid_dates_tm;
+					if ( $count_valid_dates_tm > $number_events_limit
+						&& ! $date_info['success'] ) {
+							$extra_info['invalid-for-comparison'] .= $extra_info['invalid-for-comparison'] ? ', ' : '' . 'ticketmaster dates already passed the limit';
+					}
+				}
+			}
+
+			// Now the definitive comparison if it comparable.
+			if ( empty( $extra_info['invalid-for-comparison'] ) ) {
+				$extra_info['success-icon'] = $is_successful ? '✅' : '❌';
+				// the value for the whole result:
+				$is_successful = $is_successful && $date_info['success'];
+			} else {
+				$extra_info['success-icon'] = '😵 (not evaluable)';
+			}
+
+			$dates_info[ $timestamp ]['extra'] = $extra_info;
+		}
+
+		// Update the result with extra information
+		$result['computed']['comparison'] = $dates_info;
+
+		return $is_successful;
 	}
 }

@@ -163,11 +163,15 @@ class Queue_And_Results {
 		$results = self::get_show_results();
 
 		// append computed data:
-		$computed_cartelera_result          = Parse_Text_Into_Dates::computed_data_cartelera_result( $result );
 		$result['computed']                 = empty( $result['computed'] ) ? [] : $result['computed'];
-		$result['computed']['cartelera']    = $computed_cartelera_result;
+		$result['computed']['cartelera']    = Parse_Text_Into_Dates::computed_data_cartelera_result( $result );
 		$result['computed']['ticketmaster'] = Parse_Text_Into_Dates::computed_data_ticketmaster_result( $result );
-		$result['computed']['comparison']   = Parse_Text_Into_Dates::computed_data_comparison_result( $result );
+		$result['computed']['comparison']   = Parse_Text_Into_Dates::computed_dates_comparison_result( $result );
+
+		// TODELETE;
+		// $is_successful = Parse_Text_Into_Dates::computed_is_comparison_successful( $result );
+		// echo $is_successful ? '✅ ' : '❌ ';
+		// \Cartelera_Scrap\ddie( $result );
 
 		// First looks for the show with the same title, in case it needs to update, not append.
 		foreach ( $results as $i => $existing_result ) {

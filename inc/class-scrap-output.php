@@ -125,21 +125,10 @@ class Scrap_Output {
 				</thead>
 				<tbody>
 					<?php
-					// WIP: calculate all computed, and show utput based on these calculations
-					// if I dont finish this, @TOELETE.
-					// calculate all the computed values based on what we scrapped.
 					foreach ( $results as $i => $result ) :
-						$dates_text = $result['cartelera']['scraped_dates_text'] ?? '';
-						$times_text = $result['cartelera']['scraped_time_text'] ?? '';
-						$computed   = [];
-						// cartelera computed: sentences cartelera dates and times
-						$computed['sentences_cartelera_dates'] = Parse_Text_Into_Dates::first_acceptance_of_date_text( $dates_text );
-						$computed['sentences_cartelera_times'] = Parse_Text_Into_Dates::first_acceptance_of_times_text( $times_text );
 
+						$is_result_successful = Parse_Text_Into_Dates::computed_is_comparison_successful( $result );
 
-					endforeach;
-
-					foreach ( $results as $i => $result ) :
 						$no_tickermaster = ( empty( $result['ticketmaster']['dates'] ) || ! isset( $result['ticketmaster']['url'] ) );
 
 						// retrieve the info for every col beforehand, the use the html as placeholders
@@ -168,11 +157,13 @@ class Scrap_Output {
 						ob_start();
 						$datetimes_cartelera      = self::render_col_cartelera_datetimes( $sentences_cartelera_dates, $sentences_cartelera_times );
 						$col_cartelera_dates_html = ob_get_clean();
+
 						// now that we have rendered them, remove also the dates outside the limit,
 						// we don't want to compared them with ticketmasters.
+
 						$datetimes_cartelera = Parse_Text_Into_Dates::remove_dates_after_limit( $datetimes_cartelera );
 						ob_start();
-						$comparison_success         = self::render_col_comparison( $datetimes_cartelera, $datetimes_ticketmaster );
+						$comparison_success         = self::render_col_comparison( $result );
 						$col_comparison_result_html = ob_get_clean();
 
 
@@ -355,6 +346,7 @@ class Scrap_Output {
 						<div class="accordion-content">
 								<?php
 								$result['ticketmaster']['dates'] = count( $result['ticketmaster']['dates'] ) . ' elements';
+								echo '<h2>debugging info</h2>';
 								echo '<pre>';
 								print_r( $result );
 								echo '</pre>';
@@ -434,12 +426,16 @@ class Scrap_Output {
 			$dates_text = $result['cartelera']['scraped_dates_text'];
 			echo '<p>';
 			echo '<b>Dates</b>==> ' . esc_html( $dates_text );
-			$sentences = Parse_Text_Into_Dates::first_acceptance_of_date_text( $dates_text );
-			$count     = count( $sentences );
-			echo $count ? '✅ (' . $count . ')' : '❌ text not parseable <br/>';
+			if ( ! isset( $result['computed']['cartelera']['first_acceptance_dates']['output'] ) ) {
+				echo '❌ no sentences extracted <br/>';
+			} else {
+				$sentences = $result['computed']['cartelera']['first_acceptance_dates']['output'];
+				$count     = count( $sentences );
+				echo $count ? '✅ (' . $count . ')' : '❌ text not parseable <br/>';
+			}
 			echo '</p>';
 
-			if ( $count ) {
+			if ( ! empty( $count ) ) {
 				echo '<div class="dates-sentences">';
 				echo '   <small class="muted">Parsed text for dates:</small> <br/>';
 				echo '   <em>' . implode( '</em><br/><em>📆📆📆', $sentences ) . '</em>';
@@ -463,11 +459,13 @@ class Scrap_Output {
 		// Weekday and times
 		$sentences = [];
 		if ( ! empty( $result['cartelera']['scraped_time_text'] ) ) {
-			$sentences = Parse_Text_Into_Dates::first_acceptance_of_times_text( $result['cartelera']['scraped_time_text'] );
+			if ( isset( $result['computed']['cartelera']['first_acceptance_times']['output'] ) ) {
+				$sentences = $result['computed']['cartelera']['first_acceptance_times']['output'] ?? '❌ no sentences extracted from times <br/>';
+				$count = count( $sentences );
+			}
 			echo '<p>';
 			echo '<b>Times</b>==> ' . esc_html( $result['cartelera']['scraped_time_text'] );
-			$count = count( $sentences );
-			echo $count ? '✅ (' . $count . ')' : '❌ times not parseable <br/>';
+			echo ! empty( $count ) ? '✅ (' . $count . ')' : '❌ times not parseable <br/>';
 			echo '</p>';
 		}
 		// Times
@@ -485,14 +483,13 @@ class Scrap_Output {
 	/**
 	 * Undocumented function
 	 *
-	 * @param array $sentences_dates
-	 * @param array $sentences_times
+	 * @param array $result
 	 * @return array
 	 */
-	public static function render_col_cartelera_datetimes( array $sentences_dates, array $sentences_times ): array {
+	public static function render_col_cartelera_datetimes( array $result ): array {
 
 		// parse dates to get specific calendar dates.
-		$datetimes_cartelera             = Parse_Text_Into_Dates::definitive_dates_and_times( $sentences_dates, $sentences_times );
+		$datetimes_cartelera             = $result['computed']['cartelera']['definitive_datetimes']['output'] ?? [];
 		$datetimes_cartelera_after_today = Parse_Text_Into_Dates::remove_dates_previous_of_today( $datetimes_cartelera );
 		if ( empty( $datetimes_cartelera_after_today ) && ! empty( $datetimes_cartelera ) ) {
 			printf( __( '<p>All dates are previous of today. Nothing to compare</p>', 'cartelera-scrap' ) );
@@ -527,11 +524,12 @@ class Scrap_Output {
 	/**
 	 * Undocumented function
 	 *
-	 * @param array $dates_cart
-	 * @param array $dates_tick
+	 * @param array $result
 	 * @return boolean|null
 	 */
-	public static function render_col_comparison( array $dates_cart, array $dates_tick ): bool|null {
+	public static function render_col_comparison( array $result ): bool|null {
+		$dates_cart = $result['computed']['cartelera']['definitive_datetimes']['output'] ?? [];
+		$dates_tick = $result['computed']['ticketmaster']['definitive_datetimes']['output'] ?? [];
 		if ( empty( $dates_cart ) && empty( $dates_tick ) ) {
 			echo 'Both dates are empty';
 			return null;
@@ -542,23 +540,14 @@ class Scrap_Output {
 			return null;
 		}
 
-		$result_compare = Parse_Text_Into_Dates::compare_arrays( $dates_cart, $dates_tick );
-		if ( true === $result_compare ) {
+		$is_successful = Parse_Text_Into_Dates::computed_is_comparison_successful( $result );
+
+		if ( true === $is_successful ) {
 			echo '👍🏻👍🏻👍🏻👍🏻👍🏻👍🏻👍🏻👍🏻 Yuhuuu all good';
 			return true;
 		} else {
 				echo '<br/>All baaad here: ❌❌❌❌❌❌❌❌❌❌❌❌<br/><br/><br/>';
 				return false;
-			if ( ! empty( $result_compare['only_in_a'] ) ) {
-				echo '<br>dates in cartelera not in tickermaster: <br/>';
-				echo implode( '<br/>', $result_compare['only_in_a'] );
-				return false;
-			}
-			if ( ! empty( $result_compare['only_in_b'] ) ) {
-				echo '<br>dates in tickermaster not in cartelera: <br/>';
-				echo implode( '<br/>', $result_compare['only_in_b'] );
-				return false;
-			}
 		}
 		return null;
 	}

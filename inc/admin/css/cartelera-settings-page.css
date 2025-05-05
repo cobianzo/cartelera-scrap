@@ -151,12 +151,30 @@ ACCORDION STYLES
   overflow-y: hidden;
   overflow-x: visible;
   transition: max-height 0.3s ease-out, padding 0.3s ease;
+
+  pre {
+    display: none;;
+    position: fixed;
+    left: 200px;
+    right: 60px;
+    top: 30px;
+    border: 1px solid black;
+    box-shadow: 5px 5px 15px black;
+    background-color: rgba(0,0,0,0.8);
+    padding: 0.5rem;
+    max-height: 80vh;
+    overflow: scroll;
+  }
 }
 
 /* Cuando el checkbox está marcado, mostramos el contenido */
 .accordion-toggle:checked ~ .accordion-content {
   overflow: visible;
   max-height: 500px; /* Ajusta este valor según tu contenido */
+
+  pre {
+    display: block;
+  }
 }
 
 /* Cambiamos el color del label cuando está activo */
