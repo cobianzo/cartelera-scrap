@@ -13,6 +13,9 @@ use Cartelera_Scrap\Scrap_Actions;
 use Cartelera_Scrap\Cron_Job;
 use Cartelera_Scrap\Helpers\Queue_And_Results;
 
+/**
+ * Settings_Hooks class.
+ */
 class Settings_Hooks {
 
 	const ONETIMEOFF_CRONJOB_NAME = 'cartelera-scrap_process_next_onetimeoff';
@@ -25,7 +28,10 @@ class Settings_Hooks {
 		// this function handles all actions in buttons in the settings page..
 		add_action( 'admin_init', [ __CLASS__, 'handle_scrap_action' ] );
 
-		add_action( self::ONETIMEOFF_CRONJOB_NAME, [ 'Cartelera_Scrap\Scrap_Actions', 'cartelera_process_one_batch' ] );
+		add_action( self::ONETIMEOFF_CRONJOB_NAME, function() {
+			update_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count', 0 ); // init the count of the shows being processed in this batch.
+			Scrap_Actions::cartelera_process_one_batch();
+		} );
 
 		add_action( 'update_option_' . Settings_Page::ALL_MAIN_OPTIONS_NAME, [ __CLASS__, 'start_or_stop_cron_job' ], 10, 2 );
 	}

@@ -1,6 +1,6 @@
 {
   "name": "cartelera-scrap",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Plugin para scraping de carteleras",
   "scripts": {
     "up": "wp-env start",
@@ -14,23 +14,11 @@
     "wpcli": "wp-env run cli wp ",
     "test:listcron": "npm run wpcli cron event list",
     "test:runminicron": "npm run wpcli cron event run cartelera-scrap_process_next_onetimeoff",
-    "test:runnextcron": "npm run wpcli cron event run cartelera-scrap_automated_cron",
+    "test:runmaincron": "npm run wpcli cron event run cartelera-scrap_automated_cron",
     "test:options": "npm run wpcli db query \"SELECT option_name FROM wp_options WHERE option_name LIKE 'cartelera%';\"",
     "cs": "composer run lint .",
     "cbf": "composer run format .",
-    "build": "wp-scripts build",
-    "start": "wp-scripts start",
-    "check-engines": "wp-scripts check-engines",
-    "check-licenses": "wp-scripts check-licenses",
-    "format": "wp-scripts format",
-    "lint:css": "wp-scripts lint-style",
-    "lint:js": "wp-scripts lint-js",
-    "lint:md:docs": "wp-scripts lint-md-docs",
-    "lint:pkg-json": "wp-scripts lint-pkg-json",
-    "packages-update": "wp-scripts packages-update",
-    "plugin-zip": "wp-scripts plugin-zip",
-    "test:e2e": "wp-scripts test-e2e",
-    "test:unit": "wp-scripts test-unit-js"
+    "plugin-build": "node ./bin/build-plugin.js"
   },
   "author": "@cobianzo",
   "license": "GPL-2.0-or-later",

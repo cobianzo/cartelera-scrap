@@ -232,6 +232,14 @@ async function main() {
 		console.error('Build process failed:', error);
 		process.exit(1);
 	}
+
+  console.log('Build process completed successfully! Opening folder in 5s');
+  setTimeout( () => {
+    const { exec } = require('child_process');
+    // Open the /dist folder in Finder (macOS specific)
+    exec('open ./dist', (error, stdout, stderr) => { /** I culd handle any error here  */});
+  }, 5000);
+
 }
 
 // Ejecutar solo si es llamado directamente
