@@ -1,0 +1,82 @@
+[
+  {
+    "input": "Domingo 12:00 y 14:00 horas.",
+    "output": ["sunday-12:00-14:00"]
+  },
+  {
+    "input": "S\u00e1bados y domingos 13:00 horas.",
+    "output": ["saturday-sunday-13:00"]
+  },
+  {
+    "input": "Jueves y viernes 20:00 horas, s\u00e1bado 19:00 horas y domingo 18:00 horas.",
+    "output": ["thursday-friday-20:00", "saturday-19:00", "sunday-18:00"]
+  },
+  {
+    "input": "Viernes 20:00 horas",
+    "output": ["friday-20:00"]
+  },
+  {
+    "input": "Viernes 20:30 horas, s\u00e1bado 20:00 horas y domingo 18:00 horas.",
+    "output": ["friday-20:30", "saturday-20:00", "sunday-18:00"]
+  },
+  {
+    "input": "Lunes 20:30 horas",
+    "output": ["monday-20:30"]
+  },
+  {
+    "input": "Viernes 20:00 horas",
+    "output": ["friday-20:00"]
+  },
+  {
+    "input": "S\u00e1bado 18:00 horas",
+    "output": ["saturday-18:00"]
+  },
+  {
+    "input": "S\u00e1bado y domingo 12:30 horas",
+    "output": ["saturday-sunday-12:30"]
+  },
+  {
+    "input": "Viernes y s\u00e1bado 19:00 horas y domingo 18:00 horas.",
+    "output": ["friday-saturday-19:00", "sunday-18:00"]
+  },
+  {
+    "input": "Mi\u00e9rcoles 20:30 horas.",
+    "output": ["wednesday-20:30"]
+  },
+  {
+    "input": "Viernes 20:00 horas.",
+    "output": ["friday-20:00"]
+  },
+  {
+    "input": "S\u00e1bados y domingos, 13:00 y 17:00 horas",
+    "output": ["saturday-sunday-13:00-17:00"]
+  },
+  {
+    "input": "Mi\u00e9rcoles 20:00 horas.",
+    "output": ["wednesday-20:00"]
+  },
+  {
+    "input": "Domingo",
+    "output": []
+  },
+  {
+    "input": "Jueves y viernes, 20:00 horas, s\u00e1bados 19:00 horas y domingos 18:00 horas.\nViernes 2 de mayo funci\u00f3n exclusiva para entusiastas",
+    "output": ["thursday-friday-20:00", "saturday-19:00", "sunday-18:00"]
+  },
+  {
+    "input": "Domingos 13:00 horas",
+    "output": ["sunday-13:00"]
+  },
+  {
+    "input": "Jueves, viernes y s\u00e1bados, 19:00 horas y domingos 18:00 horas",
+    "output": ["thursday-friday-saturday-19:00", "sunday-18:00"]
+  },
+  {
+    "input": "Martes 20:30 horas.",
+    "output": ["tuesday-20:30"]
+  },
+  {
+    "input": "Jueves 20:00 horas.",
+    "output": ["thursday-20:00"]
+  }
+]

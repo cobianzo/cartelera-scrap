@@ -1,0 +1,399 @@
+[
+  {
+    "COMMENT FOR THIS FILE": " I exported the results using `npm run wpcli option get cartelera-scrap_shows_results -- --format=json` ",
+
+
+    "title": "Salvando a Capibara Aventuras\u00a0Espaciales",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/salvando-a-capibara-aventuras-espaciales/",
+      "scraped_dates_text": "Majestic F\u00f3rum Cultural: 4 de mayo de 2025. Las Torres: 11 de mayo de 2025.",
+      "scraped_time_text": "Domingo 12:00 y 14:00 horas.\nDuraci\u00f3n aproximada: 90 minutos\nClasificaci\u00f3n: Familiar.\nBoletos: $330, $220 y $110. De venta en Cartelera de Teatro y taquilla.\nHaz clic aqu\u00ed para comprar con 50% de descuento para Salvando a Capibara Aventuras Espaciales, \u00a1Boletos desde $55!"
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=Salvando%20a%20Capibara%20Aventuras%C2%A0Espaciales",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": [],
+      "dates": []
+    }
+  },
+  {
+    "title": "En nombre de la\u00a0mancha",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/en-nombre-de-la-mancha/",
+      "scraped_dates_text": "Del 17 de mayo al 8 de junio de 2025.",
+      "scraped_time_text": "S\u00e1bados y domingos 13:00 horas.\nDuraci\u00f3n aproximada:\nClasificaci\u00f3n:\nBoletos: Entrada general $227. Descuento del 50%, limitado a estudiantes de nivel b\u00e1sico, maestros, personas con discapacidad, trabajadores de gobierno e INAPAM con credencial vigente. Aplican restricciones. De venta en taquilla y Ticketmaster."
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=En%20nombre%20de%20la%C2%A0mancha",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": ["En nombre de la mancha"],
+      "dates": [
+        {
+          "printed_date": "may17",
+          "time_12h": "1:00 p.m.",
+          "date": "2025-05-17",
+          "time": "13:00"
+        },
+        {
+          "printed_date": "may18",
+          "time_12h": "1:00 p.m.",
+          "date": "2025-05-18",
+          "time": "13:00"
+        },
+        {
+          "printed_date": "may24",
+          "time_12h": "1:00 p.m.",
+          "date": "2025-05-24",
+          "time": "13:00"
+        },
+        {
+          "printed_date": "may25",
+          "time_12h": "1:00 p.m.",
+          "date": "2025-05-25",
+          "time": "13:00"
+        },
+        {
+          "printed_date": "may31",
+          "time_12h": "1:00 p.m.",
+          "date": "2025-05-31",
+          "time": "13:00"
+        },
+        {
+          "printed_date": "jun01",
+          "time_12h": "1:00 p.m.",
+          "date": "2025-06-01",
+          "time": "13:00"
+        },
+        {
+          "printed_date": "jun07",
+          "time_12h": "1:00 p.m.",
+          "date": "2025-06-07",
+          "time": "13:00"
+        },
+        {
+          "printed_date": "jun08",
+          "time_12h": "1:00 p.m.",
+          "date": "2025-06-08",
+          "time": "13:00"
+        }
+      ]
+    }
+  },
+  {
+    "title": "Perdida de la\u00a0memoria",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/perdida-de-la-memoria/",
+      "scraped_dates_text": "Del 16 abril al 18 mayo de 2025.",
+      "scraped_time_text": "Jueves y viernes 20:00 horas, s\u00e1bado 19:00 horas y domingo 18:00 horas.\nDuraci\u00f3n aproximada: 45 minutos\nClasificaci\u00f3n:\nBoletos: Entrada general $204. Descuento del 50%, limitado a estudiantes de nivel b\u00e1sico, maestros, personas con discapacidad, trabajadores de gobierno e INAPAM con credencial vigente. Aplican restricciones. De venta en taquilla y Ticketmaster."
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=Perdida%20de%20la%C2%A0memoria",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": ["P\u00c9RDIDA DE LA MEMORIA de B\u00e1rbara Alvarado"],
+      "dates": [
+        {
+          "printed_date": "may08",
+          "time_12h": "8:00 p.m.",
+          "date": "2025-05-08",
+          "time": "20:00"
+        },
+        {
+          "printed_date": "may09",
+          "time_12h": "8:00 p.m.",
+          "date": "2025-05-09",
+          "time": "20:00"
+        },
+        {
+          "printed_date": "may10",
+          "time_12h": "7:00 p.m.",
+          "date": "2025-05-10",
+          "time": "19:00"
+        },
+        {
+          "printed_date": "may11",
+          "time_12h": "6:00 p.m.",
+          "date": "2025-05-11",
+          "time": "18:00"
+        }
+      ]
+    }
+  },
+  {
+    "title": "El dia\u00a0despues",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/el-dia-despues/",
+      "scraped_dates_text": "Del 18 de abril al 30 de mayo de 2025.",
+      "scraped_time_text": "Viernes 20:00 horas\nDuraci\u00f3n aproximada: 50 minutos\nClasificaci\u00f3n: Mayores de 15 a\u00f1os\nBoletos:\u00a0 Entrada general $300. Descuentos a estudiantes e INAPAM directo en taquilla. De venta en taquilla y bolet\u00f3polis."
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=El%20dia%C2%A0despues",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": [],
+      "dates": []
+    }
+  },
+  {
+    "title": "Las particulas de\u00a0Dios",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/las-particulas-de-dios-dir-karla-cantu/",
+      "scraped_dates_text": "Del 2 de mayo al 13 de junio de 2025.",
+      "scraped_time_text": "Viernes 20:30 horas, s\u00e1bado 20:00 horas y domingo 18:00 horas.\nDuraci\u00f3n aproximada: 75 minutos\nClasificaci\u00f3n: Adolescentes y adultos\nBoletos: Entrada general $450. De venta en lateatreria.boletosenlinea y taquilla."
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=Las%20particulas%20de%C2%A0Dios",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": [],
+      "dates": []
+    }
+  },
+  {
+    "title": "Ahoradespues",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/ahoradespues/",
+      "scraped_dates_text": "Del 8 al 22 de abril de 2025.",
+      "scraped_time_text": "Lunes 20:30 horas\nDuraci\u00f3n aproximada: 70 minutos\nClasificaci\u00f3n: Adolescentes y adultos\nBoletos: Entrada general $350. De venta en lateatreria.boletosenlinea y taquilla."
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=Ahoradespues",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": [],
+      "dates": []
+    }
+  },
+  {
+    "title": "Quien es\u00a0Lucy",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/quien-es-lucy/",
+      "scraped_dates_text": "Del 9 de mayo al 13 de junio de 2025.",
+      "scraped_time_text": "Viernes 20:00 horas\nDuraci\u00f3n aproximada:\nClasificaci\u00f3n: Adolescentes y adultos.\nBoletos: Entrada general $250. Descuento del 50% para la funci\u00f3n de cada d\u00eda, media hora diaria s\u00f3lo en taquilla: de lunes a viernes de 18:00 a 19:00 h, S\u00e1bados y domingos, 11:00 a 11:30 h y de 16:30 a 17:00 horas. De venta en taquilla y bolet\u00f3polis.com"
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=Quien%20es%C2%A0Lucy",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": [],
+      "dates": []
+    }
+  },
+  {
+    "title": "Quiero (en)\u00a0sueno",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/quiero-en-sueno/",
+      "scraped_dates_text": "Del 3 al 31 de mayo de 2025",
+      "scraped_time_text": "S\u00e1bado 18:00 horas\nDuraci\u00f3n aproximada: 60 minutos\nClasificaci\u00f3n: 15 en adelante\nBoletos: Entrada general $200. Descuento del 50% para la funci\u00f3n de cada d\u00eda, media hora diaria s\u00f3lo en taquilla: de lunes a viernes de 18:00 a 19:00 h, S\u00e1bados y domingos, 11:00 a 11:30 h y de 16:30 a 17:00 horas. De venta en taquilla y bolet\u00f3polis.com"
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=Quiero%20%28en%29%C2%A0sueno",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": [],
+      "dates": []
+    }
+  },
+  {
+    "title": "La maquina de\u00a0Esquilo",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/la-maquina-de-esquilo/",
+      "scraped_dates_text": "Del 3 al 25 de mayo de 2025",
+      "scraped_time_text": "S\u00e1bado y domingo 12:30 horas\nDuraci\u00f3n aproximada: 60 minutos\nClasificaci\u00f3n: Adolescentes y adultos\nBoletos: Entrada general $250. Descuento del 50% para la funci\u00f3n de cada d\u00eda, media hora diaria s\u00f3lo en taquilla: de lunes a viernes de 18:00 a 19:00 h, S\u00e1bados y domingos, 11:00 a 11:30 h y de 16:30 a 17:00 horas. De venta en taquilla y bolet\u00f3polis.com"
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=La%20maquina%20de%C2%A0Esquilo",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": [],
+      "dates": []
+    }
+  },
+  {
+    "title": "Anatomia de un\u00a0suicidio",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/anatomia-de-un-suicidio/",
+      "scraped_dates_text": "Del 16 de mayo al 22 de junio de 2025.",
+      "scraped_time_text": "Viernes y s\u00e1bado 19:00 horas y domingo 18:00 horas.\nDuraci\u00f3n aproximada: 210 minutos, tiene intermedio.\nClasificaci\u00f3n: A partir de 17 a\u00f1os.\nBoletos:  Planta Baja $504. Planta alta $360. Descuento del 30% a maestros, estudiantes e INAPAM con credencial vigente y en las funciones del s\u00e1bado dirigidas a infancias; ni\u00f1as y ni\u00f1os, obtienen el 2\u00c3\u00971 v\u00e1lido en la taquilla. Sujeto a disponibilidad. De venta en taquilla y teatrohelenico.comprarboletos.com"
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=Anatomia%20de%20un%C2%A0suicidio",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": [],
+      "dates": []
+    }
+  },
+  {
+    "title": "El esternon es una jaula muy\u00a0estrecha",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/el-esternon-es-una-jaula-muy-estrecha/",
+      "scraped_dates_text": "7, 14, 21 y 28 mayo de 2025",
+      "scraped_time_text": "Mi\u00e9rcoles 20:30 horas.\nDuraci\u00f3n aproximada: 40 minutos\nClasificaci\u00f3n: Adolescentes y adultos\nBoletos: Entrada general $220. De venta en Cartelera de Teatro, taquilla y bolet\u00f3polis.\nHaz clic aqu\u00ed para comprar con 50% de descuento para El estern\u00f3n es una jaula muy estrecha, \u00a1De $220 a s\u00f3lo $110!"
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=El%20esternon%20es%20una%20jaula%20muy%C2%A0estrecha",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": [],
+      "dates": []
+    }
+  },
+  {
+    "title": "Virginia como la\u00a0Woolf",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/virginia-como-la-woolf/",
+      "scraped_dates_text": "6 y 13 de junio de 2025.",
+      "scraped_time_text": "Viernes 20:00 horas.\nDuraci\u00f3n aproximada:\nClasificaci\u00f3n:  Mayores de 18 a\u00f1os.\nBoletos: Entrada general $400."
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=Virginia%20como%20la%C2%A0Woolf",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": [],
+      "dates": []
+    }
+  },
+  {
+    "title": "nOrMaL\u2026",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/normal/",
+      "scraped_dates_text": "Del 4 de mayo al 8 de junio 2025",
+      "scraped_time_text": "S\u00e1bados y domingos, 13:00 y 17:00 horas\nDuraci\u00f3n aproximada: 80 minutos\nClasificaci\u00f3n: Mayores de 7 a\u00f1os.\nBoletos: Entrada general $150. De venta en taquilla y bolet\u00f3polis"
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=nOrMaL%E2%80%A6",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": [],
+      "dates": []
+    }
+  },
+  {
+    "title": "Somos\u00a03",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/somos-3/",
+      "scraped_dates_text": "Del 7 al 21 de mayo de 2025.",
+      "scraped_time_text": "Mi\u00e9rcoles 20:00 horas.\nDuraci\u00f3n aproximada: 75 minutos\nClasificaci\u00f3n: Adolescentes y adultos\nBoletos:  Entrada general $650."
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=Somos%C2%A03",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": [],
+      "dates": []
+    }
+  },
+  {
+    "title": "Los girasoles en la\u00a0luna",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/los-girasoles-en-la-luna/",
+      "scraped_dates_text": "4, 11 y 18 de mayo de 2025.",
+      "scraped_time_text": "Domingo\nDuraci\u00f3n aproximada:\nClasificaci\u00f3n: Mayores de 15 a\u00f1os.\nBoletos: Entrada general $300. De venta en taquilla y bolet\u00f3polis."
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=Los%20girasoles%20en%20la%C2%A0luna",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": [],
+      "dates": []
+    }
+  },
+  {
+    "title": "Nosotros ibamos a cambiar el\u00a0mundo",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/nosotros-ibamos-a-cambiar-el-mundo/",
+      "scraped_dates_text": "Del 24 de abril al 8 de junio de 2025 (Suspende 1, 10 y 15 de mayo)",
+      "scraped_time_text": "Jueves y viernes, 20:00 horas, s\u00e1bados 19:00 horas y domingos 18:00 horas.\nViernes 2 de mayo funci\u00f3n exclusiva para entusiastas\nDuraci\u00f3n aproximada: 90 minutos.\nClasificaci\u00f3n: Mayores de 15 a\u00f1os.\nBoletos: Entrada general $150. Descuento del 50% a alumnos, maestros con credencial actualizada, exalumnos de la UNAM e INAPAM y personas con discapacidad visible y no visible; no aplica los jueves. Jueves Puma $30. Aplica programa Puntos CulturaUNAM. De venta en taquilla."
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=Nosotros%20ibamos%20a%20cambiar%20el%C2%A0mundo",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": [],
+      "dates": []
+    }
+  },
+  {
+    "title": "Princesa\u00a0lunar",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/princesa-lunar/",
+      "scraped_dates_text": "27 de abril, 4 y 11 de mayo.",
+      "scraped_time_text": "Domingos 13:00 horas\nDuraci\u00f3n aproximada:\u00a0 45 minutos\nClasificaci\u00f3n: A partir de 4 a\u00f1os\nBoletos: Entrada general $300. De venta en\u00a0 taquilla."
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=Princesa%C2%A0lunar",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": [],
+      "dates": []
+    }
+  },
+  {
+    "title": "Los\u00a0maromeros",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/los-maromeros/",
+      "scraped_dates_text": "Del 3 de mayo al 7 de junio de 2025. (Suspende 10 de mayo)",
+      "scraped_time_text": "Jueves, viernes y s\u00e1bados, 19:00 horas y domingos 18:00 horas\nDuraci\u00f3n aproximada: 110 minutos\nClasificaci\u00f3n: A partir de 14 a\u00f1os\nBoletos: Entrada general $150. Mi\u00e9rcoles 2\u00c3\u00971 en l\u00ednea (aplica para s\u00e1bado y domingo). Jueves de $30. Viernes 2\u00c3\u00971 en taquillas. De venta en taquilla y cenart.comprarboletos.com"
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=Los%C2%A0maromeros",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": [],
+      "dates": []
+    }
+  },
+  {
+    "title": "Siempre tendremos\u00a0Dallas",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/siempre-tendremos-dallas/",
+      "scraped_dates_text": "Del 6 de mayo al 1 de julio de 2025.",
+      "scraped_time_text": "Martes 20:30 horas.\nDuraci\u00f3n aproximada: 70 minutos\nClasificaci\u00f3n:\nBoletos: Entrada general $350. De venta en boletos.shakespeareycia.com y taquilla."
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=Siempre%20tendremos%C2%A0Dallas",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": [],
+      "dates": []
+    }
+  },
+  {
+    "title": "Esta\u00a0escrito",
+    "cartelera": {
+      "url": "https://carteleradeteatro.mx/2025/esta-escrito/",
+      "scraped_dates_text": "Del 1 de mayo al 5 de junio de 2025.",
+      "scraped_time_text": "Jueves 20:00 horas.\nDuraci\u00f3n aproximada: 55 minutos\nClasificaci\u00f3n:\nBoletos: Entrada general $300. De venta en boletos.shakespeareycia.com y taquilla."
+    },
+    "ticketmaster": {
+      "url": "https://www.ticketmaster.com.mx/search?q=Esta%C2%A0escrito",
+      "search_results": 0,
+      "single_page_url": "",
+      "tm_title": "",
+      "tm_titles_list": [],
+      "dates": []
+    }
+  }
+]

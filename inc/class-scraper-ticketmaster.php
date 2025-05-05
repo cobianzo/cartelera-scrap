@@ -9,7 +9,7 @@ namespace Cartelera_Scrap\Scraper;
 
 use Cartelera_Scrap\Cartelera_Scrap_Plugin;
 use Cartelera_Scrap\Scraper\Scraper;
-use Cartelera_Scrap\Text_Parser;
+use Cartelera_Scrap\Parse_Text_Into_Dates;
 use Cartelera_Scrap\Helpers\Text_Sanization;
 
 use DOMDocument;
@@ -162,7 +162,7 @@ class Scraper_Ticketmaster extends Scraper {
 				\DateTime::createFromFormat( 'g:i a', str_replace( '.', '', strtolower( $time_12h->textContent ) ) ) : false;
 
 			$time_24h = $date_object_for_time ?
-			$date_object_for_time->format( Text_Parser::TIME_COMPARE_FORMAT ) : '❌ Not found';
+			$date_object_for_time->format( Parse_Text_Into_Dates::TIME_COMPARE_FORMAT ) : '❌ Not found';
 
 			$formatted_date = \DateTime::createFromFormat( 'd/m/y', $complete_date->textContent );
 			$formatted_date = $formatted_date ? $formatted_date->format( 'Y-m-d' ) : null;

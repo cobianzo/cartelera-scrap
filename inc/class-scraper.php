@@ -10,7 +10,7 @@
 
 namespace Cartelera_Scrap\Scraper;
 
-use Cartelera_Scrap\Text_Parser;
+use Cartelera_Scrap\Parse_Text_Into_Dates;
 use Cartelera_Scrap\Helpers\Text_Sanization;
 
 use DOMDocument;

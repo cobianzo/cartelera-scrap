@@ -5,7 +5,7 @@ namespace Cartelera_Scrap\Admin;
 use Cartelera_Scrap\Cron_Job;
 use Cartelera_Scrap\Scrap_Output;
 use Cartelera_Scrap\Scrap_Actions;
-use Cartelera_Scrap\Text_Parser;
+use Cartelera_Scrap\Parse_Text_Into_Dates;
 use Cartelera_Scrap\Helpers\Queue_And_Results;
 
 /**
@@ -233,7 +233,7 @@ class Settings_Page {
 		$this->register_input_field( self::LIMIT_DAYS_FORWARD_COMPARE, $this->plugin_name . '_fields__section_leftcolumn', [
 			'type'        => 'number',
 			'label'       => __( 'After these amounts of days from today, stop comparing cartelera and ticketmaster dates.', $this->textdomain ),
-			'description' => sprintf( __( 'Currently set to %s.', $this->textdomain ), date( 'Y-m-d H:i', Text_Parser::get_limit_datetime() ) ),
+			'description' => sprintf( __( 'Currently set to %s.', $this->textdomain ), date( 'Y-m-d H:i', Parse_Text_Into_Dates::get_limit_datetime() ) ),
 		] );
 		$this->register_input_field( self::LIMIT_NUMBER_DATES_COMPARE, $this->plugin_name . '_fields__section_leftcolumn', [
 			'type'  => 'number',

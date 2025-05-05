@@ -13,7 +13,7 @@ class TextAnalyzeTest extends WP_UnitTestCase {
 
 	public function use_first_acceptance_of_date_text( array $array_of_valid_sentences, array $array_not_valid_sentences ) {
 		foreach ( $array_of_valid_sentences as $text_example ) {
-			$sentences = Cartelera_Scrap\Text_Parser::first_acceptance_of_date_text( $text_example );
+			$sentences = Cartelera_Scrap\Parse_Text_Into_Dates::first_acceptance_of_date_text( $text_example );
 			$this->assertIsArray( $sentences, "Failed asserting that the result is an array for text '$text_example'." );
 			$this->assertNotEmpty( $sentences, "Failed asserting that the sentence is accepted as valid '$text_example'." );
 			// self::deb( $sentences );
@@ -21,7 +21,7 @@ class TextAnalyzeTest extends WP_UnitTestCase {
 		}
 
 		foreach ( $array_not_valid_sentences as $text_example ) {
-			$sentences = Cartelera_Scrap\Text_Parser::first_acceptance_of_date_text( $text_example );
+			$sentences = Cartelera_Scrap\Parse_Text_Into_Dates::first_acceptance_of_date_text( $text_example );
 			$this->assertIsArray( $sentences, "Failed asserting that the result is an array for text '$text_example'." );
 			$this->assertEmpty( $sentences, "Failed asserting that the the sencene is refused: '$text_example': " . print_r( $sentences, 1 ) );
 			// self::deb( $sentences );

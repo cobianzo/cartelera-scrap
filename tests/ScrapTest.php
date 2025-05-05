@@ -53,7 +53,7 @@ class ScrapTest extends WP_UnitTestCase {
 
 		// The action !!!
 		// ===============
-		$scrapped_data_extracted = \Cartelera_Scrap\Simple_Scraper::scrap_one_cartelera_show( $html_content );
+		$scrapped_data_extracted = \Cartelera_Scrap\Scraper\Scraper_Cartelera::scrap_one_cartelera_show( $html_content );
 
 
 		$instance->assertNotEmpty( $scrapped_data_extracted, 'Failed to extract data from HTML content' );
@@ -134,7 +134,7 @@ class ScrapTest extends WP_UnitTestCase {
 		$tm_html_example_file = __DIR__ . '/data/' . $filename;
 		$tm_html_page         = self::get_file_contents_html_file( $this, $tm_html_example_file );
 
-		$result_tickermaster = Simple_Scraper::scrap_one_tickermaster_show( $tm_html_page );
+		$result_tickermaster = Scraper_Ticketmaster::scrap_one_tickermaster_show( $tm_html_page );
 		echo '$result_tickermaster = ';
 		print_r( $result_tickermaster );
 

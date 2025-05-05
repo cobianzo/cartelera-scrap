@@ -17,6 +17,7 @@ use Cartelera_Scrap\Helpers\Queue_And_Results;
 use Cartelera_Scrap\Helpers\Text_Sanization;
 
 /**
+ * Using the tools Scraper (and children classes), we perform the real scrapping.
  * The class Scrap_Actions handles the custom action triggered via a POST request
  */
 class Scrap_Actions {
@@ -28,17 +29,13 @@ class Scrap_Actions {
 	 *
 	 * @return void.
 	 */
-	public static function perform_scrap(): void {
+	public static function perform_scrap(): true|\WP_Error {
 
 		// Retrieve all html for the cartelera URL.
 		// and set them to the processing queue.
 		$all_shows = Scraper_Cartelera::scrap_all_shows_in_cartelera();
 		if ( ! $all_shows || is_wp_error( $all_shows ) ) {
-			wp_safe_redirect( add_query_arg(
-				'error', 'Error: No shows found in cartelera.',
-				admin_url( 'options-general.php?page=cartelera-scrap' )
-			) );
-			exit;
+			return $all_shows;
 		}
 		// launch the first one-time-off cron job in WP to strart processing the shows.
 		Queue_And_Results::delete_show_results(); // clean the database and we will start from scratch.
@@ -50,6 +47,8 @@ class Scrap_Actions {
 		if ( ! wp_next_scheduled( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ) ) {
 			wp_schedule_single_event( time() + 30, Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ); // exectute in a few secs.
 		}
+
+		return true;
 	}
 
 	/**
@@ -72,7 +71,7 @@ class Scrap_Actions {
 
 		self::cartelera_process_one_single_show();
 
-		/** Weel done, aonther show has been processed... Now...
+		/** Well done, aonther show has been processed... Now...
 		 * - save the option with the count of the shows processed in this batch.
 		 * - call the processing of the next one.
 		 *      - it can be straight away if the batch is not finished.
@@ -123,7 +122,7 @@ class Scrap_Actions {
 				 * =============================================
 				 * 3. SAVE BOTH DATA IN THE DB Results
 				 */
-				Queue_And_Results::add_show_result( [
+				Queue_And_Results::save_show_result( [
 					'title'        => Text_Sanization::sanitize_scraped_text( $show['text'] ),
 					'cartelera'    => $result_cartelera,
 					'ticketmaster' => $result_tickermaster,

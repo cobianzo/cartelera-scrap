@@ -62,15 +62,15 @@ class Cartelera_Scrap_Plugin {
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/helpers/class-queue-and-results.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/helpers/class-text-sanization.php';
 
-		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-scrap-output.php';
-		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-cron-job.php';
-
 		// static functions.
-		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-text-parser.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-scraper.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-scraper-cartelera.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-scraper-ticketmaster.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-scrap-actions.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-parse-text-into-dates.php';
+
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-scrap-output.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-cron-job.php';
 	}
 
 	/**
@@ -138,9 +138,18 @@ function dd( mixed $var ) {
  * @param mixed $var
  * @return void
  */
-function ddie( mixed $var ) {
-	dd( $var );
+function ddie( mixed $var = null ): void {
+	if ( $var ) {
+		dd( $var );
+	}
 	wp_die();
+}
+
+function imhere( mixed $var = null ): void {
+	echo "<h1>😀🥹😎🥶imhere😀🥹😎🥶</h1>";
+	if ( $var ) {
+		dd($var);
+	}
 }
 // phpcs:enable
 

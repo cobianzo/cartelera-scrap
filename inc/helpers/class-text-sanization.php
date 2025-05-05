@@ -101,4 +101,24 @@ class Text_Sanization {
 		// Clean up multiple spaces and trim.
 		return trim( $texto );
 	}
+
+	/**
+	 * Basically trimming, for sentences with times in it.
+	 *
+	 * @param array $sentences Array of sentences to be cleaned.
+	 * @return array The cleaned array of sentences.
+	 */
+	public static function cleanup_sentences( array $sentences ): array {
+		// Sustitución de "hrs" por "horas"
+		$sentences = array_map( function ( $sentence ) {
+
+			$input_text = str_ireplace( [ 'hrs.', 'hrs', 'Hrs', 'HRS' ], 'horas', $sentence );
+
+			// Limpiar espacios y comillas
+			$input_text = trim( trim( $input_text ), '"' );
+
+			return $input_text;
+		}, $sentences );
+		return $sentences;
+	}
 }

@@ -133,8 +133,8 @@ class Scrap_Output {
 						$times_text = $result['cartelera']['scraped_time_text'] ?? '';
 						$computed   = [];
 						// cartelera computed: sentences cartelera dates and times
-						$computed['sentences_cartelera_dates'] = Text_Parser::first_acceptance_of_date_text( $dates_text );
-						$computed['sentences_cartelera_times'] = Text_Parser::first_acceptance_of_times_text( $times_text );
+						$computed['sentences_cartelera_dates'] = Parse_Text_Into_Dates::first_acceptance_of_date_text( $dates_text );
+						$computed['sentences_cartelera_times'] = Parse_Text_Into_Dates::first_acceptance_of_times_text( $times_text );
 
 
 					endforeach;
@@ -152,7 +152,7 @@ class Scrap_Output {
 						$col_title_html = ob_get_clean();
 
 						ob_start();
-						// column cartelera dates and tweekdays adn times in text
+						// column cartelera dates and tweekdays and times in text
 						$sentences_cartelera_dates = self::render_col_cartelera_text_datetimes( $result );
 						$sentences_cartelera_times = self::render_times_parsed_sentences( $result );
 						$col_cartelera_text_html   = ob_get_clean();
@@ -163,14 +163,14 @@ class Scrap_Output {
 						$col_ticketmaster_dates_html = ob_get_clean();
 						// now that we have rendered them, remove also the dates outside the limit,
 						// we don't want to compared them with ticketmasters.
-						$datetimes_ticketmaster = Text_Parser::remove_dates_after_limit( $datetimes_tickermaster );
+						$datetimes_ticketmaster = Parse_Text_Into_Dates::remove_dates_after_limit( $datetimes_tickermaster );
 
 						ob_start();
 						$datetimes_cartelera      = self::render_col_cartelera_datetimes( $sentences_cartelera_dates, $sentences_cartelera_times );
 						$col_cartelera_dates_html = ob_get_clean();
 						// now that we have rendered them, remove also the dates outside the limit,
 						// we don't want to compared them with ticketmasters.
-						$datetimes_cartelera = Text_Parser::remove_dates_after_limit( $datetimes_cartelera );
+						$datetimes_cartelera = Parse_Text_Into_Dates::remove_dates_after_limit( $datetimes_cartelera );
 						ob_start();
 						$comparison_success         = self::render_col_comparison( $datetimes_cartelera, $datetimes_ticketmaster );
 						$col_comparison_result_html = ob_get_clean();
@@ -388,7 +388,7 @@ class Scrap_Output {
 
 					// check if date is later than our limit for muted output, and show it muted
 					$number_events_limit  = (int) Settings_Page::get_plugin_setting( Settings_Page::LIMIT_NUMBER_DATES_COMPARE ) ?? 20;
-					$date_timestamp_limit = Text_Parser::get_limit_datetime();
+					$date_timestamp_limit = Parse_Text_Into_Dates::get_limit_datetime();
 					$not_analyzed         = $date_timestamp_limit ? \strtotime( $datetime ) > $date_timestamp_limit : false;
 					$not_analyzed         = $not_analyzed || $k >= $number_events_limit;
 					echo '<li
@@ -425,7 +425,7 @@ class Scrap_Output {
 	public static function render_col_cartelera_text_datetimes( $result ): array {
 		// Dates
 		// To extract the dates from the text we:
-		// - confirm that the text is a valid dates information,(first_acceptance_of_date_text)
+		// - confirm that the text is a valid dates information,(first_ acceptance_of_ date_text)
 		// - extracting more than one sentence needed, and sanitize a little
 		// - converts that sanitized text into the dates that it represents
 		// - (calling main function identify _ dates _ sentence _ daterange _ or _ singledays)
@@ -434,7 +434,7 @@ class Scrap_Output {
 			$dates_text = $result['cartelera']['scraped_dates_text'];
 			echo '<p>';
 			echo '<b>Dates</b>==> ' . esc_html( $dates_text );
-			$sentences = Text_Parser::first_acceptance_of_date_text( $dates_text );
+			$sentences = Parse_Text_Into_Dates::first_acceptance_of_date_text( $dates_text );
 			$count     = count( $sentences );
 			echo $count ? '✅ (' . $count . ')' : '❌ text not parseable <br/>';
 			echo '</p>';
@@ -457,13 +457,13 @@ class Scrap_Output {
 	 * Undocumented function
 	 *
 	 * @param array $result
-	 * @return void
+	 * @return array
 	 */
-	public static function render_times_parsed_sentences( array $result ) {
+	public static function render_times_parsed_sentences( array $result ): array {
 		// Weekday and times
 		$sentences = [];
 		if ( ! empty( $result['cartelera']['scraped_time_text'] ) ) {
-			$sentences = Text_Parser::first_acceptance_of_times_text( $result['cartelera']['scraped_time_text'] );
+			$sentences = Parse_Text_Into_Dates::first_acceptance_of_times_text( $result['cartelera']['scraped_time_text'] );
 			echo '<p>';
 			echo '<b>Times</b>==> ' . esc_html( $result['cartelera']['scraped_time_text'] );
 			$count = count( $sentences );
@@ -476,7 +476,7 @@ class Scrap_Output {
 			echo '   <small class="muted">Parsed text for weekday and time:</small> <br/>';
 			echo '   <em>' . implode( '</em><br/><em>', $sentences ) . '</em>';
 			// echo '   <br/><small class="muted">Show is played these days of the week:</small> <br/>';
-			// echo implode( ', ', Text_Parser::get_all_days_of_week_in_sentences( $sentences ) );
+			// echo implode( ', ', Parse_Text_Into_Dates::get_all_days_of_week_in_sentences( $sentences ) );
 			echo '</div>';
 		}
 		return $sentences;
@@ -490,22 +490,10 @@ class Scrap_Output {
 	 * @return array
 	 */
 	public static function render_col_cartelera_datetimes( array $sentences_dates, array $sentences_times ): array {
-		// Day sof month
+
 		// parse dates to get specific calendar dates.
-		$all_dates = [];
-		foreach ( $sentences_dates as $dates_in_text ) {
-			if ( 0 === strpos( $dates_in_text, 'suspende' ) ) {
-				$removing_dates = Text_Parser::identify_dates_sentence_daterange_or_singledays( $dates_in_text );
-				$all_dates      = array_diff( $all_dates, $removing_dates );
-			} else {
-				$all_dates = array_merge(
-					$all_dates,
-					Text_Parser::identify_dates_sentence_daterange_or_singledays( $dates_in_text )
-				);
-			}
-		}
-		$datetimes_cartelera             = Text_Parser::definitive_dates_and_times( $all_dates, $sentences_times, $sentences_dates );
-		$datetimes_cartelera_after_today = Text_Parser::remove_dates_previous_of_today( $datetimes_cartelera );
+		$datetimes_cartelera             = Parse_Text_Into_Dates::definitive_dates_and_times( $sentences_dates, $sentences_times );
+		$datetimes_cartelera_after_today = Parse_Text_Into_Dates::remove_dates_previous_of_today( $datetimes_cartelera );
 		if ( empty( $datetimes_cartelera_after_today ) && ! empty( $datetimes_cartelera ) ) {
 			printf( __( '<p>All dates are previous of today. Nothing to compare</p>', 'cartelera-scrap' ) );
 		}
@@ -515,7 +503,7 @@ class Scrap_Output {
 		foreach ( $datetimes_cartelera_after_today as $i => $show_date ) {
 			$count++;
 			// check if date is later than our limit
-			$date_timestamp_limit = Text_Parser::get_limit_datetime();
+			$date_timestamp_limit = Parse_Text_Into_Dates::get_limit_datetime();
 			$number_events_limit  = (int) Settings_Page::get_plugin_setting( Settings_Page::LIMIT_NUMBER_DATES_COMPARE ) ?? 20;
 			$not_analyzed         = $date_timestamp_limit ? \strtotime( $show_date ) >= $date_timestamp_limit : false;
 			$not_analyzed         = $not_analyzed || $count > $number_events_limit;
@@ -554,7 +542,7 @@ class Scrap_Output {
 			return null;
 		}
 
-		$result_compare = Text_Parser::compare_arrays( $dates_cart, $dates_tick );
+		$result_compare = Parse_Text_Into_Dates::compare_arrays( $dates_cart, $dates_tick );
 		if ( true === $result_compare ) {
 			echo '👍🏻👍🏻👍🏻👍🏻👍🏻👍🏻👍🏻👍🏻 Yuhuuu all good';
 			return true;

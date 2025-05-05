@@ -64,7 +64,14 @@ class Settings_Hooks {
 			if ( 'action_start_scrapping_shows' === $action ) {
 
 				// Perform the scrap action -> calls the recurring cron job to start processing the shows.
-				Scrap_Actions::perform_scrap();
+				$result_scrap = Scrap_Actions::perform_scrap();
+				if ( is_wp_error( $result_scrap ) ) {
+					wp_safe_redirect( add_query_arg(
+						'error', 'Error: No shows found in cartelera.',
+						admin_url( 'options-general.php?page=cartelera-scrap' )
+					) );
+					exit;
+				}
 
 				// Redirect back to the admin page after the action is executed.
 				$message = 'Scrap action executed successfully.';

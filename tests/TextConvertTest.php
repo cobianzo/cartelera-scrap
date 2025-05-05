@@ -1,5 +1,5 @@
 <?php
-use Cartelera_Scrap\Text_Parser;
+use Cartelera_Scrap\Parse_Text_Into_Dates;
 
 class TextConvertTest extends WP_UnitTestCase {
 
@@ -15,7 +15,7 @@ class TextConvertTest extends WP_UnitTestCase {
 	}
 
 	private function evaluate_case( string $label, array $expected ): void {
-		$result = Text_Parser::identify_dates_sentence_daterange_or_singledays( $label );
+		$result = Parse_Text_Into_Dates::identify_dates_sentence_daterange_or_singledays( $label );
 		echo "\n--- [$label] ---\n";
 		$this->assertEquals( $expected, $result, 'Error evaluating ' . $label . '  ' );
 	}

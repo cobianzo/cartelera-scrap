@@ -1,10 +1,10 @@
 <?php
 
-use Cartelera_Scrap\Simple_Scraper;
 use Cartelera_Scrap\Scrap_Actions;
-use Cartelera_Scrap\Text_Parser;
+use Cartelera_Scrap\Parse_Text_Into_Dates;
 use Cartelera_Scrap\Helpers\Queue_And_Results;
 use Cartelera_Scrap\Helpers\Text_Sanization;
+use Cartelera_Scrap\Scraper\Scraper_Ticketmaster;
 
 /**
  * usage
@@ -46,7 +46,7 @@ class E2ETest extends WP_UnitTestCase {
 		$first_extracted_date     = '2025-06-22';
 		$first_extracted_datetime = '2025-06-22 12:00';
 
-		echo "\n ======= Step 1. retrieve texts from cartelera (Simple_Scraper::scrap_one_cartelera_show)🎬 🤯========";
+		echo "\n ======= Step 1. retrieve texts from cartelera (Scraper_Cartelera::scrap_one_cartelera_show)🎬 🤯========";
 		$result_cartelera = ( new ScrapTest() )->scrap_and_test_cartelera_file(
 			$cart_mocked_page_html,
 			$result_text_date,
@@ -63,10 +63,10 @@ class E2ETest extends WP_UnitTestCase {
 		)
 		*/
 
-		echo "\n ======= Step 2. retrieve texts from ticketmaster (Simple_Scraper::scrap_ one_ tickermaster_ show)🎬 🤯========";
+		echo "\n ======= Step 2. retrieve texts from ticketmaster (Scraper_Ticketmaster::scrap_ one_ tickermaster_ show)🎬 🤯========";
 		$filepath            = __DIR__ . "/data/$tm_mocked_page_html";
 		$html_content        = file_get_contents( $filepath );
-		$result_tickermaster = Simple_Scraper::scrap_one_tickermaster_show( $html_content );
+		$result_tickermaster = Scraper_Ticketmaster::scrap_one_tickermaster_show( $html_content );
 		echo '$result_tickermaster =';
 		print_r( $result_tickermaster );
 		/*
@@ -80,7 +80,7 @@ class E2ETest extends WP_UnitTestCase {
 					[printed_date] => jun22
 					[time_12h] => 12:00 p.m.
 					[date] => 2025-06-22
-					[time] => 12:00
+					[time] => 12:00pl
 				)
 
 		)
@@ -96,7 +96,7 @@ class E2ETest extends WP_UnitTestCase {
 			'cartelera'    => $result_cartelera,
 			'ticketmaster' => $result_tickermaster,
 		];
-		Queue_And_Results::add_show_result( $saved_result );
+		Queue_And_Results::save_show_result( $saved_result );
 
 		$show_results                 = Queue_And_Results::get_show_results();
 		$first_show_result_to_process = $show_results[0];
@@ -126,9 +126,7 @@ class E2ETest extends WP_UnitTestCase {
 							[date] => 2025-06-22
 							[time] => 12:00
 						)
-
 				)
-
 		)
 		)
 		*/
@@ -138,7 +136,7 @@ class E2ETest extends WP_UnitTestCase {
 		echo "\n ======= Step4. Get the simplified senteces for day dates, from cartelera🎬 🤯========";
 		echo "\n ======= shown in settings page with Scrap_Output::render_col_cartelera_text_datetimes ========";
 		$cartelera_dates_text = $first_show_result_to_process['cartelera']['scraped_dates_text'];
-		$date_sentences       = Text_Parser::first_acceptance_of_date_text( $cartelera_dates_text );
+		$date_sentences       = Parse_Text_Into_Dates::first_acceptance_of_date_text( $cartelera_dates_text );
 
 		$this->assertIsArray( $date_sentences, '❌ - Error. $date_sentences is not an array.' . print_r( $date_sentences, 1 ) );
 		$this->assertEquals(
@@ -160,7 +158,7 @@ class E2ETest extends WP_UnitTestCase {
 		echo "\n ======= Step5. Get the simplified senteces for day of the week and time, from cartelera🎬 🤯========";
 		echo "\n ======= shown in settings page with Scrap_Output::render_times_parsed_sentences ========";
 		$cartelera_time_text = $first_show_result_to_process['cartelera']['scraped_time_text'];
-		$time_sentences      = Text_Parser::first_acceptance_of_times_text( $cartelera_time_text );
+		$time_sentences      = Parse_Text_Into_Dates::first_acceptance_of_times_text( $cartelera_time_text );
 		// these two things do more or less the same thing (render_... is wrapper of the first_acceptance...)
 		// $sentences_cartelera_dates = Scrap_Output::render_col_cartelera_text_datetimes( $first_show_result_to_process );
 		print_r( $time_sentences );
@@ -182,8 +180,8 @@ class E2ETest extends WP_UnitTestCase {
 		echo "\n ======= Step6. Get the simplified senteces for day of the week and time, from cartelera🎬 🤯========";
 		// TODO: test dates in cartelera with
 		// converting 4-11-18-mayo-2025 into array of dates [2025-5-11, ...]
-		$dateYYYYMMDD = Text_Parser::identify_dates_sentence_daterange_or_singledays( $first_accpted_sentence_date );
-		print_r( $dateYYYYMMDD );
+		$datesYYYYMMDD = Parse_Text_Into_Dates::identify_dates_sentence_daterange_or_singledays( $first_accpted_sentence_date );
+		print_r( $datesYYYYMMDD );
 		// Output
 		/*
 		(
@@ -192,23 +190,23 @@ class E2ETest extends WP_UnitTestCase {
 		[2] => 2025-06-01
 		)
 		 */
-		$this->assertCount( 1, $dateYYYYMMDD, '❌ - Error. The count of the result of identify_dates_sentence_daterange_or_singledays is not 1, but ' . count( $dateYYYYMMDD ) );
-		$this->assertEquals( $dateYYYYMMDD[0], $first_extracted_date, '❌ - Error. The extracted date is not the expected. From ' . $first_accpted_sentence_date . ' we got ' . print_r( $dateYYYYMMDD, 1 ) . PHP_EOL . 'You need to refine "identify_dates_sentence_daterange_or_singledays" ' );
+		$this->assertCount( 1, $datesYYYYMMDD, '❌ - Error. The count of the result of identify_dates_sentence_daterange_or_singledays is not 1, but ' . count( $datesYYYYMMDD ) );
+		$this->assertEquals( $datesYYYYMMDD[0], $first_extracted_date, '❌ - Error. The extracted date is not the expected. From ' . $first_accpted_sentence_date . ' we got ' . print_r( $datesYYYYMMDD, 1 ) . PHP_EOL . 'You need to refine "identify_dates_sentence_daterange_or_singledays" ' );
 
 
 		// Test the creation of the definitive datetimes of cartelera
 		echo "\n ======= Step7. Create the definitive dates and times, from cartelera🎬 🤯========";
-		$datetimes = Text_Parser::definitive_dates_and_times( [ $dateYYYYMMDD ], $time_sentences );
+		$datetimes = Parse_Text_Into_Dates::definitive_dates_and_times( [ $datesYYYYMMDD ], $time_sentences );
 		print_r( $datetimes );
 		$this->assertCount( 1, $datetimes, '❌ - Error. The count of the result of definitive_dates_and_times is not 1, but ' . count( $datetimes ) );
 		$this->assertEquals( $datetimes, [ $first_extracted_datetime ], '❌ - Error. The extracted datetime is not the expected' . print_r( $datetimes, 1 ) );
 
-		// I can't test in this example Text_Parser::remove_dates_previous_of_today
+		// I can't test in this example Parse_Text_Into_Dates::remove_dates_previous_of_today
 
 		// Last test:
-		echo "\n ======= Step8. Compare ticketmaster dates and cartelera datesa (Text_Parser::compare_arrays)🎬 🤯========";
+		echo "\n ======= Step8. Compare ticketmaster dates and cartelera datesa (Parse_Text_Into_Dates::compare_arrays)🎬 🤯========";
 		$tm_dates       = array_map( fn( $tm_record ) => $tm_record['date'] . ' ' . $tm_record['time'], $result_tickermaster['dates'] );
-		$result_compare = Text_Parser::compare_arrays( $datetimes, $tm_dates );
+		$result_compare = Parse_Text_Into_Dates::compare_arrays( $datetimes, $tm_dates );
 		print_r( $result_compare );
 	}
 }

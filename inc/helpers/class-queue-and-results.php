@@ -13,6 +13,9 @@
 
 namespace Cartelera_Scrap\Helpers;
 
+use Cartelera_Scrap\Cartelera_Scrap_Plugin;
+use Cartelera_Scrap\Parse_Text_Into_Dates;
+
 /**
  *  * =======
  * CRUD QUEUE: for the processing queue of shows in the options table.
@@ -155,9 +158,16 @@ class Queue_And_Results {
 	 * @param array $result info about a show in both sources: [ title=>..., cartelera=>... ticketmaster=>...]  ] .
 	 * @return void
 	 */
-	public static function add_show_result( array $result ): void {
+	public static function save_show_result( array $result ): void {
 		// Append a new show result to the existing results in the database.
 		$results = self::get_show_results();
+
+		// append computed data:
+		$computed_cartelera_result          = Parse_Text_Into_Dates::computed_data_cartelera_result( $result );
+		$result['computed']                 = empty( $result['computed'] ) ? [] : $result['computed'];
+		$result['computed']['cartelera']    = $computed_cartelera_result;
+		$result['computed']['ticketmaster'] = Parse_Text_Into_Dates::computed_data_ticketmaster_result( $result );
+		$result['computed']['comparison']   = Parse_Text_Into_Dates::computed_data_comparison_result( $result );
 
 		// First looks for the show with the same title, in case it needs to update, not append.
 		foreach ( $results as $i => $existing_result ) {
