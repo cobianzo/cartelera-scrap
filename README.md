@@ -1,9 +1,5 @@
 TODO
 ===
-- Refactor code in
-  --- Text_Sanitizers
-	--- Text_Into_Dates
-	--- Simple_Parser
 
 - BUG:When deployed in a server, the main cron calling the recursive onetimeoff job is not wokring ok.
 - Send email with report. Add it to the settings options.

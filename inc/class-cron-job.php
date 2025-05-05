@@ -76,7 +76,7 @@ class Cron_Job {
 			$difference_in_seconds         = abs( $initial_difference_in_seconds % 60 );
 			$readable_difference           = sprintf( '%d minutes and %d seconds', $difference_in_minutes, $difference_in_seconds );
 
-			$text .= sprintf( 'There is current work in process being called recursivelly, with %s shows in the queue to be scraped<br/>', count( Queue_And_Results::get_queued_shows() ) );
+			$text .= sprintf( '<br/>There is current work in process being called recursivelly, with %s shows in the queue to be scraped<br/>', count( Queue_And_Results::get_queued_shows() ) );
 			if ( $initial_difference_in_seconds > 0 ) {
 				$text .= sprintf( 'The next batch will be executed in %s ', $readable_difference );
 			} else {

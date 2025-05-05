@@ -21,6 +21,7 @@ use Cartelera_Scrap\Helpers\Queue_And_Results;
  */
 class Settings_Page {
 
+
 	// Plugin name identifier.
 	private string $plugin_name;
 	private string $textdomain;
@@ -133,34 +134,62 @@ class Settings_Page {
 			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1> <!-- Display the page title. -->
 
 
-				<form action="options.php" method="post"> <!-- Form to save settings. -->
-					<?php
-					// Output nonce, action, and option group.
-					settings_fields( self::ALL_MAIN_OPTIONS_NAME );
-					?>
+			<form action="options.php" method="post"> <!-- Form to save settings. -->
+				<?php
+				// Output nonce, action, and option group.
+				settings_fields( self::ALL_MAIN_OPTIONS_NAME );
+				?>
 
-					<div class="cartelera-scrap-settings-columns-wrapper">
-						<div class="cartelera-scrap-settings-column cartelera-scrap-settings-column__left">
+				<div class="cartelera-scrap-settings-columns-wrapper">
+					<div class="cartelera-scrap-settings-column cartelera-scrap-settings-column__left">
 						<?php
 						// section left columns and right column
 						do_settings_sections( $this->pageid );
 						?>
-						</div>
 					</div>
+				</div>
 
-					<?php
-					// Save button
-					submit_button( 'Save cartelera options' ); // Output the submit button.
-					?>
+				<?php
+				// Save button
+				submit_button( 'Save cartelera options' ); // Output the submit button.
+				?>
 
-				</form>
+			</form>
 			<!-- Button to export -->
 			<?php
+			// Button to export
 			$count_results = count( Queue_And_Results::get_show_results() );
 			if ( $count_results ) :
 				$text = sprintf( __( 'Download json file for %s results', 'cartelera-scrap' ), $count_results );
 				self::create_form_button_with_action( 'action_export_scraping_results', $text, [ 'button-class' => 'button button-secondary' ] );
 			endif;
+
+
+			if ( wp_next_scheduled( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ) ) :
+
+				_e( '<h3>Scrapping is running as a cron job</h3>', 'cartelera-scrap' );
+				printf( __( '<p>Shows in the processing queue waiting to be processed: %s<br />', 'cartelera-scrap' ), Queue_And_Results::get_queued_count() );
+				printf( __( 'Already processed shows: %s</p>', 'cartelera-scrap' ), count( Queue_And_Results::get_show_results() ) );
+				$queue = Queue_And_Results::get_first_queued_show();
+				if ( $queue ) {
+					echo '<p>Next show to Scrap:  ' . $queue['text'] . '</p>';
+				} else {
+					echo '<p>Nothing in the queue to scrap</p>';
+				}
+
+				// Button to stop current ONE TIME OFF cron job
+				self::create_form_button_with_action(
+					'action_stop_one_time_off_cron_job',
+					__( 'Stop current processing queue cron job', 'cartelera-scrap' ),
+					[ 'button-class' => 'button button-secondary' ]
+				);
+
+			else :
+				echo '<p>Scrapping ' . Settings_Hooks::ONETIMEOFF_CRONJOB_NAME . ' is not running as a cron job</p>';
+			endif;
+
+
+
 
 			// the table with all the results printed.
 			Scrap_Output::render_scrap_status(); // Render the scrap status output.
@@ -265,9 +294,10 @@ class Settings_Page {
 			function () {
 				$new_value = (int) self::get_plugin_setting( self::OPTION_CRON_SAVE_AND_RUN ) ? 0 : 1;
 				echo '<button type="submit" name="'
-				. esc_attr( self::ALL_MAIN_OPTIONS_NAME ) . '[' . esc_attr( self::OPTION_CRON_SAVE_AND_RUN ) . ']"
+					. esc_attr( self::ALL_MAIN_OPTIONS_NAME ) . '[' . esc_attr( self::OPTION_CRON_SAVE_AND_RUN ) . ']"
 				value="' . esc_attr( $new_value ) . '" class="button button-secondary">Save and exectute now</button>
-				'; },
+				';
+			},
 			$this->pageid,
 			$this->plugin_name . '_fields__section_rightcolumn'
 		);
@@ -305,9 +335,9 @@ class Settings_Page {
 				?>
 				name="<?php echo esc_attr( self::ALL_MAIN_OPTIONS_NAME ); ?>[<?php echo esc_attr( $field_name ); ?>]"
 				value="<?php echo esc_attr( $option_value ); ?>">
-				<p class="description">
-					<?php echo esc_html( $more_parems['description'] ); ?>
-				</p>
+			<p class="description">
+				<?php echo esc_html( $more_parems['description'] ); ?>
+			</p>
 				<?php
 			},
 			$this->pageid, // Page slug.
@@ -338,16 +368,16 @@ class Settings_Page {
 				$options      = get_option( self::ALL_MAIN_OPTIONS_NAME ); // Retrieve the saved options.
 				$option_value = $options[ $field_name ] ?? '';
 				?>
-				<select name="<?php echo esc_attr( self::ALL_MAIN_OPTIONS_NAME ); ?>[<?php echo esc_attr( $field_name ); ?>]">
-					<?php foreach ( $options_array as $value => $label ) : ?>
-						<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $option_value, $value ); ?>>
-							<?php echo esc_html( $label ); ?>
-						</option>
-					<?php endforeach; ?>
-				</select>
-				<p class="description">
-					<?php echo esc_html( $more_params['description'] ); ?>
-				</p>
+			<select name="<?php echo esc_attr( self::ALL_MAIN_OPTIONS_NAME ); ?>[<?php echo esc_attr( $field_name ); ?>]">
+				<?php foreach ( $options_array as $value => $label ) : ?>
+					<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $option_value, $value ); ?>>
+						<?php echo esc_html( $label ); ?>
+					</option>
+				<?php endforeach; ?>
+			</select>
+			<p class="description">
+				<?php echo esc_html( $more_params['description'] ); ?>
+			</p>
 				<?php
 				// Display additional information below the dropdown if provided.
 				if ( ! empty( $more_params['append'] ) ) {

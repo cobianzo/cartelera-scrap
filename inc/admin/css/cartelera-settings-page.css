@@ -8,10 +8,10 @@ html {
   color: #3b353e;
 }
 
-
 .muted,
 .muted.color-danger,
-.muted.color-success {
+.muted.color-success,
+li.invalid {
   color: #534b4b;
 }
 
@@ -22,6 +22,18 @@ html {
 .color-danger {
   color: #d32323;
 }
+
+/* dates */
+ul.cartelera-dates {
+  li.valid:is(:first-child) { /* to align dates with the other column if it has one invalid date as first el */
+    padding-top: 25px;
+  }
+  li.invalid:has(+ li.invalid) {
+    display: none;
+  }
+}
+
+
 
 .cartelera-scrap-settings-columns-wrapper {
  columns: 2;

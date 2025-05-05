@@ -4,10 +4,10 @@
 2. We ran Parse_Text_Into_Dates::computed_data_cartelera_result( $result )
 	To get all the intermediate values and the definitive dates for both platforms.
 3. We have ran the extra layer for comparison only the dates inside of the range of comparable
-	Parse_Text_Into_Dates::computed_is_comparison_successful( $result )
+	Parse_Text_Into_Dates::computed_for_today_is_comparison_successful( $result )
 
 > NOTE: eveything in [computed] has been calculated with `computed_data_cartelera_result`,
-> and everyting inside [computed][comparison][<timestamp>][extra] has been calculated with `computed_is_comparison_successful`
+> and everyting inside [computed][comparison][<timestamp>][extra] has been calculated with `computed_for_today_is_comparison_successful`
 
 
 # The data
@@ -76,6 +76,7 @@ Boletos: Entrada general $204. Descuento del 50%, limitado a estudiantes de nive
 
     [computed] => Array
         (
+						[success] => false
             [cartelera] => Array
                 (
                     [first_aceptance_dates] => Array

@@ -149,13 +149,16 @@ class Scraper_Ticketmaster extends Scraper {
 			$title_maybe_1 = $all_spans ? $all_spans->item( 13 ) : null;
 			$title_maybe_2 = $all_spans ? $all_spans->item( 14 ) : null;
 
-			if ( str_contains( strtolower( $title_maybe_1->textContent ), strtolower( $title ) ) &&
+			if ( isset( $title_maybe_1->textContent ) && isset( $title_maybe_2->textContent ) ) {
+				if ( str_contains( strtolower( $title_maybe_1->textContent ), strtolower( $title ) ) &&
 				! str_contains( strtolower( $title_maybe_2->textContent ), strtolower( $title ) ) ) {
 					$title_maybe_2 = $title_maybe_1;
-			}
+				}
 
-			if ( ! in_array( $title_maybe_2->textContent, $result_tickermaster['tm_titles_list'], true ) ) {
-				$result_tickermaster['tm_titles_list'][] = self::cleanup_node_text_content( $title_maybe_2 );
+
+				if ( ! in_array( $title_maybe_2->textContent, $result_tickermaster['tm_titles_list'], true ) ) {
+					$result_tickermaster['tm_titles_list'][] = self::cleanup_node_text_content( $title_maybe_2 );
+				}
 			}
 
 			$date_object_for_time = ! empty( $time_12h->textContent ) ?

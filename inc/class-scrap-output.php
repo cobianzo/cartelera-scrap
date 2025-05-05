@@ -43,20 +43,6 @@ class Scrap_Output {
 	 */
 	public static function render_scrap_status() {
 
-		// check if the cron job is running
-		if ( wp_next_scheduled( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ) ) {
-			_e( '<h3>Scrapping is running as a cron job</h3>', 'cartelera-scrap' );
-			printf( __( '<p>Shows in the processing queue waiting to be processed: %s<br />', 'cartelera-scrap' ), Queue_And_Results::get_queued_count() );
-			printf( __( 'Already processed shows: %s</p>', 'cartelera-scrap' ), count( Queue_And_Results::get_show_results() ) );
-			$queue = Queue_And_Results::get_first_queued_show();
-			if ( $queue ) {
-				echo '<p>Next show to Scrap:  ' . $queue['text'] . '</p>';
-			} else {
-				echo '<p>Nothing in the queue to scrap</p>';
-			}
-		} else {
-			echo '<p>Scrapping ' . Settings_Hooks::ONETIMEOFF_CRONJOB_NAME . ' is not running as a cron job</p>';
-		}
 		?>
 		<div class="wrap" style="display: flex; gap: 10px;">
 
@@ -68,15 +54,12 @@ class Scrap_Output {
 
 			$next_show = Queue_And_Results::get_first_queued_show();
 			if ( $next_show ) :
+				Settings_Page::create_form_button_with_action(
+					'action_process_next_scheduled_show',
+					sprintf( __( 'Process next batch of %s', 'cartelera-scrap' ), Settings_Page::get_plugin_setting( Settings_Page::NUMBER_PROCESSED_EACH_TIME ) )
+				);
 				?>
-				<form method="post" style="display: flex; align-items: center; gap: 10px;">
-					<?php wp_nonce_field( 'nonce_action_field', 'nonce_action_scrapping' ); ?>
-					<input type="hidden" name="action" value="action_process_next_scheduled_show">
-					<div style="display:flex; align-items: center; gap: 10px;">
-						<input type="submit" class="button button-primary" value="<?php echo esc_attr( sprintf( __( 'Process next batch of %s', 'cartelera-scrap' ), Settings_Page::get_plugin_setting( Settings_Page::NUMBER_PROCESSED_EACH_TIME ) ) ); ?>" />
-						<strong><?php echo esc_html( $next_show['text'] ); ?></strong>
-					</div>
-				</form>
+				<strong><?php echo esc_html( $next_show['text'] ); ?></strong>
 			<?php endif; ?>
 		</div>
 		<div class="wrap">
@@ -127,13 +110,9 @@ class Scrap_Output {
 					<?php
 					foreach ( $results as $i => $result ) :
 
-						$is_result_successful = Parse_Text_Into_Dates::computed_is_comparison_successful( $result );
-
+						// we update the values of the result based on today. ($result is passed by ref)
+						$is_result_successful = Parse_Text_Into_Dates::computed_for_today_is_comparison_successful( $result );
 						$no_tickermaster = ( empty( $result['ticketmaster']['dates'] ) || ! isset( $result['ticketmaster']['url'] ) );
-
-						// retrieve the info for every col beforehand, the use the html as placeholders
-						// we need to do this so we can know the final comparison result befoe we render the
-						// <tr>, and assing the success or fail class
 
 						// column title
 						ob_start();
@@ -142,28 +121,23 @@ class Scrap_Output {
 
 						ob_start();
 						// column cartelera dates and tweekdays and times in text
-						$sentences_cartelera_dates = self::render_col_cartelera_text_datetimes( $result );
-						$sentences_cartelera_times = self::render_times_parsed_sentences( $result );
+						self::render_col_cartelera_text_datetimes( $result );
+						self::render_times_parsed_sentences( $result );
 						$col_cartelera_text_html   = ob_get_clean();
 
 						ob_start();
 						// column ticketmaster parsed dates
-						$datetimes_tickermaster      = self::render_col_ticketmaster_dates( $result );
+						self::render_col_ticketmaster_dates( $result );
 						$col_ticketmaster_dates_html = ob_get_clean();
 						// now that we have rendered them, remove also the dates outside the limit,
 						// we don't want to compared them with ticketmasters.
-						$datetimes_ticketmaster = Parse_Text_Into_Dates::remove_dates_after_limit( $datetimes_tickermaster );
 
 						ob_start();
-						$datetimes_cartelera      = self::render_col_cartelera_datetimes( $sentences_cartelera_dates, $sentences_cartelera_times );
+						self::render_col_cartelera_datetimes( $result );
 						$col_cartelera_dates_html = ob_get_clean();
 
-						// now that we have rendered them, remove also the dates outside the limit,
-						// we don't want to compared them with ticketmasters.
-
-						$datetimes_cartelera = Parse_Text_Into_Dates::remove_dates_after_limit( $datetimes_cartelera );
 						ob_start();
-						$comparison_success         = self::render_col_comparison( $result );
+						self::render_col_comparison( $result );
 						$col_comparison_result_html = ob_get_clean();
 
 
@@ -174,8 +148,8 @@ class Scrap_Output {
 							class="result-row
 							<?php
 								echo esc_attr( $no_tickermaster ? 'no-tickermaster ' : 'yes-tickermaster ' );
-								echo $comparison_success ? 'comparison-success ' : '';
-								echo false === $comparison_success ? 'comparison-fail ' : '';
+								echo $is_result_successful ? 'comparison-success ' : '';
+								echo false === $is_result_successful ? 'comparison-fail ' : '';
 							?>
 							">
 
@@ -218,51 +192,21 @@ class Scrap_Output {
 							<?php // <!-- Display the ticketmaster dates Y-m-d H:i --> ?>
 							<td class="col-ticketmaster-dates">
 								<p>TickH: 🎫🎫🎫🎫🎫 </p>
-								<?php
-								// add success or fail to the class of the date.
-								foreach ( $datetimes_tickermaster as $tm_date ) {
-
-									$tm_timestamp = strtotime( $tm_date );
-
-									// not founf in cartelera? we paint it red.
-									$class = ( false !== strpos(
-										$col_cartelera_dates_html,
-										'data-date="' . esc_attr( $tm_timestamp ) . '"'
-									) ) ? 'date-found color-success' : 'date-not-found color-danger';
-
-									$col_ticketmaster_dates_html = str_replace(
-										'data-date="' . esc_attr( $tm_timestamp ) . '" class="',
-										'data-date="' . esc_attr( $tm_timestamp ) . '" class="' . $class . ' ',
-										$col_ticketmaster_dates_html
-									);
-								}
-
-								echo $col_ticketmaster_dates_html;
-								?>
+								<ul class="cartelera-dates">
+									<?php
+									echo $col_ticketmaster_dates_html;
+									?>
+								</ul>
 							</td>
 
 							<td class="col-cartelera-dates"> <!-- Display the cartelera dates parsed -->
 								<p>CartH: 🎟️🎟️ </p>
-								<?php
-								// adds success or fail to the class of the date.
-								foreach ( $datetimes_cartelera as $car_date ) {
-
-									$car_timestamp = strtotime( $car_date );
-
-									// not founf in cartelera? we paint it red.
-									$class = ( false !== strpos(
-										$col_ticketmaster_dates_html,
-										'data-date="' . esc_attr( $car_timestamp ) . '"'
-									) ) ? 'date-found color-success' : 'date-not-found color-danger';
-
-									$col_cartelera_dates_html = str_replace(
-										'data-date="' . esc_attr( $car_timestamp ) . '" class="',
-										'data-date="' . esc_attr( $car_timestamp ) . '" class="' . $class . ' ',
-										$col_cartelera_dates_html
-									);
-								}
+								<ul class="cartelera-dates">
+									<?php
+								echo $col_cartelera_dates_html;
 								?>
-								<?php echo $col_cartelera_dates_html; ?>
+								</ul>
+
 							</td>
 
 							<td class="col-comparison"> <!-- Display the coincidence check -->
@@ -363,49 +307,23 @@ class Scrap_Output {
 	 * Undocumented function
 	 *
 	 * @param array $result
-	 * @return array
+	 * @return void
 	 */
-	public static function render_col_ticketmaster_dates( $result ): array {
+	public static function render_col_ticketmaster_dates( $result ): void {
 
-		$datetimes = [];
-		if ( ! empty( $result['ticketmaster']['dates'] ) ) :
-			?>
-			<ul>
-				<?php
-				// loop every date we will show as html
-				foreach ( $result['ticketmaster']['dates'] as $k => $date ) {
-					// add the time to the date, we'll return as result of this function
-					$datetime    = $date['date'] . ' ' . $date['time']; // YYYY-mm-dd H:i
-					$datetimes[] = $datetime;
+		// add success or fail to the class of the date.
+		foreach ( $result['computed']['comparison'] as $tm_timestamp => $date_with_full_info ) {
 
-					// check if date is later than our limit for muted output, and show it muted
-					$number_events_limit  = (int) Settings_Page::get_plugin_setting( Settings_Page::LIMIT_NUMBER_DATES_COMPARE ) ?? 20;
-					$date_timestamp_limit = Parse_Text_Into_Dates::get_limit_datetime();
-					$not_analyzed         = $date_timestamp_limit ? \strtotime( $datetime ) > $date_timestamp_limit : false;
-					$not_analyzed         = $not_analyzed || $k >= $number_events_limit;
-					echo '<li
-						data-date="' . esc_attr( \strtotime( $datetime ) ) . '" class="'
-						. ( $not_analyzed ? esc_attr( ( ( $k >= $number_events_limit ) ? 'dark-' : '' ) . 'muted' ) : '' ) . '">'
-						. esc_html( $datetime ) . sprintf( ' <small class="dark-muted">%s</small>', strtolower( date( 'D', strtotime( $datetime ) ) ) )
-						. '</li>';
+			// pre compute the date.
+			if ( ! $date_with_full_info['ticketmaster'] ) {
+				continue;
+			}
 
-					if ( $not_analyzed ) {
-						$not_analyzed_left = ( count( $result['ticketmaster']['dates'] ) - ( $k + 1 ) );
-						echo $not_analyzed_left ? '<li>... and ' . $not_analyzed_left . ' more </li>' : '';
-						break;
-					}
-				}
-				?>
-			</ul>
+			$color = $date_with_full_info['cartelera'] ? 'date-found color-success' : 'date-not-found color-danger';
+			self::render_date_from_fulldate_indo( $tm_timestamp, $date_with_full_info, $color );
 
-			<?php
-		else :
-			?>
-			No dates found
-			<?php
-		endif;
+		} // end foreach date.
 
-		return $datetimes;
 	}
 
 	/**
@@ -484,41 +402,22 @@ class Scrap_Output {
 	 * Undocumented function
 	 *
 	 * @param array $result
-	 * @return array
+	 * @return void
 	 */
-	public static function render_col_cartelera_datetimes( array $result ): array {
+	public static function render_col_cartelera_datetimes( array $result ): void {
 
-		// parse dates to get specific calendar dates.
-		$datetimes_cartelera             = $result['computed']['cartelera']['definitive_datetimes']['output'] ?? [];
-		$datetimes_cartelera_after_today = Parse_Text_Into_Dates::remove_dates_previous_of_today( $datetimes_cartelera );
-		if ( empty( $datetimes_cartelera_after_today ) && ! empty( $datetimes_cartelera ) ) {
-			printf( __( '<p>All dates are previous of today. Nothing to compare</p>', 'cartelera-scrap' ) );
-		}
-		// dont show dates previous of today, but show dates outside of analysis for being to far ahread in time
-		echo '<ul>';
-		$count = 0;
-		foreach ( $datetimes_cartelera_after_today as $i => $show_date ) {
-			$count++;
-			// check if date is later than our limit
-			$date_timestamp_limit = Parse_Text_Into_Dates::get_limit_datetime();
-			$number_events_limit  = (int) Settings_Page::get_plugin_setting( Settings_Page::LIMIT_NUMBER_DATES_COMPARE ) ?? 20;
-			$not_analyzed         = $date_timestamp_limit ? \strtotime( $show_date ) >= $date_timestamp_limit : false;
-			$not_analyzed         = $not_analyzed || $count > $number_events_limit;
-			echo '<li data-date="' . esc_attr( \strtotime( $show_date ) ) . '" class="'
-				. ( $not_analyzed ? esc_attr( ( ( $count >= $number_events_limit ) ? 'dark-' : '' ) . 'muted' ) : '' ) . '">'
-					. esc_html( $show_date )
-					. sprintf( ' <small class="dark-muted">%s</small>', strtolower( date( 'D', strtotime( $show_date ) ) ) )
-				. '</li>';
 
-			if ( $not_analyzed ) { // don't show more dates out of the range, simply mention how many left there are.
-				$not_analyzed_left = ( count( $datetimes_cartelera_after_today ) - ( $i + 1 ) );
-				echo $not_analyzed_left ? '<li>... and ' . $not_analyzed_left . ' more </li>' : '';
-				break;
+		// adds success or fail to the class of the date.
+		foreach ( $result['computed']['comparison'] as $car_timestamp => $date_with_full_info ) {
+
+			if ( ! $date_with_full_info['cartelera'] ) {
+				continue;
 			}
-		}
-		echo '</ul>';
 
-		return $datetimes_cartelera_after_today;
+			$color = $date_with_full_info['ticketmaster'] ? 'date-found color-success' : 'date-not-found color-danger';
+			self::render_date_from_fulldate_indo( $car_timestamp, $date_with_full_info, $color );
+		}
+
 	}
 
 	/**
@@ -540,7 +439,7 @@ class Scrap_Output {
 			return null;
 		}
 
-		$is_successful = Parse_Text_Into_Dates::computed_is_comparison_successful( $result );
+		$is_successful = $result['computed']['success'] ?? null;
 
 		if ( true === $is_successful ) {
 			echo '👍🏻👍🏻👍🏻👍🏻👍🏻👍🏻👍🏻👍🏻 Yuhuuu all good';
@@ -550,6 +449,21 @@ class Scrap_Output {
 				return false;
 		}
 		return null;
+	}
+
+	public static function render_date_from_fulldate_indo( string $timestamp, array $date_with_full_info, string $color ) {
+		$extra_info     = $date_with_full_info['extra'] ?? [];
+		$is_valid       = empty( $extra_info['invalid-for-comparison'] );
+		$invalid_reason = $extra_info['invalid-for-comparison'] ?? '';
+
+		// found? not found in cartelera? we paint it gree/red.
+		printf( '<li data-date="%s" class="%s %s"><b>%s</b> <small class="muted">%s</small></li>',
+			esc_attr( $timestamp ),
+			$color,
+			$invalid_reason . ' ' . ( $is_valid ? 'valid' : 'invalid' ),
+			$date_with_full_info['datetime'],
+			strtolower( date( 'D', $timestamp ) )
+		);
 	}
 }
 

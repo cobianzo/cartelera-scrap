@@ -10,7 +10,6 @@
 namespace Cartelera_Scrap\Admin;
 
 use Cartelera_Scrap\Scrap_Actions;
-use Cartelera_Scrap\Cartelera_Scrap_Plugin;
 use Cartelera_Scrap\Cron_Job;
 use Cartelera_Scrap\Helpers\Queue_And_Results;
 
@@ -22,9 +21,10 @@ class Settings_Hooks {
 	 * Initializes the class by hooking into WordPress actions.
 	 */
 	public static function init(): void {
-		// Hook the handle_scrap_action method to the 'admin_init' action.
+		// Hook the handle_scrap_action method to the 'admin_init' action
+		// this function handles all actions in buttons in the settings page..
 		add_action( 'admin_init', [ __CLASS__, 'handle_scrap_action' ] );
-		add_action( 'admin_init', [ __CLASS__, 'handle_export_action' ] );
+
 		add_action( self::ONETIMEOFF_CRONJOB_NAME, [ 'Cartelera_Scrap\Scrap_Actions', 'cartelera_process_one_batch' ] );
 
 		add_action( 'update_option_' . Settings_Page::ALL_MAIN_OPTIONS_NAME, [ __CLASS__, 'start_or_stop_cron_job' ], 10, 2 );
@@ -36,7 +36,14 @@ class Settings_Hooks {
 	public static function handle_scrap_action(): void {
 
 		// Actions sent when clicking on a button in the Settings page.
-		$valid_actions = [ 'action_start_scrapping_shows', 'action_process_next_scheduled_show', 'action_scrap_single_show' ];
+		$valid_actions = [
+			'action_start_scrapping_shows',
+			'action_process_next_scheduled_show',
+			'action_scrap_single_show',
+			'action_stop_one_time_off_cron_job',
+			'action_export_scraping_results'
+		];
+
 		if ( ! isset( $_POST['action'] ) ) {
 			return;
 		}
@@ -99,8 +106,14 @@ class Settings_Hooks {
 					$message   = sprintf( __( 'Processed theatre show: %1$s (%2$s).', 'cartelera-scrap' ), $show_title, $cartelera_href );
 					$scroll_to = '#result-' . sanitize_title( $show_title );
 				}
+			} elseif ( 'action_stop_one_time_off_cron_job' === $action ) {
+				// Stop the cron job.
+				wp_clear_scheduled_hook( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME );
+				$message = 'Cron job stopped';
+			} elseif ( 'action_export_scraping_results' === $action ) {
+				// Export the results to a file.
+				self::export_action();
 			}
-
 
 			// return to the settings page showing a notice.
 			wp_safe_redirect(
@@ -147,52 +160,30 @@ class Settings_Hooks {
 		return $temp_file_path;
 	}
 
-	public static function handle_export_action(): void {
-		if ( ! isset( $_POST['action'] ) ) {
-			return;
-		}
-		$action = sanitize_text_field( $_POST['action'] );
-		if ( 'action_export_scraping_results' !== $action ) {
-			return;
-		}
+	public static function export_action(): void {
 
-		// Check if the custom action and nonce are set in the POST request.
-		if ( isset( $_POST['nonce_action_scrapping'] ) ) {
-			// Verify the nonce to ensure the request is valid.
-			if ( ! wp_verify_nonce( sanitize_text_field( $_POST['nonce_action_scrapping'] ), 'nonce_action_field' ) ) {
-				wp_safe_redirect( add_query_arg(
-					'error', 'Error: Nonce verification failed.',
-					admin_url( 'options-general.php?page=cartelera-scrap' )
-				) );
-				exit;
-			}
+		$export_filepath = self::export_scrap_results_to_uploads_file();
 
-			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- ignoring error_log usage for debugging purposes
-			error_log( 'Export Acción ejecutada' );
-
-			$export_filepath = self::export_scrap_results_to_uploads_file();
-
-			if ( is_wp_error( $export_filepath ) ) {
-				wp_safe_redirect( add_query_arg(
-					'error', 'Error: ' . $export_filepath->get_error_message(),
-					admin_url( 'options-general.php?page=cartelera-scrap' )
-				) );
-				exit;
-			}
-
-			// Force download of the file.
-			header( 'Content-Description: File Transfer' );
-			header( 'Content-Type: application/octet-stream' );
-			header( 'Content-Disposition: attachment; filename="' . basename( $export_filepath ) . '"' );
-			header( 'Expires: 0' );
-			header( 'Cache-Control: must-revalidate' );
-			header( 'Pragma: public' );
-			header( 'Content-Length: ' . filesize( $export_filepath ) );
-			readfile( $export_filepath );
+		if ( is_wp_error( $export_filepath ) ) {
+			wp_safe_redirect( add_query_arg(
+				'error', 'Error: ' . $export_filepath->get_error_message(),
+				admin_url( 'options-general.php?page=cartelera-scrap' )
+			) );
 			exit;
-
 		}
+
+		// Force download of the file.
+		header( 'Content-Description: File Transfer' );
+		header( 'Content-Type: application/octet-stream' );
+		header( 'Content-Disposition: attachment; filename="' . basename( $export_filepath ) . '"' );
+		header( 'Expires: 0' );
+		header( 'Cache-Control: must-revalidate' );
+		header( 'Pragma: public' );
+		header( 'Content-Length: ' . filesize( $export_filepath ) );
+		readfile( $export_filepath );
+		exit;
 	}
+
 
 	/**
 	 * Executed when any of the registered fields changes value.

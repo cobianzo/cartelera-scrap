@@ -169,7 +169,7 @@ class Queue_And_Results {
 		$result['computed']['comparison']   = Parse_Text_Into_Dates::computed_dates_comparison_result( $result );
 
 		// TODELETE;
-		// $is_successful = Parse_Text_Into_Dates::computed_is_comparison_successful( $result );
+		// $is_successful = Parse_Text_Into_Dates::computed_for_today_is_comparison_successful( $result );
 		// echo $is_successful ? '✅ ' : '❌ ';
 		// \Cartelera_Scrap\ddie( $result );
 
