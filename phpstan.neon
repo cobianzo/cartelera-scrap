@@ -1,20 +1,13 @@
-includes:
-  - vendor/szepeviktor/phpstan-wordpress/extension.neon
-
 parameters:
-	# Level 9 is the highest level
-	level: max
+  level: 5
+  paths:
+    - cartelera-scrap.php
+    - inc/
+  ignoreErrors:
+    # Here the rules I want to ignore...
+  bootstrapFiles:
+    - phpstan-bootstrap.php
 
-	paths:
-		- inc/
-
-	ignoreErrors:
-		-
-			identifier: requireOnce.fileNotFound
-
-#        - '#PHPDoc tag @var#'
-#
-#    excludePaths:
-#        - ./*/*/FileToBeExcluded.php
-#
-#    checkMissingIterableValueType: false
+includes:
+  # no need to include it because we use composer.
+  # - vendor/szepeviktor/phpstan-wordpress/extension.neon

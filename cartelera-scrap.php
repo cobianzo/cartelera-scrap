@@ -44,10 +44,13 @@ class Cartelera_Scrap_Plugin {
 	 * @return void
 	 */
 	private function load_dependencies() {
-		define( 'CARTELERA_SCRAP_PLUGIN_SLUG', 'cartelera-scrap' );
-		define( 'CARTELERA_SCRAP_VERSION', self::VERSION );
+
+		require __DIR__ . '/phpstan-bootstrap.php';
+
+		// definition of constants.
 		define( 'CARTELERA_SCRAP_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'CARTELERA_SCRAP_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+
 
 		if ( file_exists( CARTELERA_SCRAP_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
 			require_once CARTELERA_SCRAP_PLUGIN_DIR . 'vendor/autoload.php';

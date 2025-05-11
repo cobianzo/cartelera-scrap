@@ -1,0 +1,106 @@
+[
+  {
+	input: 'Domingo 12:00 y 14:00 horas.',
+	expectedoutput: [
+    'sunday-12:00-14:00',
+    ],
+  },
+  {
+	input: 'Sábados y domingos 13:00 horas.',
+	expectedoutput: [
+    'saturday-sunday-13:00',
+    ],
+  },
+  {
+	input: 'Jueves y viernes 20:00 horas, sábado 19:00 horas y domingo 18:00 horas.',
+	expectedoutput: [
+    'thursday-friday-20:00',    'saturday-19:00',    'sunday-18:00',
+    ],
+  },
+  {
+	input: 'Viernes 20:00 horas',
+	expectedoutput: [
+    'friday-20:00',
+    ],
+  },
+  {
+	input: 'Viernes 20: 30 horas, sábado 20:00 horas y domingo 18:00 horas.',
+	expectedoutput: [
+    'friday-20: 30',    'saturday-20:00',    'sunday-18:00',
+    ],
+  },
+  {
+	input: 'Lunes 20: 30 horas',
+	expectedoutput: [
+    'monday-20: 30',
+    ],
+  },
+  {
+	input: 'Viernes 20:00 horas',
+	expectedoutput: [
+    'friday-20:00',
+    ],
+  },
+  {
+	input: 'Sábado 18:00 horas',
+	expectedoutput: [
+    'saturday-18:00',
+    ],
+  },
+  {
+	input: 'Sábado y domingo 12: 30 horas',
+	expectedoutput: [
+    'saturday-sunday-12: 30',
+    ],
+  },
+  {
+	input: 'Viernes y sábado 19:00 horas y domingo 18:00 horas.',
+	expectedoutput: [
+    'friday-saturday-19:00',    'sunday-18:00',)
+    ],
+  },
+  {
+	input: 'Miércoles 20: 30 horas.',
+	expectedoutput: [
+    'wednesday-20: 30',
+    ],
+  },
+  {
+	input: 'Viernes 20:00 horas.',
+	expectedoutput: [
+    'friday-20:00',
+    ],
+  },
+  {
+	input: 'Sábados y domingos,
+    13:00 y 17:00 horas',
+	expectedoutput: [
+    'saturday-sunday-13:00-17:00',
+    ],
+  },
+  {
+	input: 'Miércoles 20:00 horas.',
+	expectedoutput: [
+    'wednesday-20:00',
+    ],
+  },
+  {
+	input: 'Domingo',
+	expectedoutput: [
+    'thursday-friday-20:00',    'saturday-19:00',    'sunday-18:00',
+    ],
+  },
+  {
+	input: 'Jueves y viernes,
+    20:00 horas, sábados 19:00 horas y domingos 18:00 horas.',
+	expectedoutput: [
+    'sunday-13:00',
+    ],
+  },
+  {
+	input: 'Domingos 13:00 horas',
+	expectedoutput: [
+    'thursday-friday-saturday-19:00',    'sunday-18:00',
+    ],
+  }
+]

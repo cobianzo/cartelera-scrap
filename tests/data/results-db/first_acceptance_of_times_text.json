@@ -1,5 +1,6 @@
 [
   {
+    "comment-explanation-this-file": "",
     "input": "Domingo 12:00 y 14:00 horas.",
     "output": ["sunday-12:00-14:00"]
   },

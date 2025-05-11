@@ -21,7 +21,6 @@ use Cartelera_Scrap\Helpers\Queue_And_Results;
  */
 class Settings_Page {
 
-
 	// Plugin name identifier.
 	private string $plugin_name;
 	private string $textdomain;
@@ -58,14 +57,12 @@ class Settings_Page {
 	/**
 	 * Constructor for the Settings_Page class.
 	 *
-	 * @param string $plugin_name The name of the plugin.
-	 * @param string $version The version of the plugin.
 	 */
-	public function __construct( string $plugin_name, string $version ) {
-		$this->plugin_name = $plugin_name;
-		$this->textdomain  = $plugin_name;
-		$this->version     = $version;
-		$this->pageid      = $plugin_name . '_page';
+	public function __construct() {
+		$this->plugin_name = CARTELERA_SCRAP_PLUGIN_SLUG;
+		$this->textdomain  = CARTELERA_SCRAP_PLUGIN_SLUG;
+		$this->version     = \Cartelera_Scrap\Cartelera_Scrap_Plugin::VERSION;
+		$this->pageid      = CARTELERA_SCRAP_PLUGIN_SLUG . '_page';
 
 
 		// Hook to add the settings page to the admin menu.
@@ -82,12 +79,13 @@ class Settings_Page {
 	 * Helper
 	 *
 	 * @param string $option_name
-	 * @return string
+	 * @return string|null
 	 */
-	public static function get_plugin_setting( string $option_name ): string {
+	public static function get_plugin_setting( string $option_name ): ?string {
 		$options = get_option( self::ALL_MAIN_OPTIONS_NAME );
-		return $options[ $option_name ] ?? '';
+		return $options[ $option_name ] ?? null;
 	}
+
 
 	/**
 	 * Enqueue styles and scripts for the settings page.
@@ -421,4 +419,4 @@ class Settings_Page {
 }
 
 // Instantiate the Settings_Page class with the plugin name and version.
-new Settings_Page( CARTELERA_SCRAP_PLUGIN_SLUG, CARTELERA_SCRAP_VERSION );
+new Settings_Page();

@@ -9,7 +9,7 @@
     "tcli": "wp-env run tests-cli",
     "test:php": "wp-env run tests-wordpress --env-cwd='wp-content/plugins/cartelera-scrap' composer run punit",
     "test:php:watch": "wp-env run tests-wordpress --env-cwd='wp-content/plugins/cartelera-scrap' composer run punit-watch",
-    "test:php:single": "npm run test:php tests/Parse_Text_Into_Dates_Test.php",
+    "test:php:single": "npm run test:php tests/ScrapTest.php",
     "test:php:e2e": "npm run test:php tests/E2ETest.php",
     "wpcli": "wp-env run cli wp ",
     "test:listcron": "npm run wpcli cron event list",

@@ -148,10 +148,15 @@ class Parse_Text_Into_Dates_Test extends WP_UnitTestCase {
 		// we will tet out unit functions for every result, checking that the result is the expected
 
 
-		// 1. Test 'separate_dates_sentences'
+		// 1. Test 'separate_dates_sentences' using intro $result['cartelera']['scraped_dates_text']
 
-		// 2. Test 'sanitize_dates_sentence'
+		// 2. Test 'sanitize_dates_sentence' using intro the result of the previous.
 
+		// 3. Test both: first_acceptance_of_dates_text using intro param $result['cartelera']['scraped_dates_text']
+
+		// 4. Test 'first_acceptance_of_times_text' using intro param $result['cartelera']['scraped_time_text']
+
+		// 5 Test
 
 
 
@@ -162,6 +167,22 @@ class Parse_Text_Into_Dates_Test extends WP_UnitTestCase {
 		print_r($results);
 
 		echo '✅ test 2: XXXX completed';
+	}
+
+
+	public static function full_analysys_computed_data_of_result( array $result ): array {
+		// 1. Test 'separate_dates_sentences' using intro $result['cartelera']['scraped_dates_text']
+		// 2. Test 'sanitize_dates_sentence' using intro the result of the previous.
+		// 3. Test both: first_acceptance_of_times_text using intro param $result['cartelera']['scraped_dates_text']
+		// 4. Test 'first_acceptance_of_times_text' using intro param $result['cartelera']['scraped_time_text']
+		// 5 Test
+
+		// 1. Cartelera analysis
+
+		// Del 16 abril al 18 mayo de 2025.
+		$dates_text = $result['cartelera']['scraped_dates_text'];
+
+
 	}
 
 }
