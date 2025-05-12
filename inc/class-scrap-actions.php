@@ -13,7 +13,8 @@ use Cartelera_Scrap\Scraper\Scraper_Cartelera;
 use Cartelera_Scrap\Scraper\Scraper_Ticketmaster;
 use Cartelera_Scrap\Admin\Settings_Page;
 use Cartelera_Scrap\Admin\Settings_Hooks;
-use Cartelera_Scrap\Helpers\Queue_And_Results;
+use Cartelera_Scrap\Helpers\Queue_To_Process;
+use Cartelera_Scrap\Helpers\Results_To_Save;
 use Cartelera_Scrap\Helpers\Text_Sanization;
 
 /**
@@ -38,8 +39,8 @@ class Scrap_Actions {
 			return $all_shows;
 		}
 		// launch the first one-time-off cron job in WP to strart processing the shows.
-		Queue_And_Results::delete_show_results(); // clean the database and we will start from scratch.
-		Queue_And_Results::update_shows_queue_option( $all_shows ); // set up the list of shows that we will process.
+		Results_To_Save::delete_show_results(); // clean the database and we will start from scratch.
+		Queue_To_Process::update_shows_queue_option( $all_shows ); // set up the list of shows that we will process.
 		update_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count', 0 ); // init the count of the shows being processed in this batch.
 		if ( wp_next_scheduled( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ) ) {
 			wp_clear_scheduled_hook( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME );
@@ -94,7 +95,7 @@ class Scrap_Actions {
 	 */
 	public static function cartelera_process_one_single_show(): void {
 		// retrieve the show title and url in cartelera.
-		$show = Queue_And_Results::get_first_queued_show();
+		$show = Queue_To_Process::get_first_queued_show();
 		if ( ! $show ) {
 			// We have finished processing all the shows in the queue.
 			update_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count', 0 );
@@ -122,7 +123,7 @@ class Scrap_Actions {
 				 * =============================================
 				 * 3. SAVE BOTH DATA IN THE DB Results
 				 */
-				Queue_And_Results::save_show_result( [
+				Results_To_Save::save_show_result( [
 					'title'        => Text_Sanization::sanitize_scraped_text( $show['text'] ),
 					'cartelera'    => $result_cartelera,
 					'ticketmaster' => $result_tickermaster,
@@ -136,6 +137,6 @@ class Scrap_Actions {
 		 * 4. once finised, we:
 		 * - delete the show from the processing queue
 		 */
-		Queue_And_Results::delete_first_queued_show();
+		Queue_To_Process::delete_first_queued_show();
 	}
 }

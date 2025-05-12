@@ -45,12 +45,11 @@ class Cartelera_Scrap_Plugin {
 	 */
 	private function load_dependencies() {
 
+		// definition of constants.
 		require __DIR__ . '/phpstan-bootstrap.php';
 
-		// definition of constants.
 		define( 'CARTELERA_SCRAP_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'CARTELERA_SCRAP_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-
 
 		if ( file_exists( CARTELERA_SCRAP_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
 			require_once CARTELERA_SCRAP_PLUGIN_DIR . 'vendor/autoload.php';
@@ -60,9 +59,11 @@ class Cartelera_Scrap_Plugin {
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-settings-page.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/admin/class-settings-hooks.php';
 
-		// hepers.
+		// helpers.
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/helpers/class-results-to-save.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/helpers/class-queue-to-process.php';
+
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/helpers/class-months-and-days.php';
-		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/helpers/class-queue-and-results.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/helpers/class-text-sanization.php';
 
 		// static functions.
@@ -74,6 +75,10 @@ class Cartelera_Scrap_Plugin {
 
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-scrap-output.php';
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/class-cron-job.php';
+
+		// The frontend
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/front/class-report-cpt.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/front/blocks/class-block-registration.php';
 	}
 
 	/**

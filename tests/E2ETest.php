@@ -1,10 +1,10 @@
 <?php
 
-use Cartelera_Scrap\Scrap_Actions;
 use Cartelera_Scrap\Parse_Text_Into_Dates;
-use Cartelera_Scrap\Helpers\Queue_And_Results;
+use Cartelera_Scrap\Helpers\Results_To_Save;
 use Cartelera_Scrap\Helpers\Text_Sanization;
 use Cartelera_Scrap\Scraper\Scraper_Ticketmaster;
+use LDAP\Result;
 
 /**
  * usage
@@ -96,9 +96,9 @@ class E2ETest extends WP_UnitTestCase {
 			'cartelera'    => $result_cartelera,
 			'ticketmaster' => $result_tickermaster,
 		];
-		Queue_And_Results::save_show_result( $saved_result );
+		Results_To_Save::save_show_result( $saved_result );
 
-		$show_results                 = Queue_And_Results::get_show_results();
+		$show_results                 = Results_To_Save::get_show_results();
 		$first_show_result_to_process = $show_results[0];
 		$this->assertEquals( $saved_result, $first_show_result_to_process, '❌ - Error. The saved result does not match the first element of show results.' );
 		echo PHP_EOL . 'Saved on DB';

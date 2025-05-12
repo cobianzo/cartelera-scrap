@@ -43,8 +43,8 @@ class Parse_Text_Into_Dates {
 	 * Helper: Used only for 'singledays' format of sentences, previously splitted
 	 * by year.
 	 *
-	 * @param string $phrase ie '4-mayo-', or '29-mayo-2-junio-' (it's already sanitized and in Spanish)
-	 * @return array of senteces with a single month each. ie [ 0 => '4-mayo' ]
+	 * @param string $phrase ie '4-mayo-', or '29-mayo-2-junio-' (it's already sanitized and in Spanish).
+	 * @return array of senteces with a single month each. ie [ 0 => '4-mayo' ].
 	 */
 	public static function split_by_months( string $phrase ): array {
 
@@ -54,7 +54,7 @@ class Parse_Text_Into_Dates {
 
 		$parts = preg_split( $pattern, $phrase, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY );
 
-		// Filtrar y agrupar correctamente
+		// Filtrar y agrupar correctamente.
 		$result = [];
 		$buffer = '';
 
@@ -78,22 +78,22 @@ class Parse_Text_Into_Dates {
 	 * Helper: Given a date in format 'YYYY-MM-DD', returns the full name of the weekday in lowercase,
 	 * or null if the date format is invalid or conversion fails.
 	 *
-	 * @param string $date the date in format 'YYYY-MM-DD'
-	 * @return null|string the full name of the weekday in lowercase (english), or null
+	 * @param string $date the date in format 'YYYY-MM-DD'<div class=""></div>.
+	 * @return null|string the full name of the weekday in lowercase (english), or null.
 	 */
 	public static function get_weekday( string $date ) {
 		if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date ) ) {
 			$timestamp = strtotime( $date );
-			if ( $timestamp !== false ) {
-				return strtolower( date( 'l', $timestamp ) ); // Returns the full name of the day in lowercase
+			if ( false !== $timestamp ) {
+				return strtolower( gmdate( 'l', $timestamp ) ); // Returns the full name of the day in lowercase.
 			}
 		}
-		return null; // Return null if the date format is invalid or conversion fails
+		return null; // Return null if the date format is invalid or conversion fails.
 	}
 
 	/**
 	 * Given an array of dates, remove the previous dates to today.
-	 * TODO: remove previous to now?
+	 * TODO: remove previous to now?.
 	 *
 	 * @param array $datetimes The array of dates.
 	 * @return array The filtered array.
@@ -101,8 +101,8 @@ class Parse_Text_Into_Dates {
 	public static function remove_dates_previous_of_today( array $datetimes ): array {
 
 		return array_filter( $datetimes, function ( $datetime ) {
-			$today_start = strtotime( 'now' ); // int
-			$timestamp   = strtotime( $datetime ); // int
+			$today_start = strtotime( 'now' );
+			$timestamp   = strtotime( $datetime );
 			return $timestamp >= $today_start;
 		} );
 	}
@@ -114,7 +114,7 @@ class Parse_Text_Into_Dates {
 	 * @return integer|null
 	 */
 	public static function get_limit_datetime(): int|null {
-		$days_from_now_limit  = (int) Settings_Page::get_plugin_setting( Settings_Page::LIMIT_DAYS_FORWARD_COMPARE ) ?? null;
+		$days_from_now_limit  = (int) ( Settings_Page::get_plugin_setting( Settings_Page::LIMIT_DAYS_FORWARD_COMPARE ) ?? null );
 		$date_limit_timestamp = $days_from_now_limit ? strtotime( "+$days_from_now_limit days" ) : null;
 		return $date_limit_timestamp;
 	}
@@ -134,7 +134,7 @@ class Parse_Text_Into_Dates {
 		$date_limit_timestamp   = self::get_limit_datetime();
 		$dates_limit_by_faraway = array_filter( $datetimes, function ( $datetime ) use ( $date_limit_timestamp ) {
 			// accept any date beofre the limit date set in settings.
-			$timestamp = strtotime( $datetime ); // int
+			$timestamp = strtotime( $datetime );
 			return $date_limit_timestamp ? $timestamp <= $date_limit_timestamp : true;
 		} );
 
@@ -144,24 +144,25 @@ class Parse_Text_Into_Dates {
 
 	/**
 	 * To compare both ticketmaster and cartelera datetimes.
+	 * TODELETE: I think its not in use anymore.
 	 *
-	 * @param array $a
-	 * @param array $b
+	 * @param array $a The first array. Dates from cartelera.
+	 * @param array $b The array of dates from ticketmaster.
 	 * @return array|boolean
 	 */
 	public static function compare_arrays( array $a, array $b ): array|bool {
-		// Find elements only in A
+		// Find elements only in A.
 		$only_in_a = array_diff( $a, $b );
 
-		// Find elements only in B
+		// Find elements only in B.
 		$only_in_b = array_diff( $b, $a );
 
-		// If both diffs are empty, arrays are identical
+		// If both diffs are empty, arrays are identical.
 		if ( empty( $only_in_a ) && empty( $only_in_b ) ) {
 			return true;
 		}
 
-		// Otherwise, return the differences
+		// Otherwise, return the differences.
 		return [
 			'only_in_a' => array_values( $only_in_a ),
 			'only_in_b' => array_values( $only_in_b ),
@@ -174,17 +175,17 @@ class Parse_Text_Into_Dates {
 	 * This function prepares a text to be used as a clean slug:
 	 * - Uses sanitize_title() for basic slug formatting.
 	 * - Removes unwanted numbers (only years > 2025 or days 1-31 and are allowed).
-	 * - Keeps only specific words (suspende, cierre, finalizo, -de-temporada, temporada)
+	 * - Keeps only specific words (suspende, cierre, finalizo, -de-temporada, temporada).
 	 *  and Spanish month names.
 	 *
 	 * @param string $dates_sentence Input phrase.
 	 * @return string Sanitized slug.
 	 */
 	public static function sanitize_dates_sentence( string $dates_sentence ): string {
-		// Convert to lowercase
+		// Convert to lowercase.
 		$text = sanitize_title( $dates_sentence );
 
-		// Remove numbers not corresponding to year >= 2025 or day 1-31
+		// Remove numbers not corresponding to year >= 2025 or day 1-31.
 		$text = preg_replace_callback( '/\b\d+\b/', function ( $matches ) {
 			$num = (int) $matches[0];
 			if ( ( $num >= 1 && $num <= 31 ) || $num >= 2025 ) {
@@ -193,17 +194,17 @@ class Parse_Text_Into_Dates {
 			return '';
 		}, $text );
 
-		// Define allowed Spanish month names
+		// Define allowed Spanish month names.
 		$months = array_map( fn( string $month_name ) => $month_name, array_keys( Months_And_Days::months() ) );
 
-		// Allow only "del-", "-al-", "suspende", months, numbers, hyphens, and years numbers
+		// Allow only "del-", "-al-", "suspende", months, numbers, hyphens, and years numbers.
 		$allowed_pattern = '/(?:del\-|suspende|cierre|finalizo|\-de\-temporada|temporada|(?:' . implode( '|', $months ) . ')|-al-[0-9]{1,2}|\b[0-9]{1,2}\b|\b20[0-9]{2}\b|-)/';
 
-		// Remove unwanted parts
+		// Remove unwanted parts.
 		preg_match_all( $allowed_pattern, $text, $matches );
 		$valid_text = implode( '', $matches[0] );
 
-		// Cleanup: remove multiple hyphens
+		// Cleanup: remove multiple hyphens.
 		$valid_text = preg_replace( '/-+/', '-', $valid_text );
 		$valid_text = trim( $valid_text, '-' );
 
@@ -219,15 +220,15 @@ class Parse_Text_Into_Dates {
 	 * 3. A year with 4 digits greater than 2025.
 	 * The resulting sentences are then trimmed and filtered to remove empty strings.
 	 *
-	 * @param string $texto The text to split. ie 'Majestic Fórum Cultural: 4 de mayo de 2025. Las Torres: 11 de mayo de 2025.'
+	 * @param string $texto The text to split. ie 'Majestic Fórum Cultural: 4 de mayo de 2025. Las Torres: 11 de mayo de 2025.
 	 * @return array An array of sentences. ie:
-	 * 	[ [0] => Majestic Fórum Cultural: 4 de mayo de 2025, [1] => Las Torres: 11 de mayo de 2025].
+	 *  [ [0] => Majestic Fórum Cultural: 4 de mayo de 2025, [1] => Las Torres: 11 de mayo de 2025].
 	 */
 	public static function separate_dates_sentences( string $texto ): array {
 		// Explicación:
-		// 1. Punto seguido de espacio o fin de línea -> separador
-		// 2. Paréntesis de apertura '(' -> separador
-		// 3. Año de 4 dígitos mayor o igual que 2025 -> separador
+		// 1. Punto seguido de espacio o fin de línea -> separador.
+		// 2. Paréntesis de apertura '(' -> separador.
+		// 3. Año de 4 dígitos mayor o igual que 2025 -> separador.
 		$pattern = '/
         (\.\s+|\.?$)
         |
@@ -236,7 +237,7 @@ class Parse_Text_Into_Dates {
         (?=(\b(202[6-9]|20[3-9]\d|2[1-9]\d{2}|[3-9]\d{3})\b))  # Lookahead de año >= 2026
     /x';
 
-		// Realizar la separación
+		// Split based on sencence separators.
 		$frases = preg_split( $pattern, $texto, -1, \PREG_SPLIT_NO_EMPTY );
 
 		$return = array_values( array_filter( array_map( 'trim', $frases ) ) );
@@ -249,21 +250,21 @@ class Parse_Text_Into_Dates {
 	 * It should also cleanup any non relevant text. We set some reserved words, and numbers, and month names.
 	 *
 	 * @param string $input_date_text Input phrase in Spanish, not modified.
-	 * @param array &$debug_data used to debug and test. It will hold the sentences and sanitized sentences.
+	 * @param array  &$debug_data used to debug and test. It will hold the sentences and sanitized sentences.
 	 * @return array
 	 */
 	public static function first_acceptance_of_date_text( string $input_date_text, &$debug_data = [] ): array {
 
-		$sentences = self::separate_dates_sentences( $input_date_text );
+		$sentences               = self::separate_dates_sentences( $input_date_text );
 		$debug_data['sentences'] = $sentences;
 		// $sentences = Text_Sanization::cleanup_sentences( $sentences ); not needed @TODELETE.
 
 		// converts into lower case with dashes 'del-24-abril-al-8-junio-2025' and remove not relevant text.
-		$sentences = array_map( [ __CLASS__, 'sanitize_dates_sentence' ], $sentences );
+		$sentences               = array_map( [ __CLASS__, 'sanitize_dates_sentence' ], $sentences );
 		$debug_data['sanitized'] = $sentences;
 
 		// in order to be valid, the sentence must contain:
-		// at least one number between 1 and 31 and one name of month (in spanish)
+		// at least one number between 1 and 31 and one name of month (in spanish).
 		$pattern         = '/\b(3[01]|[12][0-9]|[1-9])\b.*\b(' . implode( '|', array_keys( Months_And_Days::months() ) ) . ')\b/i';
 		$valid_sentences = [];
 		foreach ( $sentences as $phrase ) {
@@ -291,24 +292,26 @@ class Parse_Text_Into_Dates {
 	 * sanitiz
 	 *
 	 * @param string $input_time_text the sencence to be parsed.
-	 * @param array &$debug_data used to debug and test. It will hold the sentences and sanitized sentences.
+	 * @param array  &$debug_data used to debug and test. It will hold the sentences and sanitized sentences.
 	 * @return array ie [ jueves-viernes-20:00, sabados-19:00, domingos-18:00 ].
 	 */
 	public static function first_acceptance_of_times_text( string $input_time_text, &$debug_data = [] ): array {
 
+		// phpcs:disable
 		// Text to output json that helps me to create data to test.
 		// echo '<pre>'; // TODELETE
 		// echo '{';
 		// echo "   input: " . json_encode($input_time_text) . ", <br/>";
 		// echo '</pre>';
+		// phpcs:enable
 
-		// Lista de patrones válidos
+		// List of valid days of the weel.
 		$pattern_weekdays = implode( '|', array_keys( Months_And_Days::weekdays() ) );
 
 		$valid_patterns = [
 
-			// "Jueves y viernes, 20:00 horas, sábados 19:00 horas y domingos 18:00 horas"; (see the ',')
-			// '/((?:' . $pattern_dias_plural . ')(?:\s*(?:,|y)\s*(?:' . $pattern_dias_plural . '))*)\s*,?\s*((?:\d{1,2}:\d{2})(?:\s*(?:,|y)\s*\d{1,2}:\d{2})*)\s*horas/iu',
+			// "Jueves y viernes, 20:00 horas, sábados 19:00 horas y domingos 18:00 horas"; (see the ',').
+			// '/((?:' . $pattern_dias_plural . ')(?:\s*(?:,|y)\s*(?:' . $pattern_dias_plural . '))*)\s*,?\s*((?:\d{1,2}:\d{2})(?:\s*(?:,|y)\s*\d{1,2}:\d{2})*)\s*horas/iu',.
 			'/(?:' . $pattern_weekdays . ')[^h]*?horas/iu',
 
 			//
@@ -349,12 +352,12 @@ class Parse_Text_Into_Dates {
 			$resultado = array_filter( $palabras, function ( $palabra ) {
 					$palabra_lower = mb_strtolower( $palabra );
 
-					// Mantener si es día de la semana
-				if ( in_array( $palabra_lower, array_keys( Months_And_Days::weekdays() ) ) ) {
+					// Keep[ if it's day of the week.
+				if ( in_array( $palabra_lower, array_keys( Months_And_Days::weekdays() ), true ) ) {
 						return true;
 				}
 
-					// Mantener si es hora (ej: 18:00)
+					// Keep if it's hour (ie: 18:00).
 				if ( preg_match( '/^\d{1,2}:\d{2}$/', $palabra ) ) {
 						return true;
 				}
@@ -364,7 +367,7 @@ class Parse_Text_Into_Dates {
 
 			$resultado = array_map( function ( $palabra ) {
 				$array_weekdays_translation = Months_And_Days::weekdays();
-				// Translate if it's a day of the week
+				// Translate if it's a day of the week.
 				if ( isset( $array_weekdays_translation[ $palabra ] ) ) {
 					return $array_weekdays_translation[ $palabra ];
 				}
@@ -384,8 +387,9 @@ class Parse_Text_Into_Dates {
 	}
 
 	/**
-	 * Given sentences like ['saturday-19:00', 'sunday-19:00'] extracts [ 'saturday', 'sunday' ]
+	 * Given sentences like ['saturday-19:00', 'sunday-19:00'] extracts [ 'saturday', 'sunday' ].
 	 * TODELETE: not in use.
+	 *
 	 * @param array $sentences ie ['saturday-19:00', 'sunday-19:00']
 	 * @return array all days of the week metioned in the array of sentences in english and lowercase
 	 */
@@ -394,7 +398,7 @@ class Parse_Text_Into_Dates {
 		foreach ( $sentences as $sentence ) {
 			$words = explode( '-', $sentence );
 			foreach ( $words as $word ) {
-				if ( in_array( $word, Months_And_Days::weekdays() ) ) {
+				if ( in_array( $word, Months_And_Days::weekdays(), true ) ) {
 					$weekdays[] = $word;
 				}
 			}
@@ -409,7 +413,7 @@ class Parse_Text_Into_Dates {
 	 * or is it specific days (12-14-abril-2025) , and other options.
 	 * The susing regular expressions applies the analusus
 	 *
-	 * @param string $sanitized_date_sentence:
+	 * @param string $sanitized_date_sentence full text for the sentence:
 	 *                              Intro text: del-24-abril-al-8-junio-2025 (this format is 'range'),
 	 *                              4-11-18-mayo-2025 (format `singledays`)
 	 * @return array of dates [  '2025-05-17', '2025-05-18'  ... ]
@@ -428,7 +432,7 @@ class Parse_Text_Into_Dates {
 			$type = 'singledays';
 		}
 
-		// echo "<br><h1>$type</h1>"; // TODELETE
+		// echo "<br><h1>$type</h1>"; // TODELETE.
 
 		$months_names = array_keys( Months_And_Days::months() );
 		$current_year = date( 'Y' );
@@ -481,7 +485,7 @@ class Parse_Text_Into_Dates {
 					$numbers = array_filter( $numbers, fn( $numb ) => is_numeric( $numb ) );
 					$months  = array_filter( $matches[2] ); // only one
 
-					if ( ( empty( $numbers ) ) || ( empty( $numbers ) ) ) {
+					if ( ( empty( $numbers ) ) || ( empty( $months ) ) ) {
 						continue;
 					}
 					// Combine numbers and months into valid dates
@@ -654,22 +658,26 @@ class Parse_Text_Into_Dates {
 	 * @param array &$debug_data We store some info that would help for debugging and improving analysis.
 	 * @return array An array of definitive date-time strings, sorted and unique. ie [ 'yyyy-dd-mm H:i', 'yyyy-dd-mm H:i' ... ]
 	 */
-	public static function definitive_dates_and_times( array $sentences_dates, array $weekday_and_times, &$debug_data = ['ca'] ): array {
+	public static function definitive_dates_and_times( array $sentences_dates, array $weekday_and_times, &$debug_data = [ 'ca' ] ): array {
 
 		$valid_dates = [];
-		$debug_data  = [ 'removing_dates' => [], 'dates_per_sentence' => [], 'times' => [] ];
+		$debug_data  = [
+			'removing_dates'     => [],
+			'dates_per_sentence' => [],
+			'times'              => [],
+		];
 		foreach ( $sentences_dates as $dates_in_text ) {
 			if ( 0 === strpos( $dates_in_text, 'suspende' ) ) {
-				$removing_dates               = self::identify_dates_sentence_daterange_or_singledays( $dates_in_text );
+				$removing_dates                 = self::identify_dates_sentence_daterange_or_singledays( $dates_in_text );
 				$debug_data['removing_dates'][] = $removing_dates;
-				$valid_dates    = array_diff( $valid_dates, $removing_dates );
+				$valid_dates                    = array_diff( $valid_dates, $removing_dates );
 			} else {
-				$dates_in_sentence = self::identify_dates_sentence_daterange_or_singledays( $dates_in_text );
-				$valid_dates = array_merge(
+				$dates_in_sentence                                  = self::identify_dates_sentence_daterange_or_singledays( $dates_in_text );
+				$valid_dates                                        = array_merge(
 					$valid_dates,
 					$dates_in_sentence
 				);
-				$debug_data['dates_per_sentence'][$dates_in_text] = $dates_in_sentence;
+				$debug_data['dates_per_sentence'][ $dates_in_text ] = $dates_in_sentence;
 			}
 		}
 
@@ -681,12 +689,12 @@ class Parse_Text_Into_Dates {
 		foreach ( $valid_dates as $date ) {
 
 			if ( ! empty( $sentences_dates ) && 0 === strpos( $sentences_dates[0], 'finalizo-', 0 ) ) {
-				$times = [ '23:59' ];
+				$times                           = [ '23:59' ];
 				$debug_data['times']['finalizo'] = $times;
 			} else {
-				$weekday = self::get_weekday( $date );
-				$times   = self::get_times_for_weekday( $weekday, $weekday_and_times );
-				$debug_data['times']["$weekday"] = $times;
+				$weekday                           = self::get_weekday( $date );
+				$times                             = self::get_times_for_weekday( $weekday, $weekday_and_times );
+				$debug_data['times'][ "$weekday" ] = $times;
 			}
 
 			// $debug_data['times'] = $times;
@@ -720,8 +728,8 @@ class Parse_Text_Into_Dates {
 	public static function computed_data_cartelera_result( array $result ): array {
 
 		$computed_cartelera_result = [
-			'first_aceptance_dates' => [],
-			'first_aceptance_times' => [],
+			'first_acceptance_dates' => [],
+			'first_acceptance_times' => [],
 			'definitive_datetimes'  => [],
 		];
 
@@ -731,24 +739,24 @@ class Parse_Text_Into_Dates {
 		}
 
 		// Let's start by adding the computed calculated text for the dates.
-		$input_dates     = $result['cartelera']['scraped_dates_text'];
-		$debug_data      = [];
+		$input_dates            = $result['cartelera']['scraped_dates_text'];
+		$debug_data             = [];
 		$first_acceptance_dates = self::first_acceptance_of_date_text( $input_dates, $debug_data );
-		$computed_cartelera_result['first_aceptance_dates']['output']    = $first_acceptance_dates;
-		$computed_cartelera_result['first_aceptance_dates']['sentences'] = $debug_data['sentences'];
-		$computed_cartelera_result['first_aceptance_dates']['sanitized'] = $debug_data['sanitized'];
+		$computed_cartelera_result['first_acceptance_dates']['output']    = $first_acceptance_dates;
+		$computed_cartelera_result['first_acceptance_dates']['sentences'] = $debug_data['sentences'];
+		$computed_cartelera_result['first_acceptance_dates']['sanitized'] = $debug_data['sanitized'];
 
 		// Now for the days of the week and hours.
-		$input_time     = $result['cartelera']['scraped_time_text'];
-		$debug_data     = [];
+		$input_time             = $result['cartelera']['scraped_time_text'];
+		$debug_data             = [];
 		$first_acceptance_times = self::first_acceptance_of_times_text( $input_time, $debug_data );
-		$computed_cartelera_result['first_aceptance_times']           = $debug_data;
-		$computed_cartelera_result['first_aceptance_times']['output'] = $first_acceptance_times;
+		$computed_cartelera_result['first_acceptance_times']           = $debug_data;
+		$computed_cartelera_result['first_acceptance_times']['output'] = $first_acceptance_times;
 
 		// Now the definitive date times extracted from the text.
-		$debug_data = [];
-		$definitive = self::definitive_dates_and_times( $first_acceptance_dates, $first_acceptance_times, $debug_data );
-		$computed_cartelera_result['definitive_datetimes']           = $debug_data;
+		$debug_data                                        = [];
+		$definitive                                        = self::definitive_dates_and_times( $first_acceptance_dates, $first_acceptance_times, $debug_data );
+		$computed_cartelera_result['definitive_datetimes'] = $debug_data;
 		$computed_cartelera_result['definitive_datetimes']['output'] = $definitive;
 
 		return $computed_cartelera_result;
@@ -768,6 +776,7 @@ class Parse_Text_Into_Dates {
 		$computed_tm_result = [
 			'definitive_datetimes' => [],
 		];
+		$datetimes          = [];
 		if ( ! empty( $result['ticketmaster']['dates'] ) ) {
 			foreach ( $result['ticketmaster']['dates'] as $k => $date ) {
 				$datetime    = $date['date'] . ' ' . $date['time']; // YYYY-mm-dd H:i
@@ -785,7 +794,7 @@ class Parse_Text_Into_Dates {
 		$merged_dates = array_merge( $dates_ca, $dates_tm );
 		$comparison   = [];
 		foreach ( $merged_dates as $datetime ) {
-			$computed_for_date = [
+			$computed_for_date                    = [
 				'datetime'     => $datetime,
 				'cartelera'    => in_array( $datetime, $dates_ca, true ),
 				'ticketmaster' => in_array( $datetime, $dates_tm, true ),
@@ -809,10 +818,10 @@ class Parse_Text_Into_Dates {
 		// retrieve the already computed data for comparisons and we
 		// add an extra layer of validation: we don't compare dates outside
 		// of the given ranges.
-		$dates_info   = $result['computed']['comparison'] ?? [];
-		$limit_below  = strtotime( 'now' );
-		$limit_above  = self::get_limit_datetime();
-		$number_events_limit  = (int) Settings_Page::get_plugin_setting( Settings_Page::LIMIT_NUMBER_DATES_COMPARE ) ?? 20;
+		$dates_info          = $result['computed']['comparison'] ?? [];
+		$limit_below         = strtotime( 'now' );
+		$limit_above         = self::get_limit_datetime();
+		$number_events_limit = (int) ( Settings_Page::get_plugin_setting( Settings_Page::LIMIT_NUMBER_DATES_COMPARE ) ?? 20 );
 
 		$count_valid_dates_cart = 0;
 		$count_valid_dates_tm   = 0;
@@ -871,7 +880,7 @@ class Parse_Text_Into_Dates {
 		}
 
 
-		$result['computed']['success']    = $is_successful;
+		$result['computed']['success'] = $is_successful;
 
 		return $is_successful;
 	}

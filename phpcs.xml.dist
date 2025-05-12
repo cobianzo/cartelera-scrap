@@ -36,7 +36,14 @@
 	<exclude-pattern>wordpress/</exclude-pattern>
 	<exclude-pattern>assets/</exclude-pattern>
 
+	<!-- Ignore invalid end char, it's a problem with the Squiz ruleset -->
 
+	<rule ref="Squiz.Commenting.FunctionComment.ParamCommentFullStop">
+		<exclude name="Squiz.Commenting.FunctionComment.ParamCommentFullStop" />
+	</rule>
+	<rule ref="Squiz.Commenting.InlineComment.InvalidEndChar">
+		<exclude name="Squiz.Commenting.InlineComment.InvalidEndChar" />
+	</rule>
 
 	<!-- The version set here matches the minimum version tested in buddy.yml. -->
 	<config name="minimum_supported_wp_version" value="8.1" />

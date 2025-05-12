@@ -14,9 +14,10 @@
 
 namespace Cartelera_Scrap;
 
-use Cartelera_Scrap\Admin\Settings_Hooks;
 use Cartelera_Scrap\Admin\Settings_Page;
-use Cartelera_Scrap\Helpers\Queue_And_Results;
+use Cartelera_Scrap\Helpers\Results_To_Save;
+use Cartelera_Scrap\Helpers\Queue_To_Process;
+
 
 class Scrap_Output {
 
@@ -52,7 +53,7 @@ class Scrap_Output {
 				__( 'Cleanup results and start processing NOW', 'cartelera-scrap' )
 			);
 
-			$next_show = Queue_And_Results::get_first_queued_show();
+			$next_show = Queue_To_Process::get_first_queued_show();
 			if ( $next_show ) :
 				Settings_Page::create_form_button_with_action(
 					'action_process_next_scheduled_show',
@@ -89,7 +90,7 @@ class Scrap_Output {
 	}
 
 	public static function render_table_with_results() {
-		$results = Queue_And_Results::get_show_results();
+		$results = Results_To_Save::get_show_results();
 		if ( $results ) :
 			?>
 			<h2>Results (<?php echo esc_html( count( $results ) ); ?>) </h2>
@@ -344,6 +345,7 @@ class Scrap_Output {
 			$dates_text = $result['cartelera']['scraped_dates_text'];
 			echo '<p>';
 			echo '<b>Dates</b>==> ' . esc_html( $dates_text );
+
 			if ( ! isset( $result['computed']['cartelera']['first_acceptance_dates']['output'] ) ) {
 				echo '❌ no sentences extracted <br/>';
 			} else {
@@ -361,7 +363,6 @@ class Scrap_Output {
 			}
 		} else {
 			echo '❌ not valid! <br/>';
-			dd( $result['cartelera'] );
 		}
 
 		return $sentences;

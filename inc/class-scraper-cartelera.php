@@ -107,7 +107,7 @@ class Scraper_Cartelera extends Scraper {
 		// Retrieve the text for the days, it's inside a <strong> :
 		// 'Sábados de abril y mayo, 12:00 y 14:30 horas. Domingo 1 y 8 de junio, 12:00 y 14:30 horas'.
 		$nodes = $scraper->get_root()->document->getElementsByTagName( 'strong' );
-		foreach ( $nodes as $i => $strong_node ) {
+		foreach ( $nodes as $strong_node ) {
 
 			if ( str_contains( $strong_node->textContent, 'Horario de' )
 			|| str_contains( $strong_node->textContent, 'Horarios de' ) ) {
@@ -115,15 +115,16 @@ class Scraper_Cartelera extends Scraper {
 				// Get the text that is right after this <strong>, but before the next <br>.
 				$time_text = '';
 				if ( $strong_node && $strong_node->nextSibling ) {
-					$nextNode = $strong_node->nextSibling;
-					if ( null === $nextNode || ! isset( $nextNode->nodeName ) ) {
+					$next_node = $strong_node->nextSibling; // " Jueves y viernes 20:00 horas, sÃ¡bado 19:00 horas y domingo 18:00 horas.".
+					if ( null === $next_node || ! isset( $next_node->nodeName ) ) {
 						continue;
 					}
-					while ( $nextNode && 'br' !== $nextNode && $nextNode->nodeName ) {
-						if ( XML_TEXT_NODE === $nextNode->nodeType || XML_ELEMENT_NODE === $nextNode->nodeType ) {
-							$time_text .= $nextNode->textContent;
+					// we retrieve more nodes as long as it's not a <br>.
+					while ( $next_node && $next_node->nodeName && 'br' !== $next_node->nodeName ) {
+						if ( XML_TEXT_NODE === $next_node->nodeType || XML_ELEMENT_NODE === $next_node->nodeType ) {
+							$time_text .= $next_node->textContent;
 						}
-						$nextNode = $nextNode->nextSibling;
+						$next_node = $next_node->nextSibling; // move to the next brother until it's a br.
 					}
 					$time_text = trim( $time_text ); // ie 'Domingos 13:00 horas'.
 				}

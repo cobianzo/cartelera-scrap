@@ -79,7 +79,7 @@ Boletos: Entrada general $204. Descuento del 50%, limitado a estudiantes de nive
 						[success] => false
             [cartelera] => Array
                 (
-                    [first_aceptance_dates] => Array
+                    [first_acceptance_dates] => Array
                         (
                             [output] => Array
                                 (
@@ -98,7 +98,7 @@ Boletos: Entrada general $204. Descuento del 50%, limitado a estudiantes de nive
 
                         )
 
-                    [first_aceptance_times] => Array
+                    [first_acceptance_times] => Array
                         (
                             [sentences] => Array
                                 (

@@ -4,9 +4,9 @@ namespace Cartelera_Scrap\Admin;
 
 use Cartelera_Scrap\Cron_Job;
 use Cartelera_Scrap\Scrap_Output;
-use Cartelera_Scrap\Scrap_Actions;
 use Cartelera_Scrap\Parse_Text_Into_Dates;
-use Cartelera_Scrap\Helpers\Queue_And_Results;
+use Cartelera_Scrap\Helpers\Results_To_Save;
+use Cartelera_Scrap\Helpers\Queue_To_Process;
 
 /**
  * Class Settings_Page
@@ -156,7 +156,7 @@ class Settings_Page {
 			<!-- Button to export -->
 			<?php
 			// Button to export
-			$count_results = count( Queue_And_Results::get_show_results() );
+			$count_results = count( Results_To_Save::get_show_results() );
 			if ( $count_results ) :
 				$text = sprintf( __( 'Download json file for %s results', 'cartelera-scrap' ), $count_results );
 				self::create_form_button_with_action( 'action_export_scraping_results', $text, [ 'button-class' => 'button button-secondary' ] );
@@ -166,9 +166,9 @@ class Settings_Page {
 			if ( wp_next_scheduled( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ) ) :
 
 				_e( '<h3>Scrapping is running as a cron job</h3>', 'cartelera-scrap' );
-				printf( __( '<p>Shows in the processing queue waiting to be processed: %s<br />', 'cartelera-scrap' ), Queue_And_Results::get_queued_count() );
-				printf( __( 'Already processed shows: %s</p>', 'cartelera-scrap' ), count( Queue_And_Results::get_show_results() ) );
-				$queue = Queue_And_Results::get_first_queued_show();
+				printf( __( '<p>Shows in the processing queue waiting to be processed: %s<br />', 'cartelera-scrap' ), Queue_To_Process::get_queued_count() );
+				printf( __( 'Already processed shows: %s</p>', 'cartelera-scrap' ), count( Results_To_Save::get_show_results() ) );
+				$queue = Queue_To_Process::get_first_queued_show();
 				if ( $queue ) {
 					echo '<p>Next show to Scrap:  ' . $queue['text'] . '</p>';
 				} else {
@@ -290,7 +290,7 @@ class Settings_Page {
 			self::OPTION_CRON_SAVE_AND_RUN,
 			'',
 			function () {
-				$new_value = (int) self::get_plugin_setting( self::OPTION_CRON_SAVE_AND_RUN ) ? 0 : 1;
+				$new_value = self::get_plugin_setting( self::OPTION_CRON_SAVE_AND_RUN ) ? '0' : '1';
 				echo '<button type="submit" name="'
 					. esc_attr( self::ALL_MAIN_OPTIONS_NAME ) . '[' . esc_attr( self::OPTION_CRON_SAVE_AND_RUN ) . ']"
 				value="' . esc_attr( $new_value ) . '" class="button button-secondary">Save and exectute now</button>

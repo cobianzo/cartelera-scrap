@@ -1,12 +1,14 @@
 TODO
 ===
 
-- Test scrapping to see why it detects more text than it should in Times from cartelera.
 - Finish the test phpunit.
+- Create frontend.
 - Send email with report. Add it to the settings options.
 - Refactor: ideally we loop all shows and save all relevant information in the results option table.
 then we render those results in the table. (at the mo it calculates de output results as we render that table html) - WIP
 - Don't evaluate 'Eventos Internacionales' ie https://www.ticketmaster.com.mx/search?q=Waitress&region=804
+- Confirm that everyone of the unittests work ok, and explain how to make a new unittest with a specific page.
+- cleanup the output for the backend.
 
 WHAT IS THIS PROJECT
 ===

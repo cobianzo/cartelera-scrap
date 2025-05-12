@@ -11,7 +11,8 @@ namespace Cartelera_Scrap\Admin;
 
 use Cartelera_Scrap\Scrap_Actions;
 use Cartelera_Scrap\Cron_Job;
-use Cartelera_Scrap\Helpers\Queue_And_Results;
+use Cartelera_Scrap\Helpers\Results_To_Save;
+use Cartelera_Scrap\Helpers\Queue_To_Process;
 
 /**
  * Settings_Hooks class.
@@ -107,7 +108,7 @@ class Settings_Hooks {
 						'text' => $show_title,
 						'href' => $cartelera_href,
 					];
-					Queue_And_Results::add_first_queued_show( $show_data );
+					Queue_To_Process::add_first_queued_show( $show_data );
 					Scrap_Actions::cartelera_process_one_single_show();
 					$message   = sprintf( __( 'Processed theatre show: %1$s (%2$s).', 'cartelera-scrap' ), $show_title, $cartelera_href );
 					$scroll_to = '#result-' . sanitize_title( $show_title );
@@ -139,7 +140,7 @@ class Settings_Hooks {
 	 */
 	public static function export_scrap_results_to_uploads_file(): string|\WP_Error {
 
-		$results = Queue_And_Results::get_show_results();
+		$results = Results_To_Save::get_show_results();
 		// Convert the results array to JSON format.
 		$json_data = json_encode( $results, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
 
