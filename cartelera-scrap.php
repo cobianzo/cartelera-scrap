@@ -78,7 +78,7 @@ class Cartelera_Scrap_Plugin {
 
 		// The frontend
 		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/front/class-report-cpt.php';
-		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/front/blocks/class-block-registration.php';
+		require_once CARTELERA_SCRAP_PLUGIN_DIR . 'inc/front/class-block-registration.php';
 	}
 
 	/**
@@ -163,3 +163,6 @@ function imhere( mixed $var = null ): void {
 
 // Initialize the plugin.
 new Cartelera_Scrap_Plugin();
+
+
+

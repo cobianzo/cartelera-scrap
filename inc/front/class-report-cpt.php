@@ -7,20 +7,20 @@
  */
 
 namespace Cartelera_Scrap\Front;
-
+use \Cartelera_Scrap\Front\Block_Registration;
 /**
  * Class Report_CPT
  * Registers the custom post type "Report" for the frontend.
  */
 class Report_CPT {
 
+	const POST_TYPE = 'cartelera_report';
+
 	/**
 	 * Initialize the class.
 	 */
 	public static function init(): void {
 		add_action( 'init', [ __CLASS__, 'register_report_cpt' ] );
-
-		add_filter( 'template_include', [ __CLASS__, 'cartelera_report_template' ] );
 	}
 
 	/**
@@ -46,6 +46,13 @@ class Report_CPT {
 			'publicly_queryable' => true,
 			'show_ui'            => true,
 			'show_in_menu'       => true,
+			'show_in_rest'       => true,
+			'template_lock'      => 'all',
+			'menu_icon'          => 'dashicons-analytics',
+			// important, we set the content of the single.php with a single block.
+			'template'           => [
+				array( Block_Registration::BLOCK_NAME, array('content' => 'probando a decir HOLA', 'locked' => true))
+			],
 			'query_var'          => true,
 			'rewrite'            => [
 				'slug'       => 'report',
@@ -55,32 +62,21 @@ class Report_CPT {
 			'has_archive'        => true,
 			'hierarchical'       => false,
 			'menu_position'      => null,
-			'supports'           => [ 'title', 'editor', 'thumbnail', 'custom-fields' ],
+			'supports'           => [ 'title', 'editor' ],
 		];
 
-		register_post_type( 'cartelera_report', $args );
+		register_post_type( self::POST_TYPE, $args );
 	}
 
 	/**
-	 * Changes the template for a single report post type.
+	 * Determines if the current theme is a Full Site Editing (FSE) theme.
 	 *
-	 * @param string $template The path to the template file.
-	 * @return string The path to the template file to use.
+	 * @return bool True if the current theme is an FSE theme, false otherwise.
 	 */
-	public static function cartelera_report_template( $template ) {
-		if ( is_singular( 'cartelera_report' ) ) {
-				$custom_template = plugin_dir_path( __FILE__ ) . 'template-single-report.php';
-			if ( file_exists( $custom_template ) ) {
-					return $custom_template;
-			}
-		}
-		return $template;
-	}
 
 	public static function is_fse_theme() {
-    return function_exists( 'wp_is_block_theme' ) && wp_is_block_theme();
+		return function_exists( 'wp_is_block_theme' ) && wp_is_block_theme();
 	}
-
 }
 
 Report_CPT::init();
