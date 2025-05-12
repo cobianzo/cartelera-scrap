@@ -32,7 +32,7 @@ class Scraper_Cartelera extends Scraper {
 	 * parses it, and extracts the titles and links of all shows listed
 	 * in the specified section of the page.
 	 *
-	 * @return array|WP_Error An array of shows with their titles and links, or a WP_Error object on failure.
+	 * @return array|\WP_Error An array of shows with their titles and links, or a WP_Error object on failure.
 	 */
 	public static function scrap_all_shows_in_cartelera(): array|\WP_Error {
 		$url  = Cartelera_Scrap_Plugin::get_cartelera_url();

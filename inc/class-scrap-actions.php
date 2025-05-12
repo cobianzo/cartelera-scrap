@@ -16,7 +16,6 @@ use Cartelera_Scrap\Admin\Settings_Hooks;
 use Cartelera_Scrap\Helpers\Queue_To_Process;
 use Cartelera_Scrap\Helpers\Results_To_Save;
 use Cartelera_Scrap\Helpers\Text_Sanization;
-
 /**
  * Using the tools Scraper (and children classes), we perform the real scrapping.
  * The class Scrap_Actions handles the custom action triggered via a POST request
@@ -72,7 +71,14 @@ class Scrap_Actions {
 
 		self::cartelera_process_one_single_show();
 
-		/** Well done, aonther show has been processed... Now...
+
+		// Case: There are no more shows to process in the queue => the scraping is finished.
+		if ( ! Queue_To_Process::get_first_queued_show() ) {
+			do_action( 'cartelera_scrap_all_shows_processed' ); // will be used by the CPT to create a new one.
+			Queue_To_Process::delete_timestamp_start_process();
+		}
+
+		/** Well done, aonthanotherer show has been processed... Now...
 		 * - save the option with the count of the shows processed in this batch.
 		 * - call the processing of the next one.
 		 *      - it can be straight away if the batch is not finished.
@@ -80,6 +86,7 @@ class Scrap_Actions {
 		*  */
 		update_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count', $batch_count );
 		if ( $batch_count === $shows_per_batch ) {
+			// we finished the batch.
 			if ( ! wp_next_scheduled( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ) ) {
 				wp_schedule_single_event( time() + 5, Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ); // ejecuta en 5s.
 			}

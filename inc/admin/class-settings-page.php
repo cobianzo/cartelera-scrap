@@ -166,6 +166,9 @@ class Settings_Page {
 			if ( wp_next_scheduled( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ) ) :
 
 				_e( '<h3>Scrapping is running as a cron job</h3>', 'cartelera-scrap' );
+				$start_date = Queue_To_Process::get_timestamp_start_process( 'l, F j, Y \a\\t g:i a' );
+				printf( __( '<p>Current queue started at: <b>%s</b><br />', 'cartelera-scrap' ), $start_date ? "$start_date GMT" : 'not set' );
+
 				printf( __( '<p>Shows in the processing queue waiting to be processed: %s<br />', 'cartelera-scrap' ), Queue_To_Process::get_queued_count() );
 				printf( __( 'Already processed shows: %s</p>', 'cartelera-scrap' ), count( Results_To_Save::get_show_results() ) );
 				$queue = Queue_To_Process::get_first_queued_show();

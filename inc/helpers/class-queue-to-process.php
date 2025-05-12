@@ -19,10 +19,10 @@ namespace Cartelera_Scrap\Helpers;
  */
 class Queue_To_Process {
 
-
-
 	/** The name of the option_name in the DB to store tha array of shows to process */
 	const OPTION_QUEUE = CARTELERA_SCRAP_PLUGIN_SLUG . '_shows_queue';
+
+	const OPTION_START_QUEUE_TIMESTAMP = CARTELERA_SCRAP_PLUGIN_SLUG . '_start_process_timestamp';
 
 	/**
 	 * Update the shows options in the database.
@@ -34,6 +34,8 @@ class Queue_To_Process {
 		if ( empty( $shows_text_href ) ) {
 			return false;
 		}
+
+		self::save_timestamp_start_process();
 		return update_option( self::OPTION_QUEUE, $shows_text_href );
 	}
 
@@ -102,4 +104,35 @@ class Queue_To_Process {
 		return self::get_queued_shows();
 	}
 
+	/**
+	 * Save the current timestamp in the database with the specified format.
+	 *
+	 * @return void
+	 */
+	public static function save_timestamp_start_process(): void {
+		update_option( self::OPTION_START_QUEUE_TIMESTAMP, gmdate( 'Y-m-d H:i:s' ) );
+	}
+
+	/**
+	 * Retrieve the timestamp indicating when the queue processing started.
+	 *
+	 * @param string $datetime_format The format in which to return the timestamp. Default is 'Y-m-d H:i:s'.
+	 * @return string|null Formatted timestamp or null if no timestamp is set.
+	 */
+	public static function get_timestamp_start_process( $datetime_format =	'Y-m-d H:i:s' ): ?string {
+		$time = get_option( self::OPTION_START_QUEUE_TIMESTAMP );
+		if ( ! $time ) {
+			return null;
+		}
+		return gmdate( $datetime_format, strtotime( $time ) );
+	}
+
+	/**
+	 * Deletes the timestamp indicating when the queue processing started.
+	 *
+	 * @return void
+	 */
+	public static function delete_timestamp_start_process(): void {
+		delete_option( self::OPTION_START_QUEUE_TIMESTAMP );
+	}
 }

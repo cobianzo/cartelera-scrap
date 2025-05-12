@@ -115,6 +115,11 @@ class Scrap_Output {
 						$is_result_successful = Parse_Text_Into_Dates::computed_for_today_is_comparison_successful( $result );
 						$no_tickermaster = ( empty( $result['ticketmaster']['dates'] ) || ! isset( $result['ticketmaster']['url'] ) );
 
+						$result['computed']                 = empty( $result['computed'] ) ? [] : $result['computed'];
+						$result['computed']['cartelera']    = Parse_Text_Into_Dates::computed_data_cartelera_result( $result );
+						$result['computed']['ticketmaster'] = Parse_Text_Into_Dates::computed_data_ticketmaster_result( $result );
+						$result['computed']['comparison']   = Parse_Text_Into_Dates::computed_dates_comparison_result( $result );
+
 						// column title
 						ob_start();
 						self::render_col_title( $result );

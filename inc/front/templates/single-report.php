@@ -1,29 +1,20 @@
 <?php
-/**
- * Template Name: Plantilla Cartelera Report
- * Template Post Type: cartelera-report
- */
 
-// Fuerza el modo bloque para el editor
-add_filter('use_block_editor_for_post', '__return_true');
+use Cartelera_Scrap\Helpers\Results_To_Save;
 
-get_header(); ?>
+global $post;
 
-<div class="wrap">
-    <div id="primary" class="content-area">
-        <main id="main" class="site-main">
-            <!-- Contenido bloqueado -->
-            <div class="entry-content">
-                <?php
-                // Esto mostrará "HOLA" y no será editable
-                echo '<h1>HOLA</h1>';
 
-                // Opcional: Si quieres usar un bloque personalizado
-                echo do_blocks('<!-- wp:my-custom-block /-->');
-                ?>
-            </div>
-        </main>
-    </div>
-</div>
+$r = Results_To_Save::get_show_results();
+$results = json_decode( $post->post_content );
 
-<?php get_footer(); ?>
+// print_r( $post->post_content );
+// foreach ( (array) $results as $key => $result ) {
+foreach ( (array) $r as $key => $result ) {
+	\Cartelera_Scrap\dd( $result );
+}
+print_r( $results );
+
+?>
+
+Aqui el content;

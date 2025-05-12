@@ -67,6 +67,29 @@ The raw connection would be (replacing the port with the one created by wp-env):
 Using DB CLI
 `wp-env run cli wp db cli`
 
+To know more info, which can be used to connect from a DB Client.
+
+```
+wp-env run cli wp config get DB_HOST   # Host is 127.0.0.1
+wp-env run cli wp config get DB_NAME
+wp-env run cli wp config get DB_USER
+wp-env run cli wp config get DB_PASSWORD
+```
+
+And for the port of the DB and DB tests you can run
+ `docker ps | grep mysql`
+
+Simple way to export and import DB into the root of the project
+`wordpress.sql`:
+
+```>export db
+sh ./bin/export-db.sh
+```
+```>import db
+sh ./bin/import-db.sh
+```
+
+
 ### Use WP CLI
 
 `wp-env run cli wp get option siteurl`

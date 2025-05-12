@@ -11,8 +11,6 @@
 
 namespace Cartelera_Scrap\Helpers;
 
-use Cartelera_Scrap\Parse_Text_Into_Dates;
-
 /**
  *  * =======
  * CRUD RESULTS: we store the results of the scrapped text in the options table
@@ -72,11 +70,12 @@ class Results_To_Save {
 		$results = self::get_show_results();
 
 		// append computed data:
+		/*
 		$result['computed']                 = empty( $result['computed'] ) ? [] : $result['computed'];
 		$result['computed']['cartelera']    = Parse_Text_Into_Dates::computed_data_cartelera_result( $result );
 		$result['computed']['ticketmaster'] = Parse_Text_Into_Dates::computed_data_ticketmaster_result( $result );
 		$result['computed']['comparison']   = Parse_Text_Into_Dates::computed_dates_comparison_result( $result );
-
+		*/
 		// TODELETE;
 		// $is_successful = Parse_Text_Into_Dates::computed_for_today_is_comparison_successful( $result );
 		// echo $is_successful ? '✅ ' : '❌ ';

@@ -42,3 +42,5 @@ logs
 /test-results
 /.phpunit.result.cache
 /dist
+backup.sql
+wordpress.sql
