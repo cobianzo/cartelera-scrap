@@ -3,7 +3,7 @@
  * Plugin Name: Cartelera Scrap
  * Plugin URI:
  * Description: Plugin for scrapping ticketmaster vs cartelera.com.mx
- * Version: 2.0.0
+ * Version: 2.0.1
  * Author: @cobianzo
  * Author URI: https://githuck.com/cobianzo
  * License: GPL v2 or later
@@ -46,10 +46,11 @@ class Cartelera_Scrap_Plugin {
 	private function load_dependencies() {
 
 		// definition of constants.
-		require __DIR__ . '/phpstan-bootstrap.php';
 
 		define( 'CARTELERA_SCRAP_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'CARTELERA_SCRAP_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+
+		require CARTELERA_SCRAP_PLUGIN_DIR . 'phpstan-bootstrap.php';
 
 		if ( file_exists( CARTELERA_SCRAP_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
 			require_once CARTELERA_SCRAP_PLUGIN_DIR . 'vendor/autoload.php';

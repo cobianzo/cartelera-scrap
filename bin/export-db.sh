@@ -1,2 +1,2 @@
 npm run wpcli db export wordpress.sql
-cp wordpress.sql wp-content/plugins/cartelera-scrap/
+wp-env run cli cp wordpress.sql wp-content/plugins/cartelera-scrap/

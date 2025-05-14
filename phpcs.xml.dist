@@ -45,6 +45,10 @@
 		<exclude name="Squiz.Commenting.InlineComment.InvalidEndChar" />
 	</rule>
 
+	<rule ref="WordPress.WP.I18n.MissingTranslatorsComment">
+		<exclude name="WordPress.WP.I18n.MissingTranslatorsComment" />
+	</rule>
+
 	<!-- The version set here matches the minimum version tested in buddy.yml. -->
 	<config name="minimum_supported_wp_version" value="8.1" />
 

@@ -1,3 +1,4 @@
+// used in version-increment.js
 const fs = require('fs');
 
 /**

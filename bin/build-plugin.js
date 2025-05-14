@@ -41,7 +41,8 @@ class PluginBuilder {
 		// Lista de archivos y directorios a incluir
 		this.directories = ['inc'];
 
-		this.files = [`${this.pluginSlug}.php`, `package.json`];
+    // In this case we also have to include the phpstan - bootstrap .php
+		this.files = [`${this.pluginSlug}.php`, `phpstan-bootstrap.php`, `package.json`];
 		this.files = this.files.map((file) => ({
 			source: file,
 			target: file,
