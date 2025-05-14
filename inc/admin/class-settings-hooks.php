@@ -74,7 +74,7 @@ class Settings_Hooks {
 			}
 
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- ignoring error_log usage for debugging purposes
-			error_log( 'Acción ejecutada' );
+			error_log( 'Acción de Scrap ejecutada' );
 
 			if ( 'action_start_scrapping_shows' === $action ) {
 

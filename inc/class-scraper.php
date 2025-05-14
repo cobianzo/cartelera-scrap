@@ -46,17 +46,18 @@ class Scraper {
 
 
 	/**
-	 * Reusable fn.
+	 * Reusable fn. from a url, retrieves its html source code
 	 *
 	 * @param string $url any url to retrieve the flat html.
 	 * @return string|\WP_Error
 	 */
 	public static function get_html_from_url( string $url ): string|\WP_Error {
 		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
-		$html = wp_remote_get( $url );
+		$html = wp_remote_get( $url, [ 'timeout' => 300 ] );
+		\Cartelera_Scrap\ddie($html);
 		$html = wp_remote_retrieve_body( ( $html && ! is_wp_error( $html ) ) ? $html : '' );
 		if ( is_wp_error( $html ) ) {
-			return new \WP_Error( 'ticketmaster_url_error', 'Error retrieving ticketmaster URL.' );
+			return new \WP_Error( 'ticketmaster_url_error', 'Error retrieving ticketmaster URL.' . ( $html instanceof \WP_Error ? $html->get_error_message() : '' ) );
 		} elseif ( ! $html ) {
 			return new \WP_Error( 'empty_response', 'Empty response from ticketmaster URL.' );
 		}

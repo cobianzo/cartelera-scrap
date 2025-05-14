@@ -44,3 +44,4 @@ logs
 /dist
 backup.sql
 wordpress.sql
+/db-backups

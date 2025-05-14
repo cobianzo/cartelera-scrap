@@ -7,6 +7,7 @@ use Cartelera_Scrap\Scrap_Output;
 use Cartelera_Scrap\Parse_Text_Into_Dates;
 use Cartelera_Scrap\Helpers\Results_To_Save;
 use Cartelera_Scrap\Helpers\Queue_To_Process;
+use LDAP\Result;
 
 /**
  * Class Settings_Page
@@ -168,6 +169,8 @@ class Settings_Page {
 				_e( '<h3>Scrapping is running as a cron job</h3>', 'cartelera-scrap' );
 				$start_date = Queue_To_Process::get_timestamp_start_process( 'l, F j, Y \a\\t g:i a' );
 				printf( __( '<p>Current queue started at: <b>%s</b><br />', 'cartelera-scrap' ), $start_date ? "$start_date GMT" : 'not set' );
+				$end_date = Results_To_Save::get_lastsaved_results_timestamp( 'l, F j, Y \a\\t g:i a' );
+				printf( __( '<p>Last saved result at: <b>%s</b><br />', 'cartelera-scrap' ), $end_date ? "$end_date GMT" : 'not set' );
 
 				printf( __( '<p>Shows in the processing queue waiting to be processed: %s<br />', 'cartelera-scrap' ), Queue_To_Process::get_queued_count() );
 				printf( __( 'Already processed shows: %s</p>', 'cartelera-scrap' ), count( Results_To_Save::get_show_results() ) );
@@ -315,7 +318,7 @@ class Settings_Page {
 	public function register_input_field( string $field_name, string $section_id, $more_parems = [] ) {
 		$more_parems = array_merge( [
 			'label'       => ucwords( str_replace( '_', ' ', $field_name ) ), // Field title.
-			'description' => __( 'Enter a numeric value for this setting.', $this->textdomain ),
+			'description' => __( 'Enter a value for this setting.', $this->textdomain ),
 			'type'        => 'text',
 		], $more_parems );
 

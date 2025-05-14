@@ -787,6 +787,16 @@ class Parse_Text_Into_Dates {
 		return $computed_tm_result;
 	}
 
+	/**
+	 * Takes the computed results from Cartelera and Ticketmaster data and
+	 * compares the extracted dates and times.
+	 * Returns an array with the definitive date-time entries that are extracted from result
+	 * also returns a boolean indicating if the comparison was successful.
+	 *
+	 * @param array $result The computed results from Cartelera and Ticketmaster data.
+	 * @return array An array with the definitive date-time entries and a boolean indicating
+	 *               if the comparison was successful.
+	 */
 	public static function computed_dates_comparison_result( array $result ): array {
 
 		$dates_ca     = $result['computed']['cartelera']['definitive_datetimes']['output'] ?? [];
@@ -794,7 +804,7 @@ class Parse_Text_Into_Dates {
 		$merged_dates = array_merge( $dates_ca, $dates_tm );
 		$comparison   = [];
 		foreach ( $merged_dates as $datetime ) {
-			$computed_for_date                    = [
+			$computed_for_date = [
 				'datetime'     => $datetime,
 				'cartelera'    => in_array( $datetime, $dates_ca, true ),
 				'ticketmaster' => in_array( $datetime, $dates_tm, true ),

@@ -1,6 +1,7 @@
 <?php
 /**
  * Registers the custom post type "Report" for the frontend.
+ * It includes some methods to save the date in a post and displaying it as a table.
  *
  * @package Cartelera_Scrap
  * @subpackage Front
@@ -9,7 +10,6 @@
 namespace Cartelera_Scrap\Front;
 // use \Cartelera_Scrap\Front\Block_Registration;
 
-use Cartelera_Scrap\Cartelera_Scrap_Plugin;
 use \Cartelera_Scrap\Helpers\Results_To_Save;
 /**
  * Class Report_CPT
@@ -26,6 +26,7 @@ class Report_CPT {
 		add_action( 'init', [ __CLASS__, 'register_report_cpt' ] );
 		add_action( 'cartelera_scrap_all_shows_processed', [ __CLASS__, 'save_results_as_post' ] );
 
+		// when visiting the CPT, we decode the json to show it as a table in single - report.php
 		add_filter( 'the_content', [ __CLASS__, 'filter_report_content' ] );
 	}
 
@@ -93,10 +94,6 @@ class Report_CPT {
 	 */
 	public static function save_results_as_post(): int {
 
-		// retrieve all results
-		$results = Results_To_Save::get_show_results();
-		$json    = json_encode( $results, JSON_UNESCAPED_UNICODE );
-
 		$post_title = 'Cartelera Scrap Report ' . date( 'Y-m-d H:i' );
 		// confirm that there is not a post with the title $post_title
 		$args = array(
@@ -104,15 +101,21 @@ class Report_CPT {
 			'post_title'     => $post_title,
 			'post_status'    => 'any',
 			'posts_per_page' => 1,
+			'fields'         => 'ids',  // just Ids for better performance.
 		);
 		$query = new \WP_Query( $args );
 
-		$existing_post = count( $query->posts ) > 0;
-		if ( $existing_post ) {
+		if ( ! empty( $query->posts ) ) {
 			return 0;
 		}
 
-		// create the post
+		// create the post and
+		// retrieve all results to save it as content.
+		$results = Results_To_Save::get_show_results();
+		$json    = json_encode( $results, JSON_UNESCAPED_UNICODE );
+		// TODELETE
+		// \Cartelera_Scrap\ddie($json);
+
 		$post = array(
 			'post_title'   => $post_title,
 			'post_content' => $json,
@@ -136,11 +139,6 @@ class Report_CPT {
 
 		// only for the report CPT
 		if ( self::POST_TYPE !== get_post_type() ) {
-			return $content;
-		}
-
-		// only if is a single post
-		if ( ! is_singular( self::POST_TYPE ) ) {
 			return $content;
 		}
 

@@ -21,7 +21,9 @@
     "test:options": "npm run wpcli db query \"SELECT option_name FROM wp_options WHERE option_name LIKE 'cartelera%';\"",
     "cs": "composer run lint .",
     "cbf": "composer run format .",
-    "plugin-build": "node ./bin/build-plugin.js"
+    "plugin-build": "node ./bin/build-plugin.js",
+    "import-db": "sh ./bin/import-db.sh",
+    "export-db": "sh ./bin/export-db.sh"
   },
   "author": "@cobianzo",
   "license": "GPL-2.0-or-later",

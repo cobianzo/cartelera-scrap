@@ -102,7 +102,20 @@ class Results_To_Save {
 	 *
 	 * @return void
 	 */
-	public static function update_lastsaved_results_timestamp() {
-		update_option( self::OPTION_TIMESTAMP, time() );
+	public static function update_lastsaved_results_timestamp(): void {
+		update_option( self::OPTION_TIMESTAMP, gmdate( 'U' ) );
+	}
+	/**
+	 * Retrieve the timestamp indicating when the results were last saved.
+	 *
+	 * @param string $format The format in which to return the timestamp. Default is 'l, F j, Y \a\\t g:i a'.
+	 * @return string|null Formatted timestamp or null if no timestamp is set.
+	 */
+	public static function get_lastsaved_results_timestamp( $format = 'l, F j, Y \a\\t g:i a' ): ?string {
+		$timestamp = get_option( self::OPTION_TIMESTAMP );
+		if ( ! $timestamp ) {
+			return null;
+		}
+		return gmdate( $format, $timestamp );
 	}
 }
