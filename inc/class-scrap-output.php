@@ -89,8 +89,14 @@ class Scrap_Output {
 		<?php
 	}
 
-	public static function render_table_with_results() {
-		$results = Results_To_Save::get_show_results();
+	/**
+	 * Renders the table with the results.
+	 *
+	 * @param array|null $overwritten_results The results to render. If null, we use the results from the database.
+	 * @return void
+	 */
+	public static function render_table_with_results( $overwritten_results = null ): void {
+		$results = $overwritten_results ?? Results_To_Save::get_show_results();
 		if ( $results ) :
 			?>
 			<h2>Results (<?php echo esc_html( count( $results ) ); ?>) </h2>

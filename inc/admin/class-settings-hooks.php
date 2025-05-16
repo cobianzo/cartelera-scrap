@@ -82,7 +82,7 @@ class Settings_Hooks {
 				$result_scrap = Scrap_Actions::perform_scrap();
 				if ( is_wp_error( $result_scrap ) ) {
 					wp_safe_redirect( add_query_arg(
-						'error', 'Error: No shows found in cartelera.',
+						'error', 'Error: No shows found in cartelera: ' . ($result_scrap instanceof \WP_Error ? $result_scrap->get_error_message() : 'unknown error'),
 						admin_url( 'options-general.php?page=cartelera-scrap' )
 					) );
 					exit;
@@ -143,12 +143,15 @@ class Settings_Hooks {
 
 		$results = Results_To_Save::get_show_results();
 		// Convert the results array to JSON format.
-		$json_data = json_encode( $results, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
+		$json_data = wp_json_encode( $results, JSON_UNESCAPED_UNICODE );
+		$json_data = wp_slash( $json_data ); // we need this to escape the double quotes.
 
 		// Check if the JSON encoding was successful.
 		if ( false === $json_data ) {
 			return new \WP_Error( 'json_data_error', 'Error generating json data from results.' );
 		}
+
+		// \Cartelera_Scrap\ddie($json_data);
 
 		$upload_dir = wp_upload_dir();
 		// Create a new folder in the uploads directory for 'cartelera-scrap'.

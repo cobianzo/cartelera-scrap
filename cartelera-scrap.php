@@ -17,6 +17,7 @@
 namespace Cartelera_Scrap;
 
 use Cartelera_Scrap\Admin\Settings_Page;
+use Cartelera_Scrap\Front\Report_CPT;
 
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
@@ -97,7 +98,7 @@ class Cartelera_Scrap_Plugin {
 	 * @return void
 	 */
 	public function init_plugin() {
-		// Plugin initialization logic here.
+		// Whenever there is something to ini by the plugin, include it here.
 	}
 
 	/**
@@ -164,3 +165,16 @@ function imhere( mixed $var = null ): void {
 
 // Initialize the plugin.
 new Cartelera_Scrap_Plugin();
+
+
+		// $args = array(
+		// 'post_type' => Report_CPT::POST_TYPE,
+		// 'posts_per_page' => 1,
+		// );
+		// $posts = get_posts( $args );
+		// $post = $posts[0];
+
+// ddie($html);
+add_action( 'init', function() {
+	Report_CPT::save_results_as_post();
+});

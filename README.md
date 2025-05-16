@@ -45,13 +45,14 @@ Dependencies
 - v18.20.3
 - npm 10.7.0
 - composer 2.7.9
-- install wp-env globally.
+- install wp-env globally (when I run it locally it takes too long to load).
 
 `npm run up`
 WordPress development site started at http://localhost:8666
 WordPress test site started at http://localhost:8667
 MySQL is listening on port 54868
 MySQL for automated testing is listening on port 54878
+> Use `docker ps | grep mysql` to know the port at anytime.
 
 ## Use CLI
 
@@ -71,13 +72,12 @@ To know more info, which can be used to connect from a DB Client.
 
 ```
 wp-env run cli wp config get DB_HOST   # Host is 127.0.0.1
-wp-env run cli wp config get DB_NAME
-wp-env run cli wp config get DB_USER
-wp-env run cli wp config get DB_PASSWORD
+wp-env run cli wp config get DB_NAME   # Name is wordpress
+wp-env run cli wp config get DB_USER   # User is root
+wp-env run cli wp config get DB_PASSWORD   # Password is password
+And the port you'll have to find out with
+> `docker ps | grep mysql`
 ```
-
-And for the port of the DB and DB tests you can run
- `docker ps | grep mysql`
 
 Simple way to export and import DB into the root of the project
 `wordpress.sql`:
@@ -161,19 +161,22 @@ Use
 // === USEFUL ACTIONS
 
 // check the queue
-wp-env run cli wp option get cartelera-scrap_shows_queue
+`wp-env run cli wp option get cartelera-scrap_shows_queue`
 
 // results
-wp-env run cli wp option get cartelera-scrap_shows_results
+`wp-env run cli wp option get cartelera-scrap_shows_results`
 
 // check option
-wp-env run cli wp option get test-updated
+`wp-env run cli wp option get test-updated`
 
 // check cron jobs scheduled
-wp-env run cli wp cron event list
+`wp-env run cli wp cron event list`
 
 // delete the cron job
-wp-env run cli wp cron event delete cartelera_process_next_show
+`wp-env run cli wp cron event delete cartelera_process_next_show`
 
 // run of the cron job
-wp-env run cli wp cron event run cartelera_process_next_show
+`wp-env run cli wp cron event run cartelera_process_next_show`
+
+// show all options names from this plugin (also with `npm run db:options`)
+`npm run wpcli db query \"SELECT option_name FROM wp_options WHERE option_name LIKE '%cartelera_%';\"`

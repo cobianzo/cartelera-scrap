@@ -1,42 +1,43 @@
 <?php
 
+
+if ( is_admin() ) {
+	return;
+}
+
 use Cartelera_Scrap\Parse_Text_Into_Dates;
 use Cartelera_Scrap\Scrap_Output;
+use Symfony\Component\Console\Output\Output;
+
+// $res = \Cartelera_Scrap\Helpers\Results_To_Save::get_show_results();
+// \Cartelera_Scrap\ddie($res);
+// $json    = json_encode( $res, JSON_UNESCAPED_UNICODE );
+
+// \Cartelera_Scrap\dd($json);
 
 global $post;
-$results = json_decode( $post->post_content, true );
+$results = $post->post_content;
+// \Cartelera_Scrap\ddie($results);
+$results = json_decode( $results, true );
 
 // TODELETE
-// Cartelera_Scrap\ddie($post->post_content);
+// $r = ["Cenicienta, La Magia del Amor","La Cenicienta\" Balanz Danza"];
+// $r = wp_json_encode( $r, JSON_UNESCAPED_UNICODE );
+// $r = wp_slash( $json );
+// // \Cartelera_Scrap\imhere( htmlentities( $r ) );
+// // update this post with the results.
+// $u = wp_update_post([
+	// 'ID' => $post->ID,
+	// 'post_content' => $r, // this is ["Cenicienta, La Magia del Amor","La Cenicienta\" Balanz Danza"]
+// ]);
 
-// Cartelera_Scrap\ddie($results);
-foreach ( $results as $i => $result ) :
+// $thepost = get_post( $u );
+// $content = $thepost->post_content;
+// $content = json_decode( $content, true );
+// \Cartelera_Scrap\ddie($content);
 
-	$result['computed']                 = empty( $result['computed'] ) ? [] : $result['computed'];
-	$result['computed']['cartelera']    = Parse_Text_Into_Dates::computed_data_cartelera_result( $result );
-	$result['computed']['ticketmaster'] = Parse_Text_Into_Dates::computed_data_ticketmaster_result( $result );
-	$result['computed']['comparison']   = Parse_Text_Into_Dates::computed_dates_comparison_result( $result );
+// wp_die( $u );
 
-	// we update the values of the result based on today. ($result is passed by ref)
-	$is_result_successful = Parse_Text_Into_Dates::computed_for_today_is_comparison_successful( $result );
-	$no_tickermaster = ( empty( $result['ticketmaster']['dates'] ) || ! isset( $result['ticketmaster']['url'] ) );
-
-	?>
-
-	<div class="result">
-		<?php Scrap_Output::render_col_title( $result ); ?>
-		<?php Scrap_Output::render_col_cartelera_text_datetimes( $result ); ?>
-		<?php Scrap_Output::render_col_ticketmaster_datetimes( $result ); ?>
-		<?php Scrap_Output::render_col_cartelera_datetimes( $result ); ?>
-		<?php Scrap_Output::render_col_comparison( $result ); ?>
-	</div>
-
-
-<?php
-
-
-
-endforeach;
-?>
+Scrap_Output::render_table_with_results( $results );
 
 

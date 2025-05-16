@@ -106,6 +106,7 @@ class Report_CPT {
 		$query = new \WP_Query( $args );
 
 		if ( ! empty( $query->posts ) ) {
+			// wp_die('repe');
 			return 0;
 		}
 

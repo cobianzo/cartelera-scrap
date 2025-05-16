@@ -73,6 +73,7 @@ class Scraper_Cartelera extends Scraper {
 			$html = self::get_html_from_url( $cartelera_url );
 			if ( is_wp_error( $html ) ) {
 				$result_cartelera['error'] = $html->get_error_message();
+				$html = '';
 			}
 		}
 

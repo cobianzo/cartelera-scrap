@@ -61,6 +61,13 @@ class Scrap_Actions {
 	 */
 	public static function cartelera_process_one_batch(): void {
 
+		// Validation for Case: There are no more shows to process in the queue => the scraping is finished.
+		if ( empty( Queue_To_Process::get_first_queued_show() ) ) {
+			do_action( 'cartelera_scrap_all_shows_processed' ); // will be used by the CPT to create a new one.
+			Queue_To_Process::delete_timestamp_start_process();
+			return;
+		}
+
 		// processing $batch_count/$shows_per_batch in this cron job.
 		$shows_per_batch = (int) Settings_Page::get_plugin_setting( Settings_Page::NUMBER_PROCESSED_EACH_TIME ) ?? 10;
 		$batch_count     = get_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count' );
@@ -70,13 +77,6 @@ class Scrap_Actions {
 		}
 
 		self::cartelera_process_one_single_show();
-
-
-		// Case: There are no more shows to process in the queue => the scraping is finished.
-		if ( ! Queue_To_Process::get_first_queued_show() ) {
-			do_action( 'cartelera_scrap_all_shows_processed' ); // will be used by the CPT to create a new one.
-			Queue_To_Process::delete_timestamp_start_process();
-		}
 
 		/** Well done, aonthanotherer show has been processed... Now...
 		 * - save the option with the count of the shows processed in this batch.
