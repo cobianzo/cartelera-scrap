@@ -88,7 +88,8 @@ class Scrap_Actions {
 		if ( $batch_count === $shows_per_batch ) {
 			// we finished the batch.
 			if ( ! wp_next_scheduled( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ) ) {
-				wp_schedule_single_event( time() + 5, Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ); // ejecuta en 5s.
+				wp_schedule_single_event( time() + 30, Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ); // ejecuta en 5s.
+				// wp_die('batch acabo y re scheduled');
 			}
 		} elseif ( $batch_count < $shows_per_batch ) {
 			self::cartelera_process_one_batch();

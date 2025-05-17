@@ -1,0 +1,101 @@
+
+.sr-wrap {
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.cs_result {
+  margin-bottom: 2em;
+  padding: 1em;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.cs_fail {
+  background-color: #ffebee;
+  border-color: #ffcdd2;
+}
+
+.cs_success {
+  background-color: #e8f5e9;
+  border-color: #c8e6c9;
+}
+
+.cs_row {
+  margin-bottom: 1em;
+}
+
+.cs_title_row h3 {
+  margin: 0 0 0.5em 0;
+  font-size: 1.4em;
+}
+
+.cs_tm_title {
+  font-size: 0.9em;
+  margin: 0.5em 0;
+}
+
+.cs_muted {
+  color: #666;
+  font-size: 0.85em;
+  margin: 0.2em 0;
+}
+
+.cs_danger {
+  color: #d32f2f;
+  font-weight: bold;
+}
+
+
+.invalid {
+  display: none;
+}
+.valid.color-success {
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+.cs_dates_row {
+  display: flex;
+  gap: 2em;
+  margin-top: 1em;
+}
+
+.cs_col {
+  flex: 1;
+  h4 {
+    margin: 0 auto 1lh;
+    border-bottom: 1px solid #444;
+  }
+}
+
+.cs_cartelera_link,
+.cs_tm_link {
+  display: inline-block;
+  text-decoration: none;
+  color: #1976d2;
+  margin: 0.3em 0;
+}
+
+.cs_cartelera_link:hover,
+.cs_tm_link:hover {
+  text-decoration: underline;
+}
+
+.cs_dates_detail_row {
+  display: flex;
+  gap: 2em;
+  padding-top: 1em;
+  border-top: 1px solid #eee;
+}
+
+.sr-wrap {
+  margin-bottom: 2em;
+}
+
+.sr-wrap h1 {
+  margin: 0 0 0.5em 0;
+}

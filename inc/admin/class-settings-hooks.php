@@ -35,7 +35,11 @@ class Settings_Hooks {
 		} );
 
 		// When saving the settings, if they say we need to run the cron => we schecdule the cron job.
-		add_action( 'update_option_' . Settings_Page::ALL_MAIN_OPTIONS_NAME, [ __CLASS__, 'start_or_stop_cron_job' ], 10, 2 );
+		add_action(
+			'update_option_' . Settings_Page::ALL_MAIN_OPTIONS_NAME,
+			[ __CLASS__, 'start_or_stop_cron_job' ],
+			10, 2
+		);
 	}
 
 	/**

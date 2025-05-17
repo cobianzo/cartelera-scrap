@@ -324,6 +324,9 @@ class Scrap_Output {
 	public static function render_col_ticketmaster_dates( $result ): void {
 
 		// add success or fail to the class of the date.
+		// Sort comparison array by timestamp (key) in ascending order
+		ksort($result['computed']['comparison']);
+
 		foreach ( $result['computed']['comparison'] as $tm_timestamp => $date_with_full_info ) {
 
 			// pre compute the date.
@@ -417,7 +420,6 @@ class Scrap_Output {
 	 * @return void
 	 */
 	public static function render_col_cartelera_datetimes( array $result ): void {
-
 
 		// adds success or fail to the class of the date.
 		foreach ( $result['computed']['comparison'] as $car_timestamp => $date_with_full_info ) {

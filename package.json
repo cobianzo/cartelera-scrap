@@ -21,7 +21,7 @@
     "test:runmaincron": "npm run wpcli cron event run cartelera-scrap_automated_cron",
     "cs": "composer run lint .",
     "cbf": "composer run format .",
-    "version": "node ./ bin/version-increment.js",
+    "version": "node ./bin/version-increment.js",
     "plugin-build": "node ./bin/build-plugin.js",
     "import-db": "sh ./bin/import-db.sh",
     "export-db": "sh ./bin/export-db.sh"

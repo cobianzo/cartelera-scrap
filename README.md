@@ -1,14 +1,13 @@
 TODO
 ===
 
+- Main Cron job not working. After the first processing -> empties the queue and stops.
 - Finish the test phpunit.
 - Create frontend.
 - Send email with report. Add it to the settings options.
-- Refactor: ideally we loop all shows and save all relevant information in the results option table.
-then we render those results in the table. (at the mo it calculates de output results as we render that table html) - WIP
 - Don't evaluate 'Eventos Internacionales' ie https://www.ticketmaster.com.mx/search?q=Waitress&region=804
 - Confirm that everyone of the unittests work ok, and explain how to make a new unittest with a specific page.
-- cleanup the output for the backend.
+- cleanup the code for the output for the backend. Now it has obsole and not used code. Clean all commented code.
 
 WHAT IS THIS PROJECT
 ===
