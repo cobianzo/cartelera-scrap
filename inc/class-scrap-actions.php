@@ -27,7 +27,7 @@ class Scrap_Actions {
 	 * The launches the first cron job, which will process the first show, and save the result,
 	 * calling the next cron job if there are more shows to process
 	 *
-	 * @return void.
+	 * @return true|\WP_Error.
 	 */
 	public static function perform_scrap(): true|\WP_Error {
 
@@ -56,27 +56,33 @@ class Scrap_Actions {
 	 * Processes (scraps in carteleradeteatro.mx and in ticketmaster) one show from the processing queue.
 	 * Saves the result from both sources in the database.
 	 * Once finished, it deletes the show from the queue and calls the next cron job if there are more shows to process.
-
-	 * @return void
+	 *
+	 * @param int|null $overwrite_batch_number if set, we dont use the value in the db option, and we use that number.
+	 * @return integer
 	 */
-	public static function cartelera_process_one_batch(): void {
+	public static function cartelera_process_one_batch( ?int $overwrite_batch_number = null ): int {
+
+		$batch_count = get_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count' );
 
 		// Validation for Case: There are no more shows to process in the queue => the scraping is finished.
 		if ( empty( Queue_To_Process::get_first_queued_show() ) ) {
 			do_action( 'cartelera_scrap_all_shows_processed' ); // will be used by the CPT to create a new one.
 			Queue_To_Process::delete_timestamp_start_process();
-			return;
+			return $batch_count;
 		}
 
 		// processing $batch_count/$shows_per_batch in this cron job.
-		$shows_per_batch = (int) Settings_Page::get_plugin_setting( Settings_Page::NUMBER_PROCESSED_EACH_TIME ) ?? 10;
-		$batch_count     = get_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count' );
-		$batch_count     = ( (int) $batch_count ) + 1;
-		if ( $batch_count > $shows_per_batch ) {
-			return;
+		if ( $overwrite_batch_number ) {
+			$shows_per_batch = $overwrite_batch_number;
+		} else {
+			$shows_per_batch = (int) Settings_Page::get_plugin_setting( Settings_Page::NUMBER_PROCESSED_EACH_TIME ) ?? 10;
 		}
 
-		self::cartelera_process_one_single_show();
+		if ( $batch_count < $shows_per_batch ) {
+			self::cartelera_process_one_single_show();
+			$batch_count = ( (int) $batch_count ) + 1;
+			update_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count', $batch_count );
+		}
 
 		/** Well done, aonthanotherer show has been processed... Now...
 		 * - save the option with the count of the shows processed in this batch.
@@ -84,16 +90,18 @@ class Scrap_Actions {
 		 *      - it can be straight away if the batch is not finished.
 		 *      - or we can schedule the next cron job to process the next batch.
 		*  */
-		update_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count', $batch_count );
+
 		if ( $batch_count === $shows_per_batch ) {
 			// we finished the batch.
 			if ( ! wp_next_scheduled( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ) ) {
 				wp_schedule_single_event( time() + 30, Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ); // ejecuta en 5s.
-				// wp_die('batch acabo y re scheduled');
+				return $batch_count;
 			}
 		} elseif ( $batch_count < $shows_per_batch ) {
-			self::cartelera_process_one_batch();
+			return (int) self::cartelera_process_one_batch( $shows_per_batch );
 		}
+
+		return $batch_count;
 	}
 
 	/**

@@ -96,10 +96,16 @@ class Settings_Hooks {
 				$message = 'Scrap action executed successfully.';
 			} elseif ( 'action_process_next_scheduled_show' === $action ) {
 
+
+				$shows_per_batch = isset( $_POST['shows_per_batch'] ) ? absint( sanitize_text_field( $_POST['shows_per_batch'] ) ) : 0;
+				if ( empty( $shows_per_batch ) ) {
+					// we should not need this fallback.
+					$shows_per_batch = Settings_Page::get_plugin_setting( Settings_Page::NUMBER_PROCESSED_EACH_TIME ) ?? 10;
+				}
+
 				update_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count', 0 ); // init the count of the shows being processed in this batch.
-				Scrap_Actions::cartelera_process_one_batch();
-				$shows_per_batch = Settings_Page::get_plugin_setting( Settings_Page::NUMBER_PROCESSED_EACH_TIME ) ?? 10;
-				$message         = sprintf( __( 'Processed %s theatre shows.', 'cartelera-scrap' ), $shows_per_batch );
+				$processed = Scrap_Actions::cartelera_process_one_batch( $shows_per_batch );
+				$message   = sprintf( __( 'Processed %s theatre shows.', 'cartelera-scrap' ), $processed );
 
 			} elseif ( 'action_scrap_single_show' === $action ) {
 

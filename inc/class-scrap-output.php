@@ -54,10 +54,12 @@ class Scrap_Output {
 			);
 
 			$next_show = Queue_To_Process::get_first_queued_show();
-			if ( $next_show ) :
+			if ( $next_show ) :  // next show exists, so we suggest to process it.
+				$extra_html_after_button = sprintf( '<input type="number" name="shows_per_batch" value="%s" min="1" max="100" style="width: 5em;" />', Settings_Page::get_plugin_setting( Settings_Page::NUMBER_PROCESSED_EACH_TIME ) ?? 10 );
 				Settings_Page::create_form_button_with_action(
 					'action_process_next_scheduled_show',
-					sprintf( __( 'Process next batch of %s', 'cartelera-scrap' ), Settings_Page::get_plugin_setting( Settings_Page::NUMBER_PROCESSED_EACH_TIME ) )
+					sprintf( __( 'Process next batch of ...', 'cartelera-scrap' ) ),
+					[ 'extra-html' => $extra_html_after_button ]
 				);
 				?>
 				<strong><?php echo esc_html( $next_show['text'] ); ?></strong>

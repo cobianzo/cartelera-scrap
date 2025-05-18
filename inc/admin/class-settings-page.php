@@ -206,6 +206,7 @@ class Settings_Page {
 	 * Initialize the settings for the plugin.
 	 */
 	public function settings_init(): void {
+
 		// Register the settings option in the database.
 		// Settings for section
 		register_setting(
@@ -397,7 +398,7 @@ class Settings_Page {
 	 *
 	 * @param string $action_name
 	 * @param string $button_text
-	 * @param array  $options [button-class, extra-data]
+	 * @param array  $options [button-class, extra-data, extra-html]
 	 * @return void
 	 */
 	public static function create_form_button_with_action( string $action_name, string $button_text, array $options = [] ) {
@@ -419,6 +420,11 @@ class Settings_Page {
 						value="<?php echo esc_attr( $value ); ?>" />
 				<?php endforeach; ?>
 			<?php endif; ?>
+			<?php
+			if ( ! empty( $options['extra-html'] ) ) :
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo $options['extra-html'];
+			endif; ?>
 		</form>
 		<?php
 	}

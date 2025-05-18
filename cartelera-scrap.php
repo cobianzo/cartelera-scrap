@@ -3,7 +3,7 @@
  * Plugin Name: Cartelera Scrap
  * Plugin URI:
  * Description: Plugin for scrapping ticketmaster vs cartelera.com.mx
- * Version: 2.0.2
+ * Version: 2.0.3
  * Author: @cobianzo
  * Author URI: https://githuck.com/cobianzo
  * License: GPL v2 or later
