@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "description": "Plugin para scraping de carteleras",
   "scripts": {
-    "up": "wp-env start",
+    "up": "wp-env start && npm run wordpress:install",
     "upglobal": "npx -p wp-env wp-env start",
     "down": "wp-env stop",
     "cli": "wp-env run cli",
@@ -24,7 +24,8 @@
     "version": "node ./bin/version-increment.js",
     "plugin-build": "node ./bin/build-plugin.js",
     "import-db": "sh ./bin/import-db.sh",
-    "export-db": "sh ./bin/export-db.sh"
+    "export-db": "sh ./bin/export-db.sh",
+    "wordpress:install": "wp-env run cli wp core download --path=wordpress"
   },
   "author": "@cobianzo",
   "license": "GPL-2.0-or-later",

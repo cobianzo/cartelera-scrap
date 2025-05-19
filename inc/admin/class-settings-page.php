@@ -161,6 +161,10 @@ class Settings_Page {
 			if ( $count_results ) :
 				$text = sprintf( __( 'Download json file for %s results', 'cartelera-scrap' ), $count_results );
 				self::create_form_button_with_action( 'action_export_scraping_results', $text, [ 'button-class' => 'button button-secondary' ] );
+
+				// Button to create report post
+				$text_report = sprintf( __( 'Create Report Post from %s results', 'cartelera-scrap' ), $count_results );
+				self::create_form_button_with_action( 'action_create_report_post', $text_report, [ 'button-class' => 'mt-025 button button-primary' ] );
 			endif;
 
 
@@ -174,6 +178,7 @@ class Settings_Page {
 
 				printf( __( '<p>Shows in the processing queue waiting to be processed: %s<br />', 'cartelera-scrap' ), Queue_To_Process::get_queued_count() );
 				printf( __( 'Already processed shows: %s</p>', 'cartelera-scrap' ), count( Results_To_Save::get_show_results() ) );
+
 				$queue = Queue_To_Process::get_first_queued_show();
 				if ( $queue ) {
 					echo '<p>Next show to Scrap:  ' . $queue['text'] . '</p>';
@@ -189,7 +194,11 @@ class Settings_Page {
 				);
 
 			else :
-				echo '<p>Scrapping ' . Settings_Hooks::ONETIMEOFF_CRONJOB_NAME . ' is not running as a cron job</p>';
+				if ( null !== get_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count' ) ) {
+					printf( __( 'Currently processing a batch: %s</p>', 'cartelera-scrap' ), get_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count' ) );
+				} else {
+					echo '<p>Scrapping ' . Settings_Hooks::ONETIMEOFF_CRONJOB_NAME . ' is not running as a cron job</p>';
+				}
 			endif;
 
 

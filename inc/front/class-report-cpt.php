@@ -12,6 +12,10 @@ namespace Cartelera_Scrap\Front;
 // use \Cartelera_Scrap\Front\Block_Registration;
 
 use Cartelera_Scrap\Helpers\Results_To_Save;
+
+use function Cartelera_Scrap\ddie;
+use function Cartelera_Scrap\dd;
+
 /**
  * Class Report_CPT
  * Registers the custom post type "Report" for the frontend.
@@ -31,6 +35,8 @@ class Report_CPT {
 	 */
 	public static function init(): void {
 		add_action( 'init', [ __CLASS__, 'register_report_cpt' ] );
+
+		// add hook when the queue is finished, and convert the resutls into a post.
 		add_action( 'cartelera_scrap_all_shows_processed', [ __CLASS__, 'save_results_as_post' ] );
 
 		// when visiting the CPT, we decode the json to show it as a table in single - report.php
@@ -102,19 +108,12 @@ class Report_CPT {
 	 */
 	public static function save_results_as_post(): int {
 
-		$post_title = 'Cartelera Scrap Report ' . date( 'Y-m-d H:i' );
-		// confirm that there is not a post with the title $post_title
-		$args  = [
-			'post_type'      => self::POST_TYPE,
-			'post_title'     => $post_title,
-			'post_status'    => 'any',
-			'posts_per_page' => 1,
-			'fields'         => 'ids',  // just Ids for better performance.
-		];
-		$query = new \WP_Query( $args );
+		// Sanitize the post title and generate post name
+		$post_title    = 'Cartelera Scrap Report ' . date( 'Y-m-d H:i' );
+		$post_name     = sanitize_title($post_title);
+		$existing_post = get_page_by_path( $post_name, OBJECT, self::POST_TYPE );
 
-		if ( ! empty( $query->posts ) ) {
-			// wp_die('repe');
+		if ( $existing_post ) {
 			return 0;
 		}
 

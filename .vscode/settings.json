@@ -23,5 +23,20 @@
     "titleBar.inactiveBackground": "#dd053199",
     "titleBar.inactiveForeground": "#e7e7e799"
   },
-  "peacock.color": "#dd0531"
+  "peacock.color": "#dd0531",
+  "search.exclude": {
+    "**/wordpress/**": true
+  },
+  "files.exclude": {
+    "**/wordpress/**": true,
+    "node_modules": true,
+    "vendor": true
+  },
+  "files.watcherExclude": {
+    "**/wordpress/**": true
+  },
+  "intelephense.environment.includePaths": [
+    "wordpress/wp-includes",
+    "wordpress/wp-admin"
+  ]
 }

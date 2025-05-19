@@ -22,6 +22,15 @@ use Cartelera_Scrap\Helpers\Text_Sanization;
  */
 class Scrap_Actions {
 
+
+	/**
+	 * Flag in the DB to know if the batch precessing is currently running.
+	 *
+	 * @var string
+	 */
+	const FLAG_OPTION_KEY = 'cartelera_onetimeoff_running';
+
+
 	/**
 	 * Retrieves the list of shows from cartelera and sets in to the processing queue.
 	 * The launches the first cron job, which will process the first show, and save the result,
@@ -64,13 +73,6 @@ class Scrap_Actions {
 
 		$batch_count = get_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count' );
 
-		// Validation for Case: There are no more shows to process in the queue => the scraping is finished.
-		if ( empty( Queue_To_Process::get_first_queued_show() ) ) {
-			do_action( 'cartelera_scrap_all_shows_processed' ); // will be used by the CPT to create a new one.
-			Queue_To_Process::delete_timestamp_start_process();
-			return $batch_count;
-		}
-
 		// processing $batch_count/$shows_per_batch in this cron job.
 		if ( $overwrite_batch_number ) {
 			$shows_per_batch = $overwrite_batch_number;
@@ -84,7 +86,7 @@ class Scrap_Actions {
 			update_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count', $batch_count );
 		}
 
-		/** Well done, aonthanotherer show has been processed... Now...
+		/** Well done, another show has been processed... Now...
 		 * - save the option with the count of the shows processed in this batch.
 		 * - call the processing of the next one.
 		 *      - it can be straight away if the batch is not finished.
@@ -93,8 +95,10 @@ class Scrap_Actions {
 
 		if ( $batch_count === $shows_per_batch ) {
 			// we finished the batch.
+			delete_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count' );
+
 			if ( ! wp_next_scheduled( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ) ) {
-				wp_schedule_single_event( time() + 30, Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ); // ejecuta en 5s.
+				wp_schedule_single_event( time() + 30, Settings_Hooks::ONETIMEOFF_CRONJOB_NAME ); // wait some secs and exectue again
 				return $batch_count;
 			}
 		} elseif ( $batch_count < $shows_per_batch ) {
@@ -154,5 +158,15 @@ class Scrap_Actions {
 		 * - delete the show from the processing queue
 		 */
 		Queue_To_Process::delete_first_queued_show();
+
+		/**
+		 * =============================================
+		 * 4.2 check if the queue has finished
+		 * QUEUE FINISIHED: There are no more shows to process in the queue => the scraping is finished.
+		 */
+		if ( empty( Queue_To_Process::get_first_queued_show() ) ) {
+			do_action( 'cartelera_scrap_all_shows_processed' ); // will be used by the CPT to create a new one.
+			Queue_To_Process::delete_timestamp_start_process();
+		}
 	}
 }

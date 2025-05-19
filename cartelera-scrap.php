@@ -3,13 +3,17 @@
  * Plugin Name: Cartelera Scrap
  * Plugin URI:
  * Description: Plugin for scrapping ticketmaster vs cartelera.com.mx
- * Version: 2.0.3
+ * Version: 2.0.5
  * Author: @cobianzo
  * Author URI: https://githuck.com/cobianzo
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: cartelera-scrap
  * Domain Path: /languages
+ * Requires at least: WordPress 6.0
+ * Requires PHP: 8.1
+ * WordPress tested up to: 6.6
+ * PHP tested up to: 8.2
  *
  * @package Cartelera_Scrap
  */
@@ -142,6 +146,7 @@ function dd( mixed $var ) {
 	print_r( $var );
 	echo '</pre>';
 }
+
 /**
  * Debugging function
  *
@@ -165,16 +170,3 @@ function imhere( mixed $var = null ): void {
 
 // Initialize the plugin.
 new Cartelera_Scrap_Plugin();
-
-
-		// $args = array(
-		// 'post_type' => Report_CPT::POST_TYPE,
-		// 'posts_per_page' => 1,
-		// );
-		// $posts = get_posts( $args );
-		// $post = $posts[0];
-
-// ddie($html);
-// add_action( 'init', function() {
-// 	Report_CPT::save_results_as_post();
-// });

@@ -2,6 +2,10 @@ html {
   scroll-behavior: smooth;
 }
 
+.mt-025 {
+  margin-top: 0.25lh !important;
+}
+
 .dark-muted,
 .dark-muted.color-danger,
 .dark-muted.color-success {

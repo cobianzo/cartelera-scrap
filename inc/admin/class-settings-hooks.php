@@ -11,8 +11,11 @@ namespace Cartelera_Scrap\Admin;
 
 use Cartelera_Scrap\Scrap_Actions;
 use Cartelera_Scrap\Cron_Job;
+use Cartelera_Scrap\Front\Report_CPT;
 use Cartelera_Scrap\Helpers\Results_To_Save;
 use Cartelera_Scrap\Helpers\Queue_To_Process;
+
+use function Cartelera_Scrap\ddie;
 
 /**
  * Settings_Hooks class.
@@ -29,7 +32,7 @@ class Settings_Hooks {
 		// this function handles all actions in buttons in the settings page..
 		add_action( 'admin_init', [ __CLASS__, 'handle_scrap_action' ] );
 
-		add_action( self::ONETIMEOFF_CRONJOB_NAME, function() {
+		add_action( self::ONETIMEOFF_CRONJOB_NAME, function () {
 			update_option( CARTELERA_SCRAP_PLUGIN_SLUG . '_batch_shows_count', 0 ); // init the count of the shows being processed in this batch.
 			Scrap_Actions::cartelera_process_one_batch();
 		} );
@@ -53,7 +56,8 @@ class Settings_Hooks {
 			'action_process_next_scheduled_show',
 			'action_scrap_single_show',
 			'action_stop_one_time_off_cron_job',
-			'action_export_scraping_results'
+			'action_export_scraping_results',
+			'action_create_report_post',
 		];
 
 		if ( ! isset( $_POST['action'] ) ) {
@@ -86,7 +90,7 @@ class Settings_Hooks {
 				$result_scrap = Scrap_Actions::perform_scrap();
 				if ( is_wp_error( $result_scrap ) ) {
 					wp_safe_redirect( add_query_arg(
-						'error', 'Error: No shows found in cartelera: ' . ($result_scrap instanceof \WP_Error ? $result_scrap->get_error_message() : 'unknown error'),
+						'error', 'Error: No shows found in cartelera: ' . ( $result_scrap instanceof \WP_Error ? $result_scrap->get_error_message() : 'unknown error' ),
 						admin_url( 'options-general.php?page=cartelera-scrap' )
 					) );
 					exit;
@@ -124,13 +128,35 @@ class Settings_Hooks {
 					$message   = sprintf( __( 'Processed theatre show: %1$s (%2$s).', 'cartelera-scrap' ), $show_title, $cartelera_href );
 					$scroll_to = '#result-' . sanitize_title( $show_title );
 				}
-			} elseif ( 'action_stop_one_time_off_cron_job' === $action ) {
+
+			}
+			elseif ( 'action_stop_one_time_off_cron_job' === $action ) {
+
 				// Stop the cron job.
-				wp_clear_scheduled_hook( Settings_Hooks::ONETIMEOFF_CRONJOB_NAME );
+				wp_clear_scheduled_hook( self::ONETIMEOFF_CRONJOB_NAME );
 				$message = 'Cron job stopped';
-			} elseif ( 'action_export_scraping_results' === $action ) {
+
+			}
+			elseif ( 'action_export_scraping_results' === $action ) {
+
 				// Export the results to a file.
 				self::export_action();
+
+			}
+			elseif ( 'action_create_report_post' === $action ) {
+
+				$post_id = Report_CPT::save_results_as_post();
+
+				if ( empty( $post_id ) ) {
+					wp_safe_redirect( add_query_arg(
+						'error',
+						'Error creating report post',
+						admin_url( 'options-general.php?page=cartelera-scrap' )
+					) );
+					exit;
+				}
+
+				$message = sprintf( __( 'Report post created successfully. %s', 'cartelera-scrap' ), get_permalink( $post_id ) );
 			}
 
 			// return to the settings page showing a notice.

@@ -69,7 +69,7 @@ class Results_To_Save {
 		// Append a new show result to the existing results in the database.
 		$results = self::get_show_results();
 
-		// append computed data:
+		// append computed data Removed beacuse its too much data into the DB:
 		/*
 		$result['computed']                 = empty( $result['computed'] ) ? [] : $result['computed'];
 		$result['computed']['cartelera']    = Parse_Text_Into_Dates::computed_data_cartelera_result( $result );
